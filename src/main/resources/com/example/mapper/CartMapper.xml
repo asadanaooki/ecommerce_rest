@@ -1,0 +1,30 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.CartMapper">
+  <select id="selectCartByPrimaryKey" resultType="com.example.entity.Cart">
+    select *
+    from cart
+    where cart_id = #{cartId}
+  </select>
+
+  <select id="selectCartItemByPrimaryKey" resultType="com.example.entity.CartItem">
+    select *
+    from cart_item
+    where cart_id = #{cartId}
+      and product_id = #{productId}
+  </select>
+  
+  <insert id="insertCartIfAbsent">
+    insert ignore into cart (cart_id) values (#{cart_id});
+  </insert>
+  
+  <insert id="upsertCartItem">
+      insert into cart_item
+        (cart_id, product_id, qty, price_inc_tax)
+      values
+        (#{cartId}, #{req.productId}, #{req.qty}, #{req.priceIncTax})
+      on duplicate key update
+        qty = least(qty + VALUES(qty), 20),
+        price_inc_tax = VALUES(price_inc_tax)
+  </insert>
+  
+</mapper>

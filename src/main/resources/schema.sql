@@ -8,13 +8,40 @@ DROP TABLE IF EXISTS product;
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS favorite;
 DROP TABLE IF EXISTS review;
+DROP TABLE IF EXISTS cart;
+DROP TABLE IF EXISTS cart_item;
+DROP TABLE IF EXISTS pre_registration;
 SET FOREIGN_KEY_CHECKS=1;
 
 -- user
 CREATE TABLE `user` (
-    user_id          CHAR(36)     NOT NULL,
-    created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    user_id            CHAR(36)       NOT NULL,
+    email              VARCHAR(255)   NOT NULL UNIQUE,
+    password_hash      CHAR(60)       NOT NULL,
+
+    -- ===== 氏名 =====
+    last_name          VARCHAR(50)    NOT NULL,
+    first_name         VARCHAR(50)    NOT NULL,
+    last_name_kana     VARCHAR(50)    NOT NULL,
+    first_name_kana    VARCHAR(50)    NOT NULL,
+
+    -- ===== 住所 =====
+    postal_code        CHAR(7)        NOT NULL,            -- 例: 1500041
+    address_pref_city  VARCHAR(100)   NOT NULL,            -- 都道府県 + 市区町村
+    address_area       VARCHAR(100)   NOT NULL,            -- それ以降（大字・町）
+    address_block      VARCHAR(100)   NOT NULL,            -- 丁目・番地
+    address_building   VARCHAR(100)   NULL,                -- 建物名 任意
+
+    -- ===== 連絡先・個人情報 =====
+    phone_number       VARCHAR(11)    NOT NULL,            -- 0始まり 10–11桁
+    birthday           DATE           NOT NULL,
+    gender             CHAR(1)        NOT NULL,            -- M / F 
+
+    -- ===== 監査 =====
+    created_at         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                       ON UPDATE CURRENT_TIMESTAMP,
+
     PRIMARY KEY (user_id)
 );
 
@@ -58,3 +85,30 @@ CREATE TABLE review (
       FOREIGN KEY(product_id)  REFERENCES product(product_id)
 );
 
+CREATE TABLE cart (
+    cart_id             CHAR(36)       NOT NULL,
+    created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (cart_id)
+);
+
+CREATE TABLE cart_item (
+    cart_id             CHAR(36)       NOT NULL,
+    product_id          CHAR(36)       NOT NULL,
+    qty                 INT             NOT NULL,
+    price_inc_tax       INT             NOT NULL,
+    created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (cart_id, product_id),
+    CONSTRAINT fk_cart_item_cart
+      FOREIGN KEY(cart_id)  REFERENCES cart(cart_id)
+);
+
+CREATE TABLE pre_registration (
+    token             CHAR(22)       NOT NULL,
+    email          VARCHAR(255)       NOT NULL,
+    expires_at          DATETIME             NOT NULL,
+    created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (token) 
+);

@@ -1,0 +1,60 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.UserMapper">
+  <select id="selectUserByEmail" resultType="com.example.entity.User">
+    select *
+    from `user`
+    where email = #{email}
+  </select>
+  
+    <select id="selectPreRegistrationByPrimaryKey" resultType="com.example.entity.PreRegistration">
+    select *
+    from pre_registration
+    where token = #{token}
+  </select>
+  
+  <insert id="insertPreRegistration">
+    insert into pre_registration
+      (token, email, expires_at)
+    values (#{token}, #{email}, #{expiresAt})
+  </insert>
+  
+  <delete id="deletePreRegistrationByPrimaryKey">
+    delete from pre_registration
+    where token = #{token}
+  </delete>
+  
+  <insert id="insertUser" parameterType="com.example.entity.User">
+    INSERT INTO `user`
+      ( user_id
+      , email
+      , password_hash
+      , last_name
+      , first_name
+      , last_name_kana
+      , first_name_kana
+      , postal_code
+      , address_pref_city
+      , address_area
+      , address_block
+      , address_building
+      , phone_number
+      , birthday
+      , gender )
+    VALUES
+      ( #{userId}
+      , #{email}
+      , #{passwordHash}
+      , #{lastName}
+      , #{firstName}
+      , #{lastNameKana}
+      , #{firstNameKana}
+      , #{postalCode}
+      , #{addressPrefCity}
+      , #{addressArea}
+      , #{addressBlock}
+      , #{addressBuilding}
+      , #{phoneNumber}
+      , #{birthday}
+      , #{gender} )
+  </insert>
+</mapper>

@@ -5,12 +5,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.component.TaxCalculator;
 import com.example.dto.ProductCardDto;
+import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
 import com.example.enums.SortType;
+import com.example.mapper.CartMapper;
+import com.example.mapper.FavoriteMapper;
 import com.example.mapper.ProductMapper;
+import com.example.request.AddCartRequest;
 import com.example.util.PaginationUtil;
+import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,11 +26,14 @@ public class ProductService {
     ・総件数　XX件～XX件目表示を返す
     ・お気に入りフラグ取得するのに、JOINか2回にわけるか比較
     ・毎回手動で税込み価格計算するか？
+    ・カート追加時、別スレッドとの競合　 @Transactionalつけてない
     */
 
     private final ProductMapper productMapper;
 
-    //    private final FavoriteMapper favoriteMapper;
+    private final FavoriteMapper favoriteMapper;
+
+    private final CartMapper cartMapper;
 
     @Value("${settings.product.size}")
     private int pageSize;
@@ -52,41 +59,23 @@ public class ProductService {
         return new ProductListDto(products, totalPage, pageNumbers);
     }
 
-    //    public void addFavorite(String productId) {
-    //        // SpringSecurityを通過してるため、ログイン済み
-    //        // 未ログインだとログイン画面へリダイレクトされる
-    //        // TODO: getNameだとemailがかえるため、getUserIdに変更する
-    //        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-    //
-    //        favoriteMapper.addFavorite(userId, productId);
-    //    }
-    //
-    //    public void deleteFavorite(String productId) {
-    //        // SpringSecurityを通過してるため、ログイン済み
-    //        // 未ログインだとログイン画面へリダイレクトされる
-    //        // TODO: getNameだとemailがかえるため、getUserIdに変更する
-    //        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-    //
-    //        favoriteMapper.deleteFavorite(userId, productId);
-    //    }
-    //    
-    //    public ProductDetailDto getProductDetail(String productId) {
-    //        // TODO: getNameだとemailがかえるため、getUserIdに変更する
-    //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    //        String userId = auth == null ? null : auth.getName();
-    //        
-    //        ProductDetailDto dto = productMapper.findProductDetail(productId, userId);
-    //        dto.setPrice(taxCalculator.calculatePriceIncludingTax(dto.getPrice()));
-    //        
-    //        return dto;
-    //    }
-    //    
-    //    public void addToCart(Cart cart, String productId, int qty) {
-    //        Product product = productMapper.selectById(productId);
-    //        if (product == null) {
-    //            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-    //        }
-    //        
-    //        cart.merge(productId, qty, taxCalculator.calculatePriceIncludingTax(product.getPrice()));
-    //    }
+    public void addFavorite(String productId, String userId) {
+        favoriteMapper.addFavorite(userId, productId);
+    }
+
+    public void deleteFavorite(String productId, String userId) {
+        favoriteMapper.deleteFavorite(userId, productId);
+    }
+
+    public ProductDetailDto getProductDetail(String productId, String userId) {
+        ProductDetailDto dto = productMapper.findProductDetail(productId, userId);
+        dto.setPrice(taxCalculator.calculatePriceIncludingTax(dto.getPrice()));
+
+        return dto;
+    }
+
+    public void addToCart(String cartId, AddCartRequest req) {
+        cartMapper.insertCartIfAbsent(cartId);
+        cartMapper.upsertCartItem(cartId, req);
+    }
 }

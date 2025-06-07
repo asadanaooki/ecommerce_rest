@@ -10,10 +10,16 @@ spring:
   sql:
     init:
       mode: always
-  autoconfigure:
-      exclude:
-        - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-        - org.springframework.boot.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+#  autoconfigure:
+#      exclude:
+#        - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+#        - org.springframework.boot.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+  mail:
+    host: localhost
+    port: 2525
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 mybatis:
   configuration:
@@ -33,4 +39,6 @@ settings:
     page-nav-radius: 2 # 現在ページの前後に表示するページリンク数 (±)
   tax:
     rate-percent: 10
+  auth:
+    verification-ttl-min: 30
 
