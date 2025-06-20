@@ -1,10 +1,14 @@
 package com.example.controller;
 
+import java.time.Duration;
 import java.util.List;
 
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,10 +33,20 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public String login(@RequestBody @Valid LoginRequest req) {
+    public ResponseEntity login(@RequestBody @Valid LoginRequest req, HttpServletResponse response) {
         // TODO:
         // 将来的にJSONで返す方がよいかも
-        return authService.authenticate(req.getUsername(), req.getPassword());
+        // Postmanで毎リクエストで自動でJWTが付与されるようにする
+        String jwt = authService.authenticate(req.getUsername(), req.getPassword());
+        
+        // TODO:
+        // 必要な属性後で足す
+        ResponseCookie cookie = ResponseCookie.from("accessToken", jwt)
+                .path("/")
+                .maxAge(Duration.ofHours(1))
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/register/email")

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
+import com.example.entity.Favorite;
 import com.example.enums.SortType;
 import com.example.mapper.CartMapper;
 import com.example.mapper.FavoriteMapper;
@@ -60,11 +61,16 @@ public class ProductService {
     }
 
     public void addFavorite(String productId, String userId) {
-        favoriteMapper.addFavorite(userId, productId);
+        favoriteMapper.insert(new Favorite() {
+            {
+                setUserId(userId);
+                setProductId(productId);
+            }
+        });
     }
 
     public void deleteFavorite(String productId, String userId) {
-        favoriteMapper.deleteFavorite(userId, productId);
+        favoriteMapper.deleteByPrimaryKey(userId, productId);
     }
 
     public ProductDetailDto getProductDetail(String productId, String userId) {

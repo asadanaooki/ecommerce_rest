@@ -1,14 +1,47 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.FavoriteMapper">
-  <insert id="addFavorite">
-    insert into favorite (user_id, product_id)
-    values( #{userId}, #{productId})
+  <insert id="insert">
+    insert into favorite 
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      user_id,
+      product_id,
+      <if test="createdAt != null">created_at,</if>
+      <if test="updatedAt != null">updated_at,</if>
+    </trim>
+    <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+      #{userId},
+      #{productId},
+      <if test="createdAt != null">#{createdAt}</if>
+      <if test="updatedAt != null">, #{updatedAt}</if>
+    </trim>
   </insert>
   
-  <delete id="deleteFavorite">
+  <delete id="deleteByPrimaryKey">
     delete from favorite
     where product_id = #{productId}
       and user_id = #{userId}
   </delete>
+  
+    <delete id="deleteByUserId">
+    delete from favorite
+    where user_id = #{userId}
+  </delete>
+  
+  <select id="countFavoritesByUser">
+    select count(*)
+    from favorite
+    where user_id = #{userId}
+  </select>
+  
+  <select id="findFavoritesPage" resultType="com.example.entity.Product">
+    select *
+    from favorite f
+    join product p
+    on p.product_id = f.product_id
+    where f.user_id = #{userId}
+    ORDER BY f.created_at DESC
+    LIMIT  #{limit}
+    OFFSET  #{offset}
+  </select>
   
 </mapper>

@@ -137,7 +137,7 @@ class AuthControllerTest {
 
         @Test
         void register_success() throws Exception {
-            mockMvc.perform(post("/register")
+            mockMvc.perform(post("/register/complete")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
                     .andExpect(status().isOk());
@@ -174,7 +174,7 @@ class AuthControllerTest {
                       ]
                     """;
 
-            mockMvc.perform(post("/register")
+            mockMvc.perform(post("/register/complete")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
                     .andExpect(status().isBadRequest())
@@ -187,7 +187,7 @@ class AuthControllerTest {
         @MethodSource("provideValidRegistrationArguments")
         void register_parameterSuccess(Map<String, ?> diff)
                 throws JsonProcessingException, Exception {
-            mockMvc.perform(post("/register")
+            mockMvc.perform(post("/register/complete")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(breakJson(diff)))
                     .andExpect(status().isOk());
@@ -197,7 +197,7 @@ class AuthControllerTest {
         @MethodSource("provideInvalidRegistrationArguments")
         void register_parameterFail(Map<String, ?> diff, String messageKey)
                 throws JsonProcessingException, Exception {
-            mockMvc.perform(post("/register")
+            mockMvc.perform(post("/register/complete")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(breakJson(diff)))
                     .andExpect(status().isBadRequest())

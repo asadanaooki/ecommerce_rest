@@ -19,7 +19,7 @@ INSERT INTO `user` (
 (
     '550e8400-e29b-41d4-a716-446655440000',
     'sample@example.com',
-    '$2b$10$tKp90j/P.58RX4vjCfSWZ.6eWww6d5U5l7k0q2wR3UxTd3voGIYQa', -- 'sample'
+    '$2a$10$KhWFAYeUAWf2qX6h5XJrcuWMipwdwB5lCmDbfFJcURSpZKsj7AKk.', -- 'sample1234'
     '山田',  '太郎',
     'ヤマダ', 'タロウ',
     '1500041',
@@ -35,7 +35,7 @@ INSERT INTO `user` (
 (
     '111e8400-e29b-41d4-a716-446655440111',
     'bob2@example.com',
-    '$2b$10$seiTk5/jHFtb3fG2smcP.ukTJa8Yw9gaO9Izl8QY0ZObcURI.1Jma', -- 'bob2'
+    '$2a$10$WOxF8bY/WEUJGfmvXsK.uuugkUaWCd8XNjdnpZmYxNEHeC4PlWTzu', -- 'bob2test'
     '佐藤',  '花子',
     'サトウ', 'ハナコ',
     '0600000',

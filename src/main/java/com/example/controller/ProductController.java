@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,15 +44,16 @@ public class ProductController {
 ・サイズの追加
     */
     private final ProductService productService;
+    
+    PasswordEncoder encoder;
 
     @GetMapping("/product")
     public ProductListDto searchProducts(
             @RequestParam(defaultValue = "1") String page,
             @RequestParam(defaultValue = "NEW") String sort,
             @RequestParam(required = false) String q,
-            @AuthenticationPrincipal CustomUserDetails user) {
+            @AuthenticationPrincipal String userId) {
         SearchParam param = adjustSearchParam(page, sort, q);
-        String userId = user == null ? null : user.getUserId();
         return productService.searchProducts(param.page, param.sort, param.keywords, userId);
     }
 
