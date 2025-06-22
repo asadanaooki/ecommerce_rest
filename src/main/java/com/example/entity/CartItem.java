@@ -13,7 +13,7 @@ public class CartItem {
     
     private int qty;
     
-    private int priceIncTax;
+    private int price;
     
     private LocalDateTime createdAt;
     

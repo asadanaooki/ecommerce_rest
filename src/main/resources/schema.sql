@@ -85,23 +85,32 @@ CREATE TABLE review (
       FOREIGN KEY(product_id)  REFERENCES product(product_id)
 );
 
+ -- TODO: ユーザー削除時にCascadeするか　
 CREATE TABLE cart (
     cart_id             CHAR(36)       NOT NULL,
+    user_id             CHAR(36)       UNIQUE,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (cart_id)
+    PRIMARY KEY (cart_id),
+    CONSTRAINT fk_cart_user
+      FOREIGN KEY (user_id)
+      REFERENCES `user`(user_id)
 );
 
 CREATE TABLE cart_item (
     cart_id             CHAR(36)       NOT NULL,
     product_id          CHAR(36)       NOT NULL,
     qty                 INT             NOT NULL,
-    price_inc_tax       INT             NOT NULL,
+    price       INT             NOT NULL,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (cart_id, product_id),
     CONSTRAINT fk_cart_item_cart
       FOREIGN KEY(cart_id)  REFERENCES cart(cart_id)
+    ON DELETE CASCADE,
+    CONSTRAINT fk_cart_item_product
+      FOREIGN KEY(product_id)  REFERENCES product(product_id)
+    
 );
 
 CREATE TABLE pre_registration (

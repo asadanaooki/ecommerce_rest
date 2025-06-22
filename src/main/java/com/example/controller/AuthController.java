@@ -2,8 +2,10 @@ package com.example.controller;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
@@ -24,24 +26,45 @@ import com.example.request.RegisterUserRequest;
 import com.example.response.ApiResponse;
 import com.example.response.VerifyTokenResponse;
 import com.example.service.AuthService;
+import com.example.service.AuthService.AuthResult;
+import com.example.service.CartService;
+import com.example.util.CookieUtil;
 
 import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
 public class AuthController {
+    /* TODO:
+       ログアウトは一旦フロント破棄で行う。
+       いずれはリフレッシュトークン＋短命アクセストークンにする
+       ログイン方法が増えたら、SuccessHandler 使う方が良いかも
+    */   
     private final AuthService authService;
+    
+    private final CartService cartService;
+    
+    private final CookieUtil cookieUtil;
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid LoginRequest req, HttpServletResponse response) {
+    public ResponseEntity login(@RequestBody @Valid LoginRequest req,
+            HttpServletRequest  httpReq,
+            HttpServletResponse response) {
         // TODO:
         // 将来的にJSONで返す方がよいかも
         // Postmanで毎リクエストで自動でJWTが付与されるようにする
-        String jwt = authService.authenticate(req.getUsername(), req.getPassword());
+        AuthResult res = authService.authenticate(req.getUsername(), req.getPassword());
+        
+        Optional<String> guestCartId = cookieUtil.extractCartId(httpReq);
+        if (guestCartId.isPresent()) {
+            String userCartId = cartService.findOrCreateUserCart(res.userId());
+            cartService.mergeGuestToUser(guestCartId.get(), userCartId);
+            cookieUtil.clearCartCookie(response);
+        }
         
         // TODO:
         // 必要な属性後で足す
-        ResponseCookie cookie = ResponseCookie.from("accessToken", jwt)
+        ResponseCookie cookie = ResponseCookie.from("accessToken", res.jwt())
                 .path("/")
                 .maxAge(Duration.ofHours(1))
                 .build();

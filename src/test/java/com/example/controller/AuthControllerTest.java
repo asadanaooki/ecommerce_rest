@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.json.JsonCompareMode;
@@ -26,11 +27,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.request.RegisterUserRequest;
 import com.example.service.AuthService;
+import com.example.service.CartService;
+import com.example.util.CookieUtil;
 import com.example.util.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Import(CookieUtil.class)
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
@@ -45,9 +49,15 @@ class AuthControllerTest {
 
     @MockitoBean
     AuthService authService;
+    
+    @MockitoBean
+    CartService cartService;
 
     @MockitoBean
     JwtUtil jwtUtil;
+    
+    @Autowired
+    CookieUtil cookieUtil;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -55,7 +65,8 @@ class AuthControllerTest {
     @ParameterizedTest
     @MethodSource("provideArguments")
     void login_parameterized(String username, String password, boolean expected) throws Exception {
-        doReturn("token").when(authService).authenticate(username, password);
+        doReturn(new AuthService.AuthResult("token", "userId"))
+        .when(authService).authenticate(username, password);
 
         mockMvc.perform(post("/login")
                 .contentType(MediaType.APPLICATION_JSON)

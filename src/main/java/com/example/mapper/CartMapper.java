@@ -1,7 +1,8 @@
 package com.example.mapper;
 
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import com.example.entity.Cart;
 import com.example.entity.CartItem;
@@ -14,9 +15,18 @@ public interface CartMapper {
     */
     Cart selectCartByPrimaryKey(String cartId);
     
+    Cart selectCartByUser(String userId);
+    
     CartItem selectCartItemByPrimaryKey(String cartId, String productId);
     
-    int insertCartIfAbsent(String cartId);
+    int insertCartIfAbsent(String cartId, String userId);
     
-    int upsertCartItem(@Param("cartId") String cartId, @Param("req") AddCartRequest req);
+   // int upsertCartItem(@Param("cartId") String cartId, @Param("req") AddCartRequest req, int price);
+    int upsertCartItem(String cartId, AddCartRequest req, int price);
+    
+    int findOrCreateCartIdByUser(Map<String, String> cartKeyMap);
+    
+    int mergeCart(String guestCartId, String userCartId);
+    
+    int deleteCart(String cartId);
 }

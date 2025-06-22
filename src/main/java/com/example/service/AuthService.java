@@ -51,14 +51,14 @@ public class AuthService {
     @Value("${settings.auth.verification-ttl-min}")
     private long ttlMinutes;
 
-    public String authenticate(String username, String password) {
+    public AuthResult authenticate(String username, String password) {
         // TODO:
         // 認証処理をfilterに閉じ込めたほうがよいかも。今は簡単さを優先
         Authentication auth = manager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password));
 
         CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
-        return jwtUtil.issue(user.getUserId());
+        return new AuthResult(jwtUtil.issue(user.getUserId()), user.getUserId());
     }
 
     @Transactional
@@ -156,4 +156,6 @@ public class AuthService {
         return u;
 
     }
+    
+    public static record AuthResult(String jwt, String userId) {}
 }

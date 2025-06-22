@@ -2,6 +2,7 @@ spring:
   application:
     name: ecommerce
     # TODO: 専用ユーザーにする
+    # 将来的にテスト専用DB作った方がよいかも
   datasource:
     url: jdbc:mysql://localhost:3306/ecommerce
     username: root

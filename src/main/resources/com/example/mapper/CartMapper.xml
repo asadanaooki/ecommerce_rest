@@ -5,6 +5,12 @@
     from cart
     where cart_id = #{cartId}
   </select>
+  
+    <select id="selectCartByUser" resultType="com.example.entity.Cart">
+    select *
+    from cart
+    where user_id = #{userId}
+  </select>
 
   <select id="selectCartItemByPrimaryKey" resultType="com.example.entity.CartItem">
     select *
@@ -14,17 +20,57 @@
   </select>
   
   <insert id="insertCartIfAbsent">
-    insert ignore into cart (cart_id) values (#{cart_id});
+    insert ignore into cart
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      cart_id,
+      <if test="userId != null">user_id,</if>
+    </trim>
+    values
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      #{cartId},
+      <if test="userId != null">#{userId},</if>
+    </trim>
   </insert>
   
   <insert id="upsertCartItem">
-      insert into cart_item
-        (cart_id, product_id, qty, price_inc_tax)
-      values
-        (#{cartId}, #{req.productId}, #{req.qty}, #{req.priceIncTax})
-      on duplicate key update
-        qty = least(qty + VALUES(qty), 20),
-        price_inc_tax = VALUES(price_inc_tax)
+    insert into cart_item
+      (cart_id, product_id, qty, price)
+    values
+      (#{cartId}, #{req.productId}, #{req.qty}, #{price})
+    on duplicate key update
+      qty = least(qty + VALUES(qty), 20),
+      price = VALUES(price)
   </insert>
+  
+  <insert id="findOrCreateCartIdByUser">
+    insert into cart (cart_id, user_id)
+    select #{candidateCartId}, #{userId}
+    where not exists (
+      select 1
+      from cart
+      where user_id = #{userId}
+    )
+      
+    <selectKey keyProperty="cartId" resultType="string" order="AFTER">
+      select cart_id
+      from cart
+      where user_id = #{userId}
+    </selectKey>
+  </insert>
+  
+  <insert id="mergeCart">
+    insert into cart_item (cart_id, product_id, qty, price)
+    select #{userCartId}, src.product_id, src.qty, src.price
+      from cart_item as src
+    where src.cart_id = #{guestCartId}
+    on duplicate key update
+      cart_item.qty = least(cart_item.qty + values(qty), 20),
+      cart_item.price = values(price)
+  </insert>
+  
+  <delete id="deleteCart">
+    delete from cart
+    where cart_id = #{cartId}
+  </delete>
   
 </mapper>

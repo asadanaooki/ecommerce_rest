@@ -143,23 +143,23 @@ INSERT INTO review (
     '2025-05-25 12:10:30'                       -- 更新日時
 );
 
-INSERT INTO cart(cart_id)
-VALUES ('bbbbeeee-cccc-dddd-aaaa-111122223333');
+INSERT INTO cart(cart_id, user_id)
+VALUES ('bbbbeeee-cccc-dddd-aaaa-111122223333','550e8400-e29b-41d4-a716-446655440000');
 
 INSERT INTO cart_item (
     cart_id,
     product_id,
     qty,
-    price_inc_tax
+    price
 ) VALUES (
     'bbbbeeee-cccc-dddd-aaaa-111122223333',      -- cart_id
     '1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68',      -- Item19
     2,                                           -- 数量
-    825                                          -- 税込単価（Item19 の price 列）
+    750                                          
 ),
 (
     'bbbbeeee-cccc-dddd-aaaa-111122223333',   -- cart_id
     '6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd',   -- Item6 の product_id
     1,                                         -- 数量
-    275                                        -- 税込単価（Item6 の price）
+    250                                        
 );

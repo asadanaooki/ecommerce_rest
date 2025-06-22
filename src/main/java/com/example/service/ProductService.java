@@ -10,10 +10,8 @@ import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
 import com.example.entity.Favorite;
 import com.example.enums.SortType;
-import com.example.mapper.CartMapper;
 import com.example.mapper.FavoriteMapper;
 import com.example.mapper.ProductMapper;
-import com.example.request.AddCartRequest;
 import com.example.util.PaginationUtil;
 import com.example.util.TaxCalculator;
 
@@ -33,8 +31,6 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     private final FavoriteMapper favoriteMapper;
-
-    private final CartMapper cartMapper;
 
     @Value("${settings.product.size}")
     private int pageSize;
@@ -78,10 +74,5 @@ public class ProductService {
         dto.setPrice(taxCalculator.calculatePriceIncludingTax(dto.getPrice()));
 
         return dto;
-    }
-
-    public void addToCart(String cartId, AddCartRequest req) {
-        cartMapper.insertCartIfAbsent(cartId);
-        cartMapper.upsertCartItem(cartId, req);
     }
 }

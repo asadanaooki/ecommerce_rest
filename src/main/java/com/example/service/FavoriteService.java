@@ -41,4 +41,8 @@ public class FavoriteService {
         
         return new FavoritePageDto(rows, pageSize, total);
     }
+    
+    public void deleteFavorite(String userId, String productId) {
+        favoriteMapper.deleteByPrimaryKey(userId, productId);
+    }
 }

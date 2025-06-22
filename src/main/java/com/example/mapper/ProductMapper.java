@@ -14,7 +14,7 @@ public interface ProductMapper {
 // TODO:
     // searchProductsで外部結合とサブクエリの速度比較
     
-    Product selectById(String productId);
+    Product selectByPrimaryKey(String productId);
     
     List<Product> selectAllByIds(List<String> productIds);
     
