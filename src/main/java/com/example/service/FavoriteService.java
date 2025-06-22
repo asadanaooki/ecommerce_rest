@@ -21,7 +21,7 @@ public class FavoriteService {
 
     private final FavoriteMapper favoriteMapper;
 
-    @Value("${settings.product.size}")
+    @Value("${settings.favorite.size}")
     private int pageSize;
 
     private final TaxCalculator calculator;

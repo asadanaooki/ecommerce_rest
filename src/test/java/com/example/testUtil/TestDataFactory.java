@@ -1,8 +1,14 @@
 package com.example.testUtil;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import com.example.entity.CartItem;
 
 @Component
 public class TestDataFactory {
@@ -42,16 +48,31 @@ public class TestDataFactory {
         }
     }
     
-    public void createCartItem(String cartId, String productId, int qty, int price) {
-        String sql = """
-                insert into cart_item (
-                    cart_id,
-                    product_id,
-                    qty,
-                    price
-                ) values(?, ?, ?, ?)
-                """;
-        jdbcTemplate.update(sql, cartId, productId, qty, price);
+    public void createCartItem(CartItem item) {
+        StringBuilder cols = new StringBuilder("cart_id, product_id, qty, price");
+        StringBuilder marks = new StringBuilder("?, ?, ?, ?");
+        List<Object> params = new ArrayList<>(
+                List.of(
+                item.getCartId(),
+                item.getProductId(),
+                item.getQty(),
+                item.getPrice()
+                ));
+        
+        if(item.getCreatedAt() != null) {
+            cols.append(", created_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(item.getCreatedAt()));
+        }
+        if (item.getUpdatedAt() != null) {
+            cols.append(", updated_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(item.getUpdatedAt()));
+        }
+        
+        String sql = String.format("insert into cart_item (%s) values (%s)",
+                cols, marks);
+        jdbcTemplate.update(sql, params.toArray());
     }
     
     public void deleteCart(String cartId) {

@@ -21,14 +21,13 @@ import com.example.service.FavoriteService;
 
 import lombok.AllArgsConstructor;
 
-
 @AllArgsConstructor
 @RestController
 @RequestMapping("/favorites")
 public class FavoriteController {
-    
+
     private final FavoriteService favoriteService;
-    
+
     private final CartService cartService;
 
     @GetMapping
@@ -37,21 +36,21 @@ public class FavoriteController {
         // 認証済み
         return favoriteService.getFavoritePage(userId, page);
     }
-    
+
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> remove(@PathVariable String productId,
-            @AuthenticationPrincipal String userId){
+            @AuthenticationPrincipal String userId) {
         favoriteService.deleteFavorite(userId, productId);
         return ResponseEntity.ok().build();
     }
-    
+
     @PostMapping("/cart")
     public ResponseEntity<Void> addToCart(@Valid @RequestBody AddCartRequest req,
             @AuthenticationPrincipal String userId) {
         String cartId = cartService.findOrCreateUserCart(userId);
-        cartService.addToCart(cartId, userId, req);
+        // 必ずログインしてるため、servlet不要
+        cartService.addToCart(null, null, userId, req);
         return ResponseEntity.ok().build();
     }
-    
 
 }

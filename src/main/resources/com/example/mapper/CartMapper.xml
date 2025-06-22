@@ -73,4 +73,15 @@
     where cart_id = #{cartId}
   </delete>
   
+  <select id="selectCartItemsPage" resultType="com.example.dto.CartItemDto">
+    select ci.product_id, p.product_name, ci.qty, p.price as priceEx,
+      (ci.price != p.price) as priceChanged
+    from cart_item ci
+    join product p on p.product_id = ci.product_id
+    where ci.cart_id = #{cartId}
+    order by ci.created_at desc, ci.product_id desc
+    limit #{limit}
+    offset #{offset}
+  </select>
+  
 </mapper>

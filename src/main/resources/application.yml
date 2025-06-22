@@ -42,4 +42,8 @@ settings:
     rate-percent: 10
   auth:
     verification-ttl-min: 30
+  favorite:
+    size: 2
+  cart:
+    size: 2
 
