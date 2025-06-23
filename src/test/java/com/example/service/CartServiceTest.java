@@ -16,8 +16,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
@@ -48,14 +46,10 @@ class CartServiceTest {
     @Nested
     class ShowCart {
         MockHttpServletRequest req;
-        MockHttpServletResponse res;
 
         @BeforeEach
         void setup() {
-            ReflectionTestUtils.setField(cartService, "pageSize", 2);
             req = new MockHttpServletRequest();
-            res = new MockHttpServletResponse();
-
         }
 
         @Nested
@@ -63,10 +57,9 @@ class CartServiceTest {
             @Test
             void showCart_withoutCart() {
                 doReturn(Optional.empty()).when(cookieUtil).extractCartId(req);
-                CartDto dto = cartService.showCart(req, res, null, 1);
+                CartDto dto = cartService.showCart(1, null, req);
 
                 assertThat(dto.getItems()).isEmpty();
-                assertThat(dto.getCartId()).isNull();
                 assertThat(dto.getTotalQty()).isZero();
                 assertThat(dto.getTotalPrice()).isZero();
             }
@@ -74,9 +67,8 @@ class CartServiceTest {
             @Test
             void showCart_cartExists() {
                 doReturn(Optional.of("cartId")).when(cookieUtil).extractCartId(req);
-                CartDto dto = cartService.showCart(req, res, null, 1);
-
-                assertThat(dto.getCartId()).isEqualTo("cartId");
+                CartDto dto = cartService.showCart(1, null, req);
+                assertThat(dto).isNotNull();
             }
         }
 
@@ -87,10 +79,9 @@ class CartServiceTest {
             @Test
             void showCart_withoutCart() {
                 doReturn(null).when(cartMapper).selectCartByUser(userId);
-                CartDto dto = cartService.showCart(req, res, userId, 1);
+                CartDto dto = cartService.showCart(1, userId, req);
 
                 assertThat(dto.getItems()).isEmpty();
-                assertThat(dto.getCartId()).isNull();
                 assertThat(dto.getTotalQty()).isZero();
                 assertThat(dto.getTotalPrice()).isZero();
             }
@@ -122,38 +113,34 @@ class CartServiceTest {
                                 setPriceChanged(true);
                             }
                         });
-                doReturn(items).when(cartMapper).selectCartItemsPage(anyString(), anyInt(), anyInt());
-                
-                CartDto dto = cartService.showCart(req, res, userId, 1);
-                
-                assertThat(dto.getCartId()).isEqualTo("cartId");
+                doReturn(items).when(cartMapper).selectCartItems(anyString());
+
+                CartDto dto = cartService.showCart(1, userId, req);
+
                 assertThat(dto.getTotalQty()).isEqualTo(4);
                 assertThat(dto.getTotalPrice()).isEqualTo(550);
-                
+
                 assertThat(dto.getItems()).hasSize(2).first()
-                .extracting(
-                        CartItemDto::getProductId,
-                        CartItemDto::getProductName,
-                        CartItemDto::getQty,
-                        CartItemDto::getPriceEx,
-                        CartItemDto::getPriceInc,
-                        CartItemDto::getSubtotal,
-                        CartItemDto::isPriceChanged
-                        )
-                .containsExactly(
-                        "A-001",
-                        "Item A",
-                        3,
-                        100,
-                        110,
-                        330,
-                        false
-                        );
+                        .extracting(
+                                CartItemDto::getProductId,
+                                CartItemDto::getProductName,
+                                CartItemDto::getQty,
+                                CartItemDto::getPriceEx,
+                                CartItemDto::getPriceInc,
+                                CartItemDto::getSubtotal,
+                                CartItemDto::isPriceChanged)
+                        .containsExactly(
+                                "A-001",
+                                "Item A",
+                                3,
+                                100,
+                                110,
+                                330,
+                                false);
                 assertThat(dto.getItems().get(1).getProductId()).isEqualTo("B-002");
-                
+
             }
         }
-
     }
 
 }

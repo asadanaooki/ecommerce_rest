@@ -73,15 +73,26 @@
     where cart_id = #{cartId}
   </delete>
   
-  <select id="selectCartItemsPage" resultType="com.example.dto.CartItemDto">
+    <delete id="deleteCartItem">
+    delete from cart_item
+    where cart_id = #{cartId}
+      and product_id = #{productId}
+  </delete>
+  
+  <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
     select ci.product_id, p.product_name, ci.qty, p.price as priceEx,
       (ci.price != p.price) as priceChanged
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}
     order by ci.created_at desc, ci.product_id desc
-    limit #{limit}
-    offset #{offset}
   </select>
+  
+  <update id="updateCartItemQty">
+    update cart_item 
+      set qty = #{qty}
+    where cart_id = #{cartId}
+      and product_id = #{productId}
+  </update>
   
 </mapper>

@@ -23,7 +23,6 @@ import com.example.entity.Cart;
 import com.example.entity.CartItem;
 import com.example.request.AddCartRequest;
 import com.example.testUtil.TestDataFactory;
-import com.example.util.PaginationUtil;
 
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -167,7 +166,7 @@ class CartMapperTest {
         @Test
         void mergeCart_new() {
             factory.createCartItem(new CartItem() {{
-                setCartId(cartId);
+                setCartId(guestCart);
                 setProductId(productId);
                 setQty(5);
                 setPrice(3000);
@@ -221,7 +220,7 @@ class CartMapperTest {
     }
     
     @Nested
-    class SelectCartItemsPage{
+    class selectCartItems{
         int pageSize = 3;
         
         @BeforeEach
@@ -231,14 +230,13 @@ class CartMapperTest {
         }
         
         @Test
-        void SelectCartItemsPage_cartEmpty() {
-            List<CartItemDto> items = cartMapper.selectCartItemsPage(cartId,
-                    pageSize, PaginationUtil.calculateOffset(1, pageSize));
+        void selectCartItems_cartEmpty() {
+            List<CartItemDto> items = cartMapper.selectCartItems(cartId);
             assertThat(items).isEmpty();
         }
         
         @Test
-        void SelectCartItemsPage_cartExists() {
+        void selectCartItems_cartExists() {
             LocalDateTime time1 = LocalDateTime.of(2025, 6, 22, 10, 40,3);
             LocalDateTime time2 = LocalDateTime.of(2025, 6, 21, 15, 42,3);
             
@@ -267,8 +265,7 @@ class CartMapperTest {
                 setUpdatedAt(time2);
             }});
             
-            List<CartItemDto> items = cartMapper.selectCartItemsPage(cartId,
-                    pageSize, PaginationUtil.calculateOffset(1, pageSize));
+            List<CartItemDto> items = cartMapper.selectCartItems(cartId);
             
             assertThat(items).hasSize(pageSize)
             .extracting(CartItemDto::getProductId, CartItemDto::isPriceChanged)

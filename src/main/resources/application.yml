@@ -44,6 +44,3 @@ settings:
     verification-ttl-min: 30
   favorite:
     size: 2
-  cart:
-    size: 2
-

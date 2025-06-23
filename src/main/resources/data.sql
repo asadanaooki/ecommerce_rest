@@ -162,4 +162,10 @@ INSERT INTO cart_item (
     '6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd',   -- Item6 の product_id
     1,                                         -- 数量
     250                                        
+),
+(
+    'bbbbeeee-cccc-dddd-aaaa-111122223333',  -- cart_id（既存）
+    '09d5a43a-d24c-41c7-af2b-9fb7b0c9e049', -- Item5 の product_id
+    1,                                       -- 数量
+    2500                                     -- 税抜価格
 );

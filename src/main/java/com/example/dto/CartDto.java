@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartDto {
-    private String cartId;
-
     private List<CartItemDto> items = Collections.EMPTY_LIST;
 
     private int totalQty;

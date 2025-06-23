@@ -32,5 +32,9 @@ public interface CartMapper {
     
     int deleteCart(String cartId);
     
-    List<CartItemDto> selectCartItemsPage(String cartId, int limit, int offset);
+    int deleteCartItem(String cartId, String productId);
+    
+    List<CartItemDto> selectCartItems(String cartId);
+    
+    int updateCartItemQty(String cartId, String productId, int qty);
 }
