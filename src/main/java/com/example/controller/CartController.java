@@ -36,20 +36,21 @@ public class CartController {
      * userIdで毎回expression書いてるが、anonyを無効にしたほうがよいのか？
      * HttpServletRequestをサービスに渡さないほうが良いかも
      * @validatedで発生した例外を400ステータスに変換して返す
+     * カート内商品はすべて表示。件数多くなったら考える
      */
 
     private final CartService cartService;
 
     @GetMapping
     public CartDto showCart(@RequestParam(defaultValue = "1") @Min(1) int page,
-            @AuthenticationPrincipal(expression = "#this == 'anonymousUser' ? null : #this") String userId,
+            @AuthenticationPrincipal String userId,
             HttpServletRequest req) {
         return cartService.showCart(page, userId, req);
     }
 
     @PostMapping("/items")
     public ResponseEntity<Void> addToCart(@Valid @RequestBody AddCartRequest req,
-            @AuthenticationPrincipal(expression = "#this == 'anonymousUser' ? null : #this") String userId,
+            @AuthenticationPrincipal String userId,
             HttpServletRequest httpReq, HttpServletResponse httpRes) {
         // TODO:
         // reqをMapperまで渡しても現状問題ないが、将来的に詰め替えた方がいい？
@@ -61,7 +62,7 @@ public class CartController {
 
     @DeleteMapping("/items/{productId}")
     public CartDto removeFromCart(@PathVariable @NotBlank String productId,
-            @AuthenticationPrincipal(expression = "#this == 'anonymousUser' ? null : #this") String userId,
+            @AuthenticationPrincipal String userId,
             HttpServletRequest req) {
         return cartService.removeItem(productId, userId, req);
     }
@@ -69,8 +70,10 @@ public class CartController {
     @PutMapping("items/{productId}")
     public CartDto changeQty(@PathVariable String productId,
             @RequestBody @Min(1) @Max(20) int qty,
-            @AuthenticationPrincipal(expression = "#this == 'anonymousUser' ? null : #this") String userId,
+            @AuthenticationPrincipal String userId,
             HttpServletRequest httpReq) {
         return cartService.changeQty(productId, qty, userId, httpReq);
     }
+    
+    
 }

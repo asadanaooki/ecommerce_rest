@@ -65,7 +65,7 @@ class FavoriteServiceTest {
             p1.setProductId("P-001");
             p1.setProductName("商品A");
             p1.setPrice(1000);          // 税込 1,100 になる想定
-            p1.setSaleStatus("1");
+            p1.setStatus("1");
 
             Product p2 = new Product();
             p2.setProductId("P-002");

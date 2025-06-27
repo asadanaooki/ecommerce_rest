@@ -9,6 +9,7 @@ import com.example.entity.User;
 
 @Mapper
 public interface UserMapper {
+    User selectUserByPrimaryKey(String userId);
 
     Optional<User> selectUserByEmail(String email);
     

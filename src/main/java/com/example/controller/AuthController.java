@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +22,6 @@ import com.example.entity.PreRegistration;
 import com.example.request.LoginRequest;
 import com.example.request.PreSignupRequest;
 import com.example.request.RegisterUserRequest;
-import com.example.response.ApiResponse;
 import com.example.response.VerifyTokenResponse;
 import com.example.service.AuthService;
 import com.example.service.AuthService.AuthResult;
@@ -66,17 +64,17 @@ public class AuthController {
         // 必要な属性後で足す
         ResponseCookie cookie = ResponseCookie.from("accessToken", res.jwt())
                 .path("/")
-                .maxAge(Duration.ofHours(1))
+//                .maxAge(Duration.ofHours(1))
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/register/email")
-    public ApiResponse send(@RequestBody @Valid PreSignupRequest req) throws MessagingException {
+    public ResponseEntity<Void> send(@RequestBody @Valid PreSignupRequest req) throws MessagingException {
         authService.sendRegistrationUrl(req.getEmail());
 
-        return new ApiResponse("signup.email.sent");
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/register/verify")
@@ -94,14 +92,15 @@ public class AuthController {
         // 将来的に各フィールドfail-fastのバリデーションチェックにする
         if (result.hasErrors()) {
             List<FieldErrorInfo> errors = result.getFieldErrors().stream()
-                    .map(f -> new FieldErrorInfo(f.getField(), f.getDefaultMessage())).toList();
+                    .map(f -> new FieldErrorInfo(f.getField(),
+                            f.getCode())).toList();
             return ResponseEntity.badRequest().body(errors);
         }
         authService.register(req);
         return ResponseEntity.ok().build();
     }
 
-    public static record FieldErrorInfo(String field, String messageKey) {
+    public static record FieldErrorInfo(String field, String errorCode) {
     }
 
 }

@@ -24,6 +24,8 @@ public interface ProductMapper {
     
     ProductDetailDto findProductDetail(String productId, String userId);
     
+    int decreaseStock(String productId, int qty);
+    
     record SearchCondition(String userId,
             List<String> keywords,
             SortType sort,

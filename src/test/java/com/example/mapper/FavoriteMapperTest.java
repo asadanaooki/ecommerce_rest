@@ -78,7 +78,7 @@ class FavoriteMapperTest {
                     .extracting(Product::getProductId,
                             Product::getProductName,
                             Product::getPrice,
-                            Product::getSaleStatus)
+                            Product::getStatus)
                     .containsExactly("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68",
                             "Item19",
                             750,

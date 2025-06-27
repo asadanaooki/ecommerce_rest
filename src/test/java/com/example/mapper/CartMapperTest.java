@@ -38,7 +38,7 @@ class CartMapperTest {
     String cartId = "bbbbeeee-cccc-dddd-aaaa-111122223333";
 
     String productId = "1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68";
-    
+
     String userId = "550e8400-e29b-41d4-a716-446655440000";
 
     @Nested
@@ -68,7 +68,7 @@ class CartMapperTest {
             AddCartRequest req = new AddCartRequest(productId, 13);
             factory.deleteCartItemByCartId(cartId);
             int row = cartMapper.upsertCartItem(cartId, req, 300);
-            
+
             CartItem ci = cartMapper.selectCartItemByPrimaryKey(cartId, productId);
 
             assertThat(row).isOne();
@@ -97,192 +97,201 @@ class CartMapperTest {
             assertThat(ci.getQty()).isEqualTo(expectedQty);
         }
     }
+
     @Nested
-    class FindOrCreateCartIdByUser{
+    class FindOrCreateCartIdByUser {
         @Test
         void findOrCreateCartIdByUser_new() {
-            factory.deleteCartItemsByUserId(userId);
             factory.deleteCartByUserId(userId);
-            
+
             String candidate = UUID.randomUUID().toString();
             Map<String, String> p = new HashMap();
             p.put("userId", userId);
             p.put("candidateCartId", candidate);
-            
+
             int rows = cartMapper.findOrCreateCartIdByUser(p);
             assertThat(rows).isOne();
             assertThat(p.get("cartId")).isEqualTo(candidate);
-            
-           Cart cart = cartMapper.selectCartByPrimaryKey(candidate);
-           assertThat(cart.getCartId()).isEqualTo(candidate);
-           assertThat(cart.getUserId()).isEqualTo(userId);
-           assertThat(cart.getCreatedAt()).isNotNull();
-           assertThat(cart.getUpdatedAt()).isNotNull();
+
+            Cart cart = cartMapper.selectCartByPrimaryKey(candidate);
+            assertThat(cart.getCartId()).isEqualTo(candidate);
+            assertThat(cart.getUserId()).isEqualTo(userId);
+            assertThat(cart.getCreatedAt()).isNotNull();
+            assertThat(cart.getUpdatedAt()).isNotNull();
         }
-        
+
         @Test
         void findOrCreateCartIdByUser_exists() {
-          String cartId = UUID.randomUUID().toString();
-            factory.deleteCartItemsByUserId(userId);
+            String cartId = UUID.randomUUID().toString();
             factory.deleteCartByUserId(userId);
             cartMapper.insertCartIfAbsent(cartId, userId);
-            
+
             String candidate = UUID.randomUUID().toString();
             Map<String, String> p = new HashMap();
             p.put("userId", userId);
             p.put("candidateCartId", candidate);
-            
+
             int rows = cartMapper.findOrCreateCartIdByUser(p);
             assertThat(rows).isZero();
             assertThat(p.get("cartId")).isEqualTo(cartId);
-            
-           Cart cart = cartMapper.selectCartByPrimaryKey(cartId);
-           assertThat(cart.getCartId()).isEqualTo(cartId);
-           assertThat(cart.getUserId()).isEqualTo(userId);
-           assertThat(cart.getCreatedAt()).isNotNull();
-           assertThat(cart.getUpdatedAt()).isNotNull();
+
+            Cart cart = cartMapper.selectCartByPrimaryKey(cartId);
+            assertThat(cart.getCartId()).isEqualTo(cartId);
+            assertThat(cart.getUserId()).isEqualTo(userId);
+            assertThat(cart.getCreatedAt()).isNotNull();
+            assertThat(cart.getUpdatedAt()).isNotNull();
         }
     }
 
     @Nested
-    class MergeCart{
+    class MergeCart {
         String userCart = "00000000-0000-0000-0000-000000000001";
         String guestCart = "00000000-0000-0000-0000-000000000002";
         String productId = "09d5a43a-d24c-41c7-af2b-9fb7b0c9e049";
-        
+
         @BeforeEach
         void setup() {
             factory.deleteCartByUser(userId);
             factory.createCart(guestCart, null);
             factory.createCart(userCart, userId);
         }
-        
+
         @Test
         void mergeCart_guestEmpty() {
             int rows = cartMapper.mergeCart(guestCart, userCart);
             assertThat(rows).isZero();
         }
-        
+
         @Test
         void mergeCart_new() {
-            factory.createCartItem(new CartItem() {{
-                setCartId(guestCart);
-                setProductId(productId);
-                setQty(5);
-                setPrice(3000);
-            }});
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(guestCart);
+                    setProductId(productId);
+                    setQty(5);
+                    setPrice(3000);
+                }
+            });
             int rows = cartMapper.mergeCart(guestCart, userCart);
             assertThat(rows).isOne();
-            
+
             CartItem item = cartMapper.selectCartItemByPrimaryKey(userCart, productId);
             assertThat(item)
-            .extracting(
-                    CartItem::getCartId,
-                    CartItem::getProductId,
-                    CartItem::getQty,
-                    CartItem::getPrice)
-            .containsExactly(
-                    userCart,
-                    productId,
-                    5,
-                    3000
-                    );
+                    .extracting(
+                            CartItem::getCartId,
+                            CartItem::getProductId,
+                            CartItem::getQty,
+                            CartItem::getPrice)
+                    .containsExactly(
+                            userCart,
+                            productId,
+                            5,
+                            3000);
         }
-        
+
         @ParameterizedTest
         @CsvSource({
-            // existing, add, expectedQty, expectedRows
-            "20, 3, 20, 1", // 更新なし
-            "15, 5, 20, 2", // 20ちょうど
-            "18, 6, 20, 2" // 20超過
+                // existing, add, expectedQty, expectedRows
+                "20, 3, 20, 1", // 更新なし
+                "15, 5, 20, 2", // 20ちょうど
+                "18, 6, 20, 2" // 20超過
         })
         void mergeCart_updateBoundary(int existing, int add, int expectedQty, int expectedRows) {
-            factory.createCartItem(new CartItem() {{
-                setCartId(userCart);
-                setProductId(productId);
-                setQty(existing);
-                setPrice(4800);
-            }});
-            factory.createCartItem(new CartItem() {{
-                setCartId(guestCart);
-                setProductId(productId);
-                setQty(add);
-                setPrice(4800);
-            }});
-            
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(userCart);
+                    setProductId(productId);
+                    setQty(existing);
+                    setPrice(4800);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(guestCart);
+                    setProductId(productId);
+                    setQty(add);
+                    setPrice(4800);
+                }
+            });
+
             int rows = cartMapper.mergeCart(guestCart, userCart);
             assertThat(rows).isEqualTo(expectedRows);
-            
+
             CartItem item = cartMapper.selectCartItemByPrimaryKey(userCart, productId);
             assertThat(item.getQty()).isEqualTo(expectedQty);
-            
+
         }
     }
-    
+
     @Nested
-    class selectCartItems{
+    class selectCartItems {
         int pageSize = 3;
-        
+
         @BeforeEach
         void setup() {
             factory.deleteCartByUser(userId);
             factory.createCart(cartId, userId);
         }
-        
+
         @Test
         void selectCartItems_cartEmpty() {
             List<CartItemDto> items = cartMapper.selectCartItems(cartId);
             assertThat(items).isEmpty();
         }
-        
+
         @Test
         void selectCartItems_cartExists() {
-            LocalDateTime time1 = LocalDateTime.of(2025, 6, 22, 10, 40,3);
-            LocalDateTime time2 = LocalDateTime.of(2025, 6, 21, 15, 42,3);
-            
-            factory.createCartItem(new CartItem() {{
-                setCartId(cartId);
-                setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
-                setQty(1);
-                setPrice(750);
-                setCreatedAt(time1);
-                setUpdatedAt(time1);
-            }});
-            factory.createCartItem(new CartItem() {{
-                setCartId(cartId);
-                setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
-                setQty(1);
-                setPrice(3300);
-                setCreatedAt(time1);
-                setUpdatedAt(time1);
-            }});
-            factory.createCartItem(new CartItem() {{
-                setCartId(cartId);
-                setProductId("4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07");
-                setQty(4);
-                setPrice(1800);
-                setCreatedAt(time2);
-                setUpdatedAt(time2);
-            }});
-            
-            List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-            
-            assertThat(items).hasSize(pageSize)
-            .extracting(CartItemDto::getProductId, CartItemDto::isPriceChanged)
-            .containsExactly(tuple("f9c9cfb2-0893-4f1c-b508-f9e909ba5274", true),
-                    tuple("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68", false),
-                    tuple("4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07", false));
-            
-            assertThat(items.get(0))
-            .satisfies(dto ->{
-                assertThat(dto.getProductId())
-                .isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
-            assertThat(dto.getProductName()).isEqualTo("Item18");
-            assertThat(dto.getQty()).isEqualTo(1);
-            assertThat(dto.getPriceEx()).isEqualTo(3200);
-            assertThat(dto.getPriceInc()).isNull();
-            assertThat(dto.isPriceChanged()).isTrue();
+            LocalDateTime time1 = LocalDateTime.of(2025, 6, 22, 10, 40, 3);
+            LocalDateTime time2 = LocalDateTime.of(2025, 6, 21, 15, 42, 3);
+
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
+                    setQty(1);
+                    setPrice(750);
+                    setCreatedAt(time1);
+                    setUpdatedAt(time1);
+                }
             });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
+                    setQty(1);
+                    setPrice(3300);
+                    setCreatedAt(time1);
+                    setUpdatedAt(time1);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId("4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07");
+                    setQty(4);
+                    setPrice(1800);
+                    setCreatedAt(time2);
+                    setUpdatedAt(time2);
+                }
+            });
+
+            List<CartItemDto> items = cartMapper.selectCartItems(cartId);
+
+            assertThat(items).hasSize(pageSize)
+                    .extracting(CartItemDto::getProductId)
+                    .containsExactly("f9c9cfb2-0893-4f1c-b508-f9e909ba5274",
+                            "1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68",
+                            "4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07");
+
+            assertThat(items.get(0))
+                    .satisfies(dto -> {
+                        assertThat(dto.getProductId())
+                                .isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
+                        assertThat(dto.getProductName()).isEqualTo("Item18");
+                        assertThat(dto.getQty()).isEqualTo(1);
+                        assertThat(dto.getPriceEx()).isEqualTo(3200);
+                        assertThat(dto.getPriceInc()).isNull();
+                    });
         }
     }
 }

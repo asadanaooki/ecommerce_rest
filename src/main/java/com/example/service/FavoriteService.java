@@ -18,6 +18,7 @@ public class FavoriteService {
     // TODO:
     // 毎回TaxCalculatorをDIして価格計算するのか？色々なクラスに散らばってる
     // 毎回pazeSize返してるが、コスト的にどうなのか？
+    // 削除時、位置かえないようにする
 
     private final FavoriteMapper favoriteMapper;
 
@@ -36,7 +37,7 @@ public class FavoriteService {
                         p.getProductId(),
                         p.getProductName(),
                         calculator.calculatePriceIncludingTax(p.getPrice()),
-                        p.getSaleStatus()))
+                        p.getStatus()))
                 .toList();
         
         return new FavoritePageDto(rows, pageSize, total);

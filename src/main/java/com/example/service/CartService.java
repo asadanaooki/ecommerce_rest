@@ -27,9 +27,12 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class CartService {
     /* TODO:
-      トランザクションのテストは結合テストにする
-      フロントに持たせないほうが良いということで、カートIDを毎回バックで解決してる。パフォーマンス要検証
-      削除のたびにpage=1を取得してる。毎回ジャンプするため同じ位置にした方が良いかも？
+      ・トランザクションのテストは結合テストにする
+      　フロントに持たせないほうが良いということで、カートIDを毎回バックで解決してる。パフォーマンス要検証
+      ・削除のたびにpage=1を取得してる。毎回ジャンプするため同じ位置にした方が良いかも？
+      ・販売ステータス定数を共通化したほうが良いかも。
+      ・価格計算、重複して書いてるが共通化したほうが良いのか
+      ・buildCartメソッドstaticで定義しているが、ちゃんと共通化したほうがよいかも
     */
     private final CartMapper cartMapper;
 
@@ -66,7 +69,7 @@ public class CartService {
             return new CartDto();
         }
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items);
+        return buildCart(items, calculator);
     }
 
     public String findOrCreateUserCart(String userId) {
@@ -88,7 +91,7 @@ public class CartService {
         }
         cartMapper.deleteCartItem(cartId, productId);
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items);
+        return buildCart(items, calculator);
     }
 
     @Transactional
@@ -101,21 +104,10 @@ public class CartService {
         cartMapper.updateCartItemQty(cartId, productId, qty);
 
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items);
+        return buildCart(items, calculator);
     }
 
-    private String findCartId(HttpServletRequest req, String userId) {
-        String cartId;
-        if (userId == null) {
-            cartId = cookieUtil.extractCartId(req).orElse(null);
-        } else {
-            Cart c = cartMapper.selectCartByUser(userId);
-            cartId = c == null ? null : c.getCartId();
-        }
-        return cartId;
-    }
-
-    private CartDto buildCart(List<CartItemDto> items) {
+    public static CartDto buildCart(List<CartItemDto> items, TaxCalculator calculator) {
 
         int totalQty = 0;
         int totalPrice = 0;
@@ -128,5 +120,17 @@ public class CartService {
             totalPrice += subtotal;
         }
         return new CartDto(items, totalQty, totalPrice);
+    }
+    
+    
+    private String findCartId(HttpServletRequest req, String userId) {
+        String cartId;
+        if (userId == null) {
+            cartId = cookieUtil.extractCartId(req).orElse(null);
+        } else {
+            Cart c = cartMapper.selectCartByUser(userId);
+            cartId = c == null ? null : c.getCartId();
+        }
+        return cartId;
     }
 }

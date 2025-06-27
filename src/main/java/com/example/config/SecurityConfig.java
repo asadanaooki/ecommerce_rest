@@ -33,8 +33,9 @@ public class SecurityConfig {
                 .formLogin(f -> f.disable())
                 .httpBasic(b -> b.disable())
                 .addFilterAfter(jwtAuthFilter, SecurityContextHolderFilter.class)
+                .anonymous(a -> a.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/favorites/**").authenticated()
+                        .requestMatchers("/favorites/**", "/checkout/**").authenticated()
                         .anyRequest().permitAll());
 
         return http.build();

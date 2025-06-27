@@ -111,4 +111,11 @@
       </if>
     where p.product_id = #{productId};
   </select>
+  
+  <update id="decreaseStock">
+    update product
+      set stock = stock - #{qty}
+    where product_id = #{productId}
+  </update>
+  
 </mapper>

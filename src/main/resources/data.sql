@@ -55,7 +55,7 @@ INSERT INTO product (
     price,
     product_description,
     stock,
-    sale_status,
+    status,
     created_at,
     updated_at
 ) VALUES(

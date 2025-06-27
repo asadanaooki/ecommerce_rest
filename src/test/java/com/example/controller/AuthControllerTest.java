@@ -49,13 +49,13 @@ class AuthControllerTest {
 
     @MockitoBean
     AuthService authService;
-    
+
     @MockitoBean
     CartService cartService;
 
     @MockitoBean
     JwtUtil jwtUtil;
-    
+
     @Autowired
     CookieUtil cookieUtil;
 
@@ -66,7 +66,7 @@ class AuthControllerTest {
     @MethodSource("provideArguments")
     void login_parameterized(String username, String password, boolean expected) throws Exception {
         doReturn(new AuthService.AuthResult("token", "userId"))
-        .when(authService).authenticate(username, password);
+                .when(authService).authenticate(username, password);
 
         mockMvc.perform(post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -120,8 +120,7 @@ class AuthControllerTest {
                           "email": "%s"
                         }
                         """.formatted("test@example.com")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.messageKey").value("signup.email.sent"));
+                .andExpect(status().isOk());
     }
 
     @Nested
@@ -180,8 +179,8 @@ class AuthControllerTest {
 
             String expected = """
                       [
-                        { "field": "password", "messageKey": "register.password.length" },
-                        { "field": "gender",  "messageKey": "register.gender.pattern" }
+                        { "field": "password", "errorCode": "Size" },
+                        { "field": "gender",  "errorCode": "Pattern" }
                       ]
                     """;
 
@@ -206,13 +205,13 @@ class AuthControllerTest {
 
         @ParameterizedTest
         @MethodSource("provideInvalidRegistrationArguments")
-        void register_parameterFail(Map<String, ?> diff, String messageKey)
+        void register_parameterFail(Map<String, ?> diff, String errorCode)
                 throws JsonProcessingException, Exception {
             mockMvc.perform(post("/register/complete")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(breakJson(diff)))
                     .andExpect(status().isBadRequest())
-                    .andExpect((jsonPath("$..messageKey", hasItem(messageKey))));
+                    .andExpect((jsonPath("$..errorCode", hasItem(errorCode))));
         }
 
         static Stream<Arguments> provideValidRegistrationArguments() {
@@ -277,116 +276,82 @@ class AuthControllerTest {
         }
 
         static Stream<Arguments> provideInvalidRegistrationArguments() {
-            String email256 = "a".repeat(64) + // ローカル部 64 文字（上限ぎりぎり）
-                    "@" +
-                    "b".repeat(63) + // ドメイン・ラベル 1   (63 文字)
-                    "." +
-                    "c".repeat(63) + // ドメイン・ラベル 2   (63 文字)
-                    "." +
+            // メール全体 256 文字（= 64 + 1 + 63 + 1 + 63 + 1 + 63）
+            String email256 = "a".repeat(64) + "@" +
+                    "b".repeat(63) + "." +
+                    "c".repeat(63) + "." +
                     "d".repeat(63);
+
             return Stream.of(
-                    // token
-                    // @notBlank
-                    Arguments.of(Map.of("token", ""), "error.unexpected"),
-                    // @Length
-                    Arguments.of(Map.of("token", "a".repeat(21)), "error.unexpected"),
-                    Arguments.of(Map.of("token", "a".repeat(23)), "error.unexpected"),
+                    /* token -------------------------------------------------------------- */
+                    Arguments.of(Map.of("token", ""), "NotBlank"),
+                    Arguments.of(Map.of("token", "a".repeat(21)), "Size"), // <22
+                    Arguments.of(Map.of("token", "a".repeat(23)), "Size"), // >22
 
-                    // @email
-                    // @notBlank
-                    Arguments.of(Map.of("email", ""), "register.email.invalid"),
-                    // @Length
-                    Arguments.of(Map.of("email", email256), "register.email.invalid"),
+                    /* email -------------------------------------------------------------- */
+                    Arguments.of(Map.of("email", ""), "NotBlank"),
+                    Arguments.of(Map.of("email", email256), "Size"), // >255
 
-                    // password
-                    // @NotBlank
-                    Arguments.of(Map.of("password", ""), "register.password.required"),
-                    // @Length
-                    Arguments.of(Map.of("password", "1234567"), "register.password.length"),
-                    Arguments.of(Map.of("password", "123456789012345678901"), "register.password.length"),
-                    // @Pattern
-                    Arguments.of(Map.of("password", "testあい"), "register.password.pattern"),
+                    /* password ----------------------------------------------------------- */
+                    Arguments.of(Map.of("password", ""), "NotBlank"),
+                    Arguments.of(Map.of("password", "1234567"), "Size"), // <8
+                    Arguments.of(Map.of("password", "123456789012345678901"), "Size"), // >20
+                    Arguments.of(Map.of("password", "testあい"), "Pattern"),
 
-                    // lastName
-                    // @notBlank
-                    Arguments.of(Map.of("lastName", ""), "register.last-name.required"),
-                    // @Length
-                    Arguments.of(Map.of("lastName", "あ".repeat(51)), "register.last-name.length"),
+                    /* lastName ----------------------------------------------------------- */
+                    Arguments.of(Map.of("lastName", ""), "NotBlank"),
+                    Arguments.of(Map.of("lastName", "あ".repeat(51)), "Size"),
 
-                    // firstName
-                    // @notBlank
-                    Arguments.of(Map.of("firstName", ""), "register.first-name.required"),
-                    // @Length
-                    Arguments.of(Map.of("firstName", "あ".repeat(51)), "register.first-name.length"),
+                    /* firstName ---------------------------------------------------------- */
+                    Arguments.of(Map.of("firstName", ""), "NotBlank"),
+                    Arguments.of(Map.of("firstName", "あ".repeat(51)), "Size"),
 
-                    // lastNameKana
-                    // @notBlank
-                    Arguments.of(Map.of("lastNameKana", ""), "register.last-name-kana.required"),
-                    // @Length
-                    Arguments.of(Map.of("lastNameKana", "ア".repeat(51)), "register.last-name-kana.length"),
-                    // @Pattern
-                    Arguments.of(Map.of("lastNameKana", "テスト3"), "register.last-name-kana.pattern"),
+                    /* lastNameKana ------------------------------------------------------- */
+                    Arguments.of(Map.of("lastNameKana", ""), "NotBlank"),
+                    Arguments.of(Map.of("lastNameKana", "ア".repeat(51)), "Size"),
+                    Arguments.of(Map.of("lastNameKana", "テスト3"), "Pattern"),
 
-                    // firstNameKana
-                    // @notBlank
-                    Arguments.of(Map.of("firstNameKana", ""), "register.first-name-kana.required"),
-                    // @Length
-                    Arguments.of(Map.of("firstNameKana", "ア".repeat(51)), "register.first-name-kana.length"),
-                    // @Pattern
-                    Arguments.of(Map.of("firstNameKana", "テストな"), "register.first-name-kana.pattern"),
+                    /* firstNameKana ------------------------------------------------------ */
+                    Arguments.of(Map.of("firstNameKana", ""), "NotBlank"),
+                    Arguments.of(Map.of("firstNameKana", "ア".repeat(51)), "Size"),
+                    Arguments.of(Map.of("firstNameKana", "テストな"), "Pattern"),
 
-                    // postCode
-                    // @notBlank
-                    Arguments.of(Map.of("postCode", ""), "register.post-code.required"),
-                    // @Pattern
-                    Arguments.of(Map.of("postCode", "12345678"), "register.post-code.pattern"),
-                    Arguments.of(Map.of("postCode", "123456a"), "register.post-code.pattern"),
+                    /* postCode ----------------------------------------------------------- */
+                    Arguments.of(Map.of("postCode", ""), "NotBlank"),
+                    Arguments.of(Map.of("postCode", "12345678"), "Pattern"), // 8 桁
+                    Arguments.of(Map.of("postCode", "123456a"), "Pattern"), // 英字混入
 
-                    // addressPrefCity
-                    // @notBlank
-                    Arguments.of(Map.of("addressPrefCity", ""), "register.address-pref-city.required"),
-                    // @Length
-                    Arguments.of(Map.of("addressPrefCity", "い".repeat(101)), "register.address-pref-city.length"),
+                    /* addressPrefCity ---------------------------------------------------- */
+                    Arguments.of(Map.of("addressPrefCity", ""), "NotBlank"),
+                    Arguments.of(Map.of("addressPrefCity", "い".repeat(101)), "Size"),
 
-                    // addressArea
-                    // @notBlank
-                    Arguments.of(Map.of("addressArea", ""), "register.address-area.required"),
-                    // @Length
-                    Arguments.of(Map.of("addressArea", "い".repeat(101)), "register.address-area.length"),
+                    /* addressArea -------------------------------------------------------- */
+                    Arguments.of(Map.of("addressArea", ""), "NotBlank"),
+                    Arguments.of(Map.of("addressArea", "い".repeat(101)), "Size"),
 
-                    // addressBuilding
-                    // @Length
-                    Arguments.of(Map.of("addressBuilding", "い".repeat(101)), "register.address-building.length"),
+                    /* addressBuilding (任意) -------------------------------------------- */
+                    Arguments.of(Map.of("addressBuilding", "い".repeat(101)), "Size"),
 
-                    // phoneNumber
-                    // @notBlank
-                    Arguments.of(Map.of("phoneNumber", ""), "register.phone-number.required"),
-                    // @Pattern
-                    // ① 非数字混入
-                    Arguments.of(Map.of("phoneNumber", "09012A4567"), "register.phone-number.pattern"),
-                    // ② 桁数境界
-                    Arguments.of(Map.of("phoneNumber", "012345678"), "register.phone-number.pattern"), // 9 桁
-                    Arguments.of(Map.of("phoneNumber", "012345678901"), "register.phone-number.pattern"), // 12 桁
-                    // ③ 先頭 0 でない
-                    Arguments.of(Map.of("phoneNumber", "11234567890"), "register.phone-number.pattern"),
+                    /* phoneNumber -------------------------------------------------------- */
+                    Arguments.of(Map.of("phoneNumber", ""), "NotBlank"),
+                    Arguments.of(Map.of("phoneNumber", "09012A4567"), "Pattern"), // 非数字
+                    Arguments.of(Map.of("phoneNumber", "012345678"), "Pattern"), // 9 桁
+                    Arguments.of(Map.of("phoneNumber", "012345678901"), "Pattern"), // 12 桁
+                    Arguments.of(Map.of("phoneNumber", "11234567890"), "Pattern"), // 先頭 0 でない
 
-                    // birthday
-                    // @notNull
-                    Arguments.of(new HashMap<>(){
-                        {put("birthday",null);
-                        }}, "register.birthday.required"),
-                    // @Past
-                    Arguments.of(Map.of("birthday", LocalDate.now().plusYears(3)), "register.birthday.past"),
+                    /* birthday ----------------------------------------------------------- */
+                    Arguments.of(new HashMap<>() {
+                        {
+                            put("birthday", null);
+                        }
+                    }, "NotNull"),
+                    Arguments.of(Map.of("birthday", LocalDate.now().plusYears(3)), "Past"),
 
-                    // gender
-                    // @NotBlank
-                    Arguments.of(Map.of("gender", ""), "register.gender.required"),
-                    // @Pattern
-                    Arguments.of(Map.of("gender", "U"), "register.gender.pattern"),
-                    Arguments.of(Map.of("gender", "MM"), "register.gender.pattern"));
+                    /* gender ------------------------------------------------------------- */
+                    Arguments.of(Map.of("gender", ""), "NotBlank"),
+                    Arguments.of(Map.of("gender", "U"), "Pattern"),
+                    Arguments.of(Map.of("gender", "MM"), "Pattern"));
         }
-        
-        
 
         private RegisterUserRequest createValid() {
             return new RegisterUserRequest(

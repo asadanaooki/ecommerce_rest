@@ -19,10 +19,11 @@ public class JwtUtil {
     /*    TODO:
     ・「鍵管理」　現状ハードコードされたシークレット をコードに置いている
     ・Refresh トークン方式　現状15 分固定
+    ・開発用に一旦、有効期限なし
     */
 
     private static final String SECRET = "myDevSecretKey1234567890_ABCDEFG";
-    private static final long EXP = 15 * 60; // 秒（15 分）
+  //  private static final long EXP = 15 * 60; // 秒（15 分）
 
     public String issue(String subject) {
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
@@ -30,7 +31,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(subject)
                 .issuedAt(new Date(now))
-                .expiration(new Date(now + EXP * 1000))
+//                .expiration(new Date(now + EXP * 1000))
                 .signWith(key)
                 .compact();
     }

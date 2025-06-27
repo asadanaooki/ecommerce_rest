@@ -1,5 +1,7 @@
 package com.example.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,19 +11,19 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class BusinessException extends RuntimeException {
-    private final String code;
-
-    private final String messageKey;
+    private HttpStatus httpStatus;
+    
+    private final String errorCode;
 
     private Object data;
-
-    public BusinessException(String messageKey) {
-        this.code = "";
-        this.messageKey = messageKey;
-    }
     
-    public BusinessException(String code, String messageKey) {
-        this.code = code;
-        this.messageKey = messageKey;
+    public BusinessException(HttpStatus status) {
+        this.httpStatus = status;
+        this.errorCode = "";
+    }
+
+    public BusinessException(HttpStatus status, String errorCode) {
+        this.httpStatus = status;
+        this.errorCode = errorCode;
     }
 }

@@ -19,7 +19,7 @@ public class Product {
     
     private int stock;
     
-    private String saleStatus;
+    private String status;
     
     private LocalDateTime createdAt;
     

@@ -11,6 +11,8 @@ public class Cart {
     
     private String userId;
     
+    private int version;
+    
     private LocalDateTime createdAt;
     
     private LocalDateTime updatedAt;

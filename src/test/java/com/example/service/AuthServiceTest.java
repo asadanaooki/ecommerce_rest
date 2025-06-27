@@ -20,6 +20,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -117,8 +118,7 @@ class AuthServiceTest {
 
             assertThatThrownBy(() -> authService.sendRegistrationUrl(email))
                     .isInstanceOf(BusinessException.class)
-                    .satisfies(e -> assertThat(((BusinessException) e).getMessageKey())
-                            .isEqualTo("signup.email.alreadyRegistered"));
+                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.CONFLICT);
         }
 
         @Test
@@ -228,7 +228,7 @@ class AuthServiceTest {
                                 /* birthday         */ LocalDate.of(1990, 4, 15),
                                 /* gender           */ "M");
             }
-            
+
             verify(userMapper).deletePreRegistrationByPrimaryKey(token);
         }
 
@@ -239,8 +239,7 @@ class AuthServiceTest {
 
             assertThatThrownBy(() -> authService.register(req))
                     .isInstanceOf(BusinessException.class)
-                    .satisfies(e -> assertThat(((BusinessException) e).getMessageKey())
-                            .isEqualTo("signup.link.expired"));
+                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
         }
 
         @Test
@@ -251,8 +250,7 @@ class AuthServiceTest {
 
             assertThatThrownBy(() -> authService.register(req))
                     .isInstanceOf(BusinessException.class)
-                    .satisfies(e -> assertThat(((BusinessException) e).getMessageKey())
-                            .isEqualTo("signup.link.expired"));
+                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
         }
 
         @Test
@@ -286,8 +284,7 @@ class AuthServiceTest {
 
                 assertThatThrownBy(() -> authService.register(req))
                         .isInstanceOf(BusinessException.class)
-                        .satisfies(e -> assertThat(((BusinessException) e).getMessageKey())
-                                .isEqualTo("signup.link.expired"));
+                        .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
             }
         }
     }

@@ -6,7 +6,7 @@
     where cart_id = #{cartId}
   </select>
   
-    <select id="selectCartByUser" resultType="com.example.entity.Cart">
+  <select id="selectCartByUser" resultType="com.example.entity.Cart">
     select *
     from cart
     where user_id = #{userId}
@@ -81,7 +81,7 @@
   
   <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
     select ci.product_id, p.product_name, ci.qty, p.price as priceEx,
-      (ci.price != p.price) as priceChanged
+      ci.price as priceAtCartAdditon
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}

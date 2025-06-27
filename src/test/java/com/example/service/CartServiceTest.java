@@ -22,6 +22,7 @@ import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
+import com.example.mapper.UserMapper;
 import com.example.util.CookieUtil;
 import com.example.util.TaxCalculator;
 
@@ -33,6 +34,9 @@ class CartServiceTest {
 
     @Mock
     ProductMapper productMapper;
+
+    @Mock
+    UserMapper userMapper;
 
     @Spy
     TaxCalculator calculator = new TaxCalculator(10);
@@ -100,7 +104,7 @@ class CartServiceTest {
                                 setProductName("Item A");
                                 setQty(3);
                                 setPriceEx(100); // 税抜 100 円
-                                setPriceChanged(false);
+                                setPriceAtCartAddition(100);
                             }
                         },
                         new CartItemDto() {
@@ -110,7 +114,7 @@ class CartServiceTest {
                                 setQty(1);
                                 setPriceEx(200); // 税抜 200 円
                                 setSubtotal(220); // 220 * 1
-                                setPriceChanged(true);
+                                setPriceAtCartAddition(190);
                             }
                         });
                 doReturn(items).when(cartMapper).selectCartItems(anyString());
@@ -126,17 +130,17 @@ class CartServiceTest {
                                 CartItemDto::getProductName,
                                 CartItemDto::getQty,
                                 CartItemDto::getPriceEx,
+                                CartItemDto::getPriceAtCartAddition,
                                 CartItemDto::getPriceInc,
-                                CartItemDto::getSubtotal,
-                                CartItemDto::isPriceChanged)
+                                CartItemDto::getSubtotal)
                         .containsExactly(
                                 "A-001",
                                 "Item A",
                                 3,
                                 100,
+                                100,
                                 110,
-                                330,
-                                false);
+                                330);
                 assertThat(dto.getItems().get(1).getProductId()).isEqualTo("B-002");
 
             }

@@ -6,19 +6,11 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class ApiResponse {
-    private final String resultCode;
-
-    private final String messageKey;
+    private final String errorCode;
 
     Object data;
-
-    public ApiResponse(String messageKey) {
-        this.resultCode = "";
-        this.messageKey = messageKey;
-    }
     
-    public ApiResponse(String code, String messageCode) {
-        this.resultCode = code;
-        this.messageKey = messageCode;
+    public ApiResponse(String errorCode) {
+        this.errorCode = errorCode;
     }
 }

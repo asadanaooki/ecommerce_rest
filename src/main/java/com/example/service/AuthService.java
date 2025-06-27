@@ -8,6 +8,7 @@ import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -64,7 +65,7 @@ public class AuthService {
     @Transactional
     public void sendRegistrationUrl(String email) throws MessagingException {
         if (userMapper.selectUserByEmail(email).isPresent()) {
-            throw new BusinessException("signup.email.alreadyRegistered");
+            throw new BusinessException(HttpStatus.CONFLICT);
         }
 
         String token = RandomTokenUtil.generate();
@@ -98,7 +99,7 @@ public class AuthService {
     public PreRegistration verify(String token) {
         PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(token);
         if (pr == null || pr.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BusinessException("signup.link.expired");
+            throw new BusinessException(HttpStatus.NOT_FOUND);
         }
         return pr;
     }
@@ -108,7 +109,7 @@ public class AuthService {
         PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(req.getToken());
 
         if (pr == null || !pr.getToken().equals(req.getToken())) {
-            throw new BusinessException("signup.link.expired");
+            throw new BusinessException(HttpStatus.NOT_FOUND);
         }
 
         try {
@@ -117,7 +118,7 @@ public class AuthService {
             userMapper.insertUser(user);
             userMapper.deletePreRegistrationByPrimaryKey(req.getToken());
         } catch (DuplicateKeyException e) {
-            throw new BusinessException("signup.link.expired");
+            throw new BusinessException(HttpStatus.NOT_FOUND);
         }
 
         // TODO:

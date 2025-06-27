@@ -1,5 +1,6 @@
 package com.example.advice;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -13,7 +14,8 @@ import lombok.AllArgsConstructor;
 public class RestExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    public ApiResponse handleBusinessException(BusinessException e) {
-        return new ApiResponse(e.getCode(), e.getMessageKey(), e.getData());
+    public ResponseEntity<ApiResponse> handleBusinessException(BusinessException e) {
+        return ResponseEntity.status(e.getHttpStatus())
+                .body(new ApiResponse(e.getErrorCode(), e.getData())) ;
     }
 }
