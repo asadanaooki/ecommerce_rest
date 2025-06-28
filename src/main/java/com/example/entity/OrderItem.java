@@ -15,6 +15,8 @@ public class OrderItem {
 
     /** order_item.product_id */
     private String productId;
+    
+    private String productName;
 
     /** 数量（order_item.qty） */
     private int qty;

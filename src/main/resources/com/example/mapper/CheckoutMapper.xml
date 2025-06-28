@@ -17,12 +17,6 @@
     from `order`
     where order_id = #{orderId}
   </select>
-  
-  <select id="selectOrderItems" resultType="com.example.entity.OrderItem">
-    select *
-    from order_item
-    where order_id = #{orderId}
-  </select>
 
   <insert id="insertOrderHeader">
     insert into `order` (
@@ -36,10 +30,10 @@
   
   <insert id="insertOrderItems">
     insert into order_item (
-      order_id, product_id, qty, price, subtotal
+      order_id, product_id, product_name, qty, price, subtotal
     ) values 
     <foreach collection="items" item="it" separator=",">
-      (#{it.orderId}, #{it.productId}, #{it.qty}, #{it.price}, #{it.subtotal})
+      (#{it.orderId}, #{it.productId}, #{it.productName}, #{it.qty}, #{it.price}, #{it.subtotal})
     </foreach>
   </insert>
 
@@ -52,5 +46,15 @@
   <!-- #{id} -->
   <!-- </foreach> -->
   <!-- </delete> -->
+  
+<!--  <select id="selectItemsByOrderIds" resultType="com.example.dto.OrderItemDto">-->
+<!--    select-->
+<!--      order_id, product_id, product_name, price, qty-->
+<!--    from order_item-->
+<!--    where order_id in-->
+<!--      <foreach  item="id" collection="orderIds" open="(" separator="," close=")">-->
+<!--        #{id}-->
+<!--      </foreach>-->
+<!--  </select>-->
 
 </mapper>

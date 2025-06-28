@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .addFilterAfter(jwtAuthFilter, SecurityContextHolderFilter.class)
                 .anonymous(a -> a.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/favorites/**", "/checkout/**").authenticated()
+                        .requestMatchers("/favorites/**", "/checkout/**", "/order-history/**").authenticated()
                         .anyRequest().permitAll());
 
         return http.build();

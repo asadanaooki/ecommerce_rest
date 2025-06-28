@@ -373,14 +373,18 @@ class CheckoutServiceTest {
 
             assertThatThrownBy(() -> checkoutService.checkout(userId, 2))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.CONFLICT);
+                    .satisfies(t ->{
+                        BusinessException e = (BusinessException) t;
+                        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
+                        assertThat(e.getErrorCode()).isEqualTo("diff");
+                        assertThat((List<CartItemDto>)e.getData()).extracting(CartItemDto::getReason)
+                        .containsExactly(
+                                CartItemDto.DiffReason.DISCONTINUED,
+                                CartItemDto.DiffReason.OUT_OF_STOCK,
+                                CartItemDto.DiffReason.LOW_STOCK,
+                                CartItemDto.DiffReason.PRICE_CHANGED);
+                    });
 
-            assertThat(diffItems).extracting(CartItemDto::getReason)
-                    .containsExactly(
-                            CartItemDto.DiffReason.DISCONTINUED,
-                            CartItemDto.DiffReason.OUT_OF_STOCK,
-                            CartItemDto.DiffReason.LOW_STOCK,
-                            CartItemDto.DiffReason.PRICE_CHANGED);
         }
 
         @Test
@@ -462,6 +466,7 @@ class CheckoutServiceTest {
             assertThat(oItems.get(0)).extracting(
                     OrderItem::getOrderId,
                     OrderItem::getProductId,
+                    OrderItem::getProductName,
                     OrderItem::getQty,
                     OrderItem::getPrice,
                     OrderItem::getSubtotal
@@ -469,6 +474,7 @@ class CheckoutServiceTest {
             .containsExactly(
                     cartId,
                     "N-001",
+                    "通常品1",
                     2,
                     220,
                     440

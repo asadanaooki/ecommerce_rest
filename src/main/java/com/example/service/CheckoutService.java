@@ -40,6 +40,7 @@ public class CheckoutService {
     ・メールに商品画像ものせる。
     ・sendCheckoutCompleteMailの引数多い、今後どうする？
     ・支払方法増やす。希望日時や送り先変更も。
+    ・diffリストを別に返す方が良いかも
     */
 
     private final UserMapper userMapper;
@@ -123,10 +124,10 @@ public class CheckoutService {
         }
         String orderId = c.getCartId();
         List<CartItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
-        
-       // 要確認商品がある場合
+
+        // 要確認商品がある場合
         if (hasDiff(items)) {
-            throw new BusinessException(HttpStatus.CONFLICT, "diff");
+            throw new BusinessException(HttpStatus.CONFLICT, "diff", items);
         }
 
         CartDto cart = CartService.buildCart(items, calculator);
@@ -137,7 +138,9 @@ public class CheckoutService {
         // TODO:メール送信 仮実装
         sendOrderCompleteMail(orderId, user, cart);
     }
-    
+
+
+
     /**
      * 差分を検知し、各 Item に Reason を付与。
      * 差分が 1 件でもあれば true を返す。
@@ -156,7 +159,6 @@ public class CheckoutService {
         }
         return items.stream().anyMatch(i -> i.getReason() != null);
     }
-
 
     private void finalizeOrder(String orderId, User user, CartDto cart) {
         NameAddress na = buildNameAddress(user);
@@ -183,6 +185,7 @@ public class CheckoutService {
                     OrderItem oi = new OrderItem();
                     oi.setOrderId(orderId);
                     oi.setProductId(i.getProductId());
+                    oi.setProductName(i.getProductName());
                     oi.setQty(i.getQty());
                     oi.setPrice(i.getPriceInc());
                     oi.setSubtotal(i.getSubtotal());

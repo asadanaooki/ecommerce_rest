@@ -127,7 +127,7 @@ CREATE TABLE pre_registration (
 
 CREATE TABLE `order` (
   order_id          CHAR(36)        NOT NULL,
-  user_id           CHAR(36)        NOT NULL UNIQUE,
+  user_id           CHAR(36)        NOT NULL,
   name              VARCHAR(100)    NOT NULL,
   postal_code       CHAR(7)         NOT NULL,
   address           VARCHAR(400)    NOT NULL,
@@ -143,6 +143,7 @@ CREATE TABLE `order` (
 CREATE TABLE order_item (
   order_id          CHAR(36)        NOT NULL,
   product_id        CHAR(36)        NOT NULL,
+  product_name      VARCHAR(100)   NOT NULL,
   qty               INT             NOT NULL,
   price             INT             NOT NULL,
   subtotal          INT             NOT NULL,

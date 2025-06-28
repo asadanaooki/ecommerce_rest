@@ -40,4 +40,6 @@ public class CheckoutController {
         checkoutService.checkout(userId, version);
         return ResponseEntity.ok().build();
     }
+    
+    
 }
