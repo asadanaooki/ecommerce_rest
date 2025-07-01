@@ -6,12 +6,14 @@ import lombok.Data;
 
 @Data
 public class Review {
+    
+    private String productId;
 
     private String userId;
     
-    private String productId;
+    private int rating;
     
-    private String comment;
+    private String reviewText;
     
     private LocalDateTime createdAt;
     

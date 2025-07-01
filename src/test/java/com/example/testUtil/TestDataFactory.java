@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.example.entity.CartItem;
+import com.example.entity.Review;
 
 @Component
 public class TestDataFactory {
@@ -24,12 +25,6 @@ public class TestDataFactory {
                 "UPDATE product SET stock = ? WHERE product_id = ?",
                 stock,
                 productId);
-    }
-
-    public void createReview(String userId, String productId, int rating) {
-        jdbcTemplate.update(
-                "INSERT INTO review (user_id, product_id, rating) VALUES (?, ?, ?)",
-                userId, productId, rating);
     }
 
     public void createFavorite(String userId, String productId) {
@@ -94,6 +89,36 @@ public class TestDataFactory {
     public int deleteCartByUserId(String userId) {
         String sql = "DELETE FROM cart WHERE user_id = ?";
         return jdbcTemplate.update(sql, userId);
+    }
+
+    /** 商品 ID をキーにレビューを一括削除 */
+    public int deleteReviewsByProductId(String productId) {
+        String sql = "DELETE FROM review WHERE product_id = ?";
+        return jdbcTemplate.update(sql, productId);
+    }
+
+    public void createReview(Review r) {
+        StringBuilder cols = new StringBuilder("product_id, user_id, rating");
+        StringBuilder marks = new StringBuilder("?, ?, ?");
+        List<Object> params = new ArrayList<Object>(List.of(r.getProductId(), r.getUserId(), r.getRating()));
+
+        if (r.getReviewText() != null) {
+            cols.append(", review_text");
+            marks.append(", ?");
+            params.add(r.getReviewText());
+        }
+        if (r.getCreatedAt() != null) {
+            cols.append(", created_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(r.getCreatedAt()));
+        }
+        if (r.getUpdatedAt() != null) {
+            cols.append(", updated_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(r.getUpdatedAt()));
+        }
+        String sql = String.format("INSERT INTO review (%s) VALUES (%s)", cols, marks);
+        jdbcTemplate.update(sql, params.toArray());
     }
 
 }

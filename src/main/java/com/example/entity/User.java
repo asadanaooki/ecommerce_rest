@@ -28,6 +28,7 @@ public class User {
 
     private LocalDate birthday;     // 生年月日
     private String     gender;      // M / F / U
+    private String     nickname;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

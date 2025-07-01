@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS cart_item;
 DROP TABLE IF EXISTS pre_registration;
 DROP TABLE IF EXISTS `order`;
 DROP TABLE IF EXISTS order_item;
+DROP TABLE IF EXISTS review;
 SET FOREIGN_KEY_CHECKS=1;
 
 -- user
@@ -38,6 +39,7 @@ CREATE TABLE `user` (
     phone_number       VARCHAR(11)    NOT NULL,            -- 0始まり 10–11桁
     birthday           DATE           NOT NULL,
     gender             CHAR(1)        NOT NULL,            -- M / F 
+    nickname          VARCHAR(15),
 
     -- ===== 監査 =====
     created_at         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -70,20 +72,6 @@ CREATE TABLE favorite (
     CONSTRAINT fk_favorite_user
       FOREIGN KEY(user_id)  REFERENCES user(user_id),
     CONSTRAINT fk_favorite_product
-      FOREIGN KEY(product_id)  REFERENCES product(product_id)
-);
-
-CREATE TABLE review (
-    user_id             CHAR(36)       NOT NULL,
-    product_id          CHAR(36)   NOT NULL,
-    rating           INT           NOT NULL,
-    comment          VARCHAR(500),
-    created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, product_id),
-    CONSTRAINT fk_review_user
-      FOREIGN KEY(user_id)  REFERENCES user(user_id),
-    CONSTRAINT fk_review_product
       FOREIGN KEY(product_id)  REFERENCES product(product_id)
 );
 
@@ -155,6 +143,18 @@ CREATE TABLE order_item (
     ON DELETE CASCADE,
   CONSTRAINT fk_order_item_product
   FOREIGN KEY (product_id) REFERENCES product (product_id)
+);
+-- TODO: レビュー本文は一旦500文字以内
+CREATE TABLE review (
+  product_id CHAR(36) NOT NULL,
+  user_id    CHAR(36) NOT NULL,
+  rating     INT  NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  review_text VARCHAR(500),
+  created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (product_id, user_id),
+  CONSTRAINT fk_review_product FOREIGN KEY (product_id) REFERENCES product(product_id),
+  CONSTRAINT fk_review_user    FOREIGN KEY (user_id)    REFERENCES `user`(user_id)
 );
 
 -- ======================

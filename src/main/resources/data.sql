@@ -13,7 +13,8 @@ INSERT INTO `user` (
     address_building,
     phone_number,
     birthday,
-    gender
+    gender,
+    nickname
 ) VALUES
 -- 1件目 (sample)
 (
@@ -29,7 +30,8 @@ INSERT INTO `user` (
     'パークウェイビル3F 10号室',
     '0312345678',
     '1990-04-15',
-    'M'
+    'M',
+    'yamarou'
 ),
 -- 2件目 (bob2)
 (
@@ -45,7 +47,8 @@ INSERT INTO `user` (
     NULL,
     '01187654321',
     '1992-08-23',
-    'F'
+    'F',
+    'sato'
 );
 
 
@@ -127,22 +130,6 @@ insert into favorite (
     '1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68'
 );
 
-INSERT INTO review (
-    user_id,
-    product_id,
-    rating,
-    comment,
-    created_at,
-    updated_at
-) VALUES (
-    '550e8400-e29b-41d4-a716-446655440000',     -- レビュアー
-    '1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68',     -- Item19
-    5,                                          -- ★5
-    'コスパ抜群で毎回リピートしています！',       -- 500 文字以内
-    '2025-05-25 12:10:30',                      -- 作成日時
-    '2025-05-25 12:10:30'                       -- 更新日時
-);
-
 INSERT INTO cart(cart_id, user_id)
 VALUES ('bbbbeeee-cccc-dddd-aaaa-111122223333','550e8400-e29b-41d4-a716-446655440000');
 
@@ -168,4 +155,28 @@ INSERT INTO cart_item (
     '09d5a43a-d24c-41c7-af2b-9fb7b0c9e049', -- Item5 の product_id
     1,                                       -- 数量
     2500                                     -- 税抜価格
+);
+
+INSERT INTO review (
+    user_id,
+    product_id,
+    rating,
+    review_text,
+    created_at,
+    updated_at
+)  VALUES(
+    '550e8400-e29b-41d4-a716-446655440000',     -- ユーザー ID
+    '09d5a43a-d24c-41c7-af2b-9fb7b0c9e049',     -- Item5
+    4,                                          -- ★4
+    '程よい甘さで家族にも好評でした！',
+    '2025-06-05 09:20:15',
+    '2025-06-05 09:20:15'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440000',     -- ユーザー ID
+    '6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd',     -- Item6
+    3,                                          -- ★3
+    'サイズが思ったより小さいですが味は満足。',
+    '2024-06-10 18:42:05',
+    '2024-06-10 18:42:05'
 );

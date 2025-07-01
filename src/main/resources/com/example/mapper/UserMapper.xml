@@ -31,36 +31,47 @@
   
   <insert id="insertUser" parameterType="com.example.entity.User">
     INSERT INTO `user`
-      ( user_id
-      , email
-      , password_hash
-      , last_name
-      , first_name
-      , last_name_kana
-      , first_name_kana
-      , postal_code
-      , address_pref_city
-      , address_area
-      , address_block
-      , address_building
-      , phone_number
-      , birthday
-      , gender )
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      user_id,
+      email,
+      password_hash,
+      last_name,
+      first_name,
+      last_name_kana,
+      first_name_kana,
+      postal_code,
+      address_pref_city,
+      address_area,
+      address_block,
+      address_building,
+      phone_number,
+      birthday,
+      gender,
+      <if test="nickname != null">
+        nickname,
+      </if>
+    </trim>
     VALUES
-      ( #{userId}
-      , #{email}
-      , #{passwordHash}
-      , #{lastName}
-      , #{firstName}
-      , #{lastNameKana}
-      , #{firstNameKana}
-      , #{postalCode}
-      , #{addressPrefCity}
-      , #{addressArea}
-      , #{addressBlock}
-      , #{addressBuilding}
-      , #{phoneNumber}
-      , #{birthday}
-      , #{gender} )
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      #{userId},
+      #{email},
+      #{passwordHash},
+      #{lastName},
+      #{firstName},
+      #{lastNameKana},
+      #{firstNameKana},
+      #{postalCode},
+      #{addressPrefCity},
+      #{addressArea},
+      #{addressBlock},
+      #{addressBuilding},
+      #{phoneNumber},
+      #{birthday},
+      #{gender},
+      <if test="nickname != null">
+        #{nickname},
+      </if>
+    </trim>
+
   </insert>
 </mapper>

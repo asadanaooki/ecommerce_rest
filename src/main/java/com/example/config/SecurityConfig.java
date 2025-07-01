@@ -2,6 +2,7 @@ package com.example.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +36,7 @@ public class SecurityConfig {
                 .addFilterAfter(jwtAuthFilter, SecurityContextHolderFilter.class)
                 .anonymous(a -> a.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/review/**").authenticated()
                         .requestMatchers("/favorites/**", "/checkout/**", "/order-history/**").authenticated()
                         .anyRequest().permitAll());
 

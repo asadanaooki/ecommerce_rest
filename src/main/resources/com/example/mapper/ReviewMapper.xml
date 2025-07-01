@@ -1,0 +1,38 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.ReviewMapper">
+  
+  <select id="selectReviews" resultType="com.example.dto.ReviewDto">
+    select 
+      u.nickname, date(r.created_at) as createdDate, r.rating, r.review_text
+    from review r
+    join `user` u on u.user_id = r.user_id
+    where r.product_id = #{productId}
+    order by r.created_at desc, r.user_id asc
+    limit #{limit}
+    offset #{offset}
+  </select>
+  
+  <select id="countReviews" resultType="int">
+    select count(*)
+    from review
+    where product_id = #{productId}
+  </select>
+  
+  <select id="hasPurchased" resultType="boolean">
+    select exists (
+      select 1
+      from order_item oi
+      join `order` o on o.order_id = oi.order_id
+      where o.user_id = #{userId}
+        and oi.product_id = #{productId}
+    )
+  </select>
+  
+  <insert id="insertReview">
+    insert into review
+      (user_id, product_id, rating, review_text)
+    values
+      (#{userId}, #{productId}, #{rating},#{reviewText})
+  </insert>
+
+</mapper>
