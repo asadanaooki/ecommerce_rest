@@ -1,29 +1,32 @@
 package com.example.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.example.entity.PasswordResetToken;
 import com.example.entity.PreRegistration;
 import com.example.entity.User;
+import com.example.enums.MailTemplate;
 import com.example.exception.BusinessException;
 import com.example.mapper.UserMapper;
+import com.example.request.PasswordResetMailRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.security.CustomUserDetails;
+import com.example.support.MailGateway;
 import com.example.util.JwtUtil;
 import com.example.util.RandomTokenUtil;
 
@@ -38,6 +41,8 @@ public class AuthService {
         メール送信をトランザクション外にしたほうがよいか？メリットがわからん
         未使用トークンをバッチで削除
         自動ログインにする
+    ・パスワードリセットで、列挙攻撃対策としてパスワード送信時にトークンチェックする？
+    ・メール送信のUtil作成したほうがよいかも
     */
     private final AuthenticationManager manager;
 
@@ -45,12 +50,15 @@ public class AuthService {
 
     private final UserMapper userMapper;
 
-    private final JavaMailSender javaMailSender;
-
     private final PasswordEncoder encoder;
+
+    private final MailGateway mailGateway;
 
     @Value("${settings.auth.verification-ttl-min}")
     private long ttlMinutes;
+
+    @Value("${settings.reset.expire-minutes}")
+    private long expireMin;
 
     public AuthResult authenticate(String username, String password) {
         // TODO:
@@ -71,30 +79,15 @@ public class AuthService {
         String token = RandomTokenUtil.generate();
         LocalDateTime exp = LocalDateTime.now().plusMinutes(ttlMinutes);
         PreRegistration pr = new PreRegistration();
-        pr.setToken(token);
+        pr.setToken(RandomTokenUtil.hash(token));
         pr.setEmail(email);
         pr.setExpiresAt(exp);
 
         userMapper.insertPreRegistration(pr);
-        // TODO:
-        // メール送信はローカルで仮実装
-        // sendされるmsgの中身まで単体テストで見るべきか？setTextやsetSubjectなど
-        MimeMessage msg = javaMailSender.createMimeMessage();
-        MimeMessageHelper h = new MimeMessageHelper(msg, "UTF-8");
+
         String link = "http://localhost:8080/register/verify?token=" + token;
-
-        h.setTo(email);
-        h.setSubject("会員登録のご案内");
-        h.setText("""
-                以下のURLにアクセス頂き、お客様情報をご入力の上、会員登録をお願いいたします。
-
-                %s
-
-                %d分以内に会員登録が完了しない場合、このURLが無効となりますのでご注意ください。
-                無効となった際は再度会員登録のページよりお進みください
-                """.formatted(link, ttlMinutes));
-        javaMailSender.send(msg);
-    }
+        mailGateway.send(MailTemplate.REGISTRATION.build(email, link, ttlMinutes));
+        }
 
     public PreRegistration verify(String token) {
         PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(token);
@@ -123,6 +116,25 @@ public class AuthService {
 
         // TODO:
         // 歓迎メール送る
+    }
+
+    @Transactional
+    public void sendPasswordRestMail(PasswordResetMailRequest req) {
+        Optional<User> op = userMapper.selectUserByEmail(req.getEmail());
+        if (op.isEmpty() || !op.get().getBirthday().equals(req.getBirthday())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        User user = op.get();
+        String rawToken = RandomTokenUtil.generate();
+
+        userMapper.insertPasswordResetToken(new PasswordResetToken() {
+            {
+                setTokenHash(RandomTokenUtil.hash(rawToken));
+                setUserId(user.getUserId());
+                setExpiresAt(LocalDateTime.now().plusMinutes(expireMin));
+            }
+        });
+
     }
 
     private User toUserEntity(RegisterUserRequest r, String userId) {
@@ -157,6 +169,7 @@ public class AuthService {
         return u;
 
     }
-    
-    public static record AuthResult(String jwt, String userId) {}
+
+    public static record AuthResult(String jwt, String userId) {
+    }
 }

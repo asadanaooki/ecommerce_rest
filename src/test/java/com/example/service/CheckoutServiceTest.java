@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -22,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import com.example.dto.CartItemDto;
 import com.example.dto.CheckoutDto;
@@ -30,11 +28,13 @@ import com.example.entity.Cart;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
+import com.example.enums.MailTemplate;
 import com.example.exception.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
+import com.example.support.MailGateway;
 import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,8 +59,8 @@ class CheckoutServiceTest {
     CheckoutService checkoutService;
 
     @Mock
-    JavaMailSender sender;
-
+    MailGateway gateway;
+    
     @Nested
     class LoadCheckout {
         String userId = "user";
@@ -434,7 +434,6 @@ class CheckoutServiceTest {
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
             doReturn(items).when(checkoutMapper).selectCheckoutItems(cartId);
             doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
-            doReturn(mock(MimeMessage.class)).when(sender).createMimeMessage();
             
             checkoutService.checkout(userId, 2);
             
@@ -482,6 +481,8 @@ class CheckoutServiceTest {
             
             verify(productMapper,times(2)).decreaseStock(anyString(), anyInt());
             verify(cartMapper).deleteCart(cartId);
+            verify(gateway).send(argThat(msg -> msg.subject().equals(MailTemplate.ORDER_CONFIRMATION.getSubject())));
+            
         }
     }
 

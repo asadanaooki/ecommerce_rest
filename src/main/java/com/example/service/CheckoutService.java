@@ -5,11 +5,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +17,13 @@ import com.example.entity.Cart;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
+import com.example.enums.MailTemplate;
 import com.example.exception.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
+import com.example.support.MailGateway;
 import com.example.util.TaxCalculator;
 
 import lombok.AllArgsConstructor;
@@ -53,7 +52,7 @@ public class CheckoutService {
 
     private final TaxCalculator calculator;
 
-    private final JavaMailSender javaMailSender;
+    private final MailGateway mailGateway;
 
     public CheckoutDto loadCheckout(String userId) {
         String cartId = cartMapper.selectCartByUser(userId).getCartId();
@@ -136,10 +135,8 @@ public class CheckoutService {
         finalizeOrder(orderId, user, cart);
 
         // TODO:メール送信 仮実装
-        sendOrderCompleteMail(orderId, user, cart);
+        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, cart, orderId));
     }
-
-
 
     /**
      * 差分を検知し、各 Item に Reason を付与。
@@ -199,59 +196,7 @@ public class CheckoutService {
         cartMapper.deleteCart(orderId);
     }
 
-    private void sendOrderCompleteMail(String orderId, User user, CartDto cart) throws MessagingException {
-        NameAddress na = buildNameAddress(user);
-
-        /* ---------- MimeMessage 生成 ---------- */
-        MimeMessage msg = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");
-
-        helper.setTo(user.getEmail());
-        helper.setSubject("ご注文ありがとうございます");
-
-        /* ---------- 明細ブロック ---------- */
-        String itemsBlock = cart.getItems().stream()
-                .map(i -> """
-                        %s
-                        数量 : %d
-                        価格 : ¥%,d
-                        小計 : ¥%,d
-                        """.formatted(i.getProductName(),
-                        i.getQty(),
-                        i.getPriceInc(),
-                        i.getSubtotal()))
-                .collect(Collectors.joining("\n"));
-
-        /* ---------- 本文 ---------- */
-        String body = """
-                %s様、ご注文ありがとうございます。
-
-                【お届け先】
-                %s
-                %s
-
-                【注文番号】
-                %s
-
-                【ご注文内容】
-                %s
-
-                --- 合計欄 ---
-                合計金額 : ¥%,d
-
-                ※本メールは自動送信です。ご不明点がございましたらお問い合わせフォームよりご連絡ください。
-                """.formatted(na.fullName,
-                na.fullName,
-                na.fullAddress,
-                orderId,
-                itemsBlock,
-                cart.getTotalPrice());
-
-        helper.setText(body); // プレーンテキスト。HTMLなら第2引数を true
-        javaMailSender.send(msg);
-    }
-
-    private NameAddress buildNameAddress(User user) {
+    public static NameAddress buildNameAddress(User user) {
         String name = user.getLastName() + " " + user.getFirstName();
         String address = String.join("",
                 user.getAddressPrefCity(),
@@ -261,7 +206,7 @@ public class CheckoutService {
         return new NameAddress(name, address);
     }
 
-    private record NameAddress(String fullName, String fullAddress) {
+    public record NameAddress(String fullName, String fullAddress) {
     }
 
 }

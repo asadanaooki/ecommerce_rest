@@ -5,7 +5,7 @@
 -- ======================
 SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS product;
-DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS favorite;
 DROP TABLE IF EXISTS review;
 DROP TABLE IF EXISTS cart;
@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS pre_registration;
 DROP TABLE IF EXISTS `order`;
 DROP TABLE IF EXISTS order_item;
 DROP TABLE IF EXISTS review;
+DROP TABLE IF EXISTS password_reset_token;
 SET FOREIGN_KEY_CHECKS=1;
 
 -- user
@@ -105,7 +106,7 @@ CREATE TABLE cart_item (
 );
 
 CREATE TABLE pre_registration (
-    token             CHAR(22)       NOT NULL,
+    token             CHAR(64)       NOT NULL,
     email          VARCHAR(255)       NOT NULL,
     expires_at          DATETIME             NOT NULL,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -155,6 +156,16 @@ CREATE TABLE review (
   PRIMARY KEY (product_id, user_id),
   CONSTRAINT fk_review_product FOREIGN KEY (product_id) REFERENCES product(product_id),
   CONSTRAINT fk_review_user    FOREIGN KEY (user_id)    REFERENCES `user`(user_id)
+);
+
+CREATE TABLE password_reset_token (
+  token_hash CHAR(64) NOT NULL,
+  user_id    CHAR(36) NOT NULL,
+  expires_at DATETIME   NOT NULL,
+  created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (token_hash),
+  CONSTRAINT fk_password_reset_token_user    FOREIGN KEY (user_id)    REFERENCES `user`(user_id)
 );
 
 -- ======================

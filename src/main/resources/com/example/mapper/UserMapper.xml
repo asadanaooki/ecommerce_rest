@@ -72,6 +72,35 @@
         #{nickname},
       </if>
     </trim>
-
   </insert>
+  
+  <insert id="insertPasswordResetToken">
+    insert into password_reset_token(
+      token_hash,
+      user_id,
+      expires_at
+    ) values(
+      #{tokenHash},
+      #{userId},
+      #{expiresAt}
+    )
+  </insert>
+  
+  <select id="selectPasswordResetTokenByPrimaryKey" resultType="com.example.entity.PasswordResetToken">
+    select *
+    from password_reset_token
+    where token_hash = #{hash}
+  </select>
+  
+  <delete id="deletePasswordResetToken">
+    delete from password_reset_token
+    where token_hash = #{hash}
+  </delete>
+  
+  <update id="updatePassword">
+    update `user`
+      set password_hash = #{pw}
+    where user_id = #{userId}
+  </update>
+  
 </mapper>

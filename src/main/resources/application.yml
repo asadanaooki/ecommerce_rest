@@ -42,6 +42,8 @@ settings:
     rate-percent: 10
   auth:
     verification-ttl-min: 30
+  reset:
+    expire-minutes: 2
   favorite:
     size: 2
   review:
