@@ -77,11 +77,11 @@
   <insert id="insertPasswordResetToken">
     insert into password_reset_token(
       token_hash,
-      user_id,
+      email,
       expires_at
     ) values(
       #{tokenHash},
-      #{userId},
+      #{email},
       #{expiresAt}
     )
   </insert>
@@ -94,13 +94,13 @@
   
   <delete id="deletePasswordResetToken">
     delete from password_reset_token
-    where token_hash = #{hash}
+    where token_hash = #{token}
   </delete>
   
   <update id="updatePassword">
     update `user`
       set password_hash = #{pw}
-    where user_id = #{userId}
+    where email = #{email}
   </update>
   
 </mapper>

@@ -7,12 +7,17 @@ import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import jakarta.mail.MessagingException;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -22,15 +27,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.example.entity.PasswordResetToken;
 import com.example.entity.PreRegistration;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
 import com.example.exception.BusinessException;
 import com.example.mapper.UserMapper;
+import com.example.request.PasswordResetMailRequest;
+import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.support.MailGateway;
 import com.example.util.JwtUtil;
@@ -55,18 +66,21 @@ class AuthServiceTest {
 
     @MockitoSpyBean
     UserMapper userMapper;
-    
+
     @MockitoBean
     MailGateway gateway;
     
+    @MockitoBean
+    PasswordEncoder encoder;
+
     String email = "foo@example.com";
+
+    String fixedToken = "a".repeat(22);
+
+    String hashed = RandomTokenUtil.hash(fixedToken);
 
     @Nested
     class SendRegistrationUrl {
-
-        String fixedToken = "a".repeat(22);
-        
-        String hashed = RandomTokenUtil.hash(fixedToken);
 
         @Test
         void sendRegistrationUrl_success() throws MessagingException {
@@ -86,7 +100,8 @@ class AuthServiceTest {
                 assertThat(pr.getEmail()).isEqualTo(email);
                 assertThat(pr.getExpiresAt()).isAfter(LocalDateTime.now());
 
-                verify(gateway).send(argThat(msg -> msg.subject().equals(MailTemplate.REGISTRATION.getSubject())));;
+                verify(gateway).send(argThat(msg -> msg.subject().equals(MailTemplate.REGISTRATION.getSubject())));
+                ;
             }
         }
 
@@ -117,26 +132,26 @@ class AuthServiceTest {
                     .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.CONFLICT);
         }
 
-//        @Test
-//        @Transactional(propagation = Propagation.NOT_SUPPORTED)
-//        void sendRegistrationUrl_mailFail() {
-//            doThrow(new MailSendException("smtp down")).when(sender).send(any(MimeMessage.class));
-//
-//            try (MockedConstruction<MimeMessageHelper> mocked = Mockito.mockConstruction(MimeMessageHelper.class,
-//                    (mock, ctx) -> {
-//                        // setter 系は特に何もしない
-//                    });
-//                    MockedStatic<RandomTokenUtil> rnd = Mockito.mockStatic(RandomTokenUtil.class)) {
-//                rnd.when(RandomTokenUtil::generate).thenReturn(fixedToken);
-//                rnd.when(() -> RandomTokenUtil.hash(fixedToken)).thenReturn(hashed);
-//                
-//                assertThatThrownBy(() -> authService.sendRegistrationUrl(email))
-//                        .isInstanceOf(MailSendException.class);
-//
-//                PreRegistration p = userMapper.selectPreRegistrationByPrimaryKey(fixedToken);
-//                assertThat(p).isNull();
-//            }
-//        }
+        //        @Test
+        //        @Transactional(propagation = Propagation.NOT_SUPPORTED)
+        //        void sendRegistrationUrl_mailFail() {
+        //            doThrow(new MailSendException("smtp down")).when(sender).send(any(MimeMessage.class));
+        //
+        //            try (MockedConstruction<MimeMessageHelper> mocked = Mockito.mockConstruction(MimeMessageHelper.class,
+        //                    (mock, ctx) -> {
+        //                        // setter 系は特に何もしない
+        //                    });
+        //                    MockedStatic<RandomTokenUtil> rnd = Mockito.mockStatic(RandomTokenUtil.class)) {
+        //                rnd.when(RandomTokenUtil::generate).thenReturn(fixedToken);
+        //                rnd.when(() -> RandomTokenUtil.hash(fixedToken)).thenReturn(hashed);
+        //                
+        //                assertThatThrownBy(() -> authService.sendRegistrationUrl(email))
+        //                        .isInstanceOf(MailSendException.class);
+        //
+        //                PreRegistration p = userMapper.selectPreRegistrationByPrimaryKey(fixedToken);
+        //                assertThat(p).isNull();
+        //            }
+        //        }
     }
 
     @Nested
@@ -286,4 +301,161 @@ class AuthServiceTest {
         }
     }
 
+    @Nested
+    class SendPasswordRestMail {
+        PasswordResetMailRequest req;
+
+        @BeforeEach
+        void setup() {
+            req = new PasswordResetMailRequest() {
+                {
+                    setEmail("sample@example.com");
+                    setBirthday(LocalDate.of(1990, 4, 15));
+                }
+            };
+        }
+
+        @Test
+        void sendPasswordRestMail_success() {
+            LocalDateTime fixed = LocalDateTime.of(2025, 7, 2, 10, 43, 2);
+            long expireMin = (long) ReflectionTestUtils.getField(authService, "expireMin");
+            try (MockedStatic<RandomTokenUtil> rnd = Mockito.mockStatic(RandomTokenUtil.class);
+                    MockedStatic<LocalDateTime> time = Mockito.mockStatic(LocalDateTime.class,
+                            Mockito.CALLS_REAL_METHODS);) {
+                rnd.when(RandomTokenUtil::generate).thenReturn(fixedToken);
+                rnd.when(() -> RandomTokenUtil.hash(fixedToken)).thenReturn(hashed);
+                time.when(LocalDateTime::now).thenReturn(fixed);
+
+                authService.sendPasswordRestMail(req);
+
+                PasswordResetToken token = userMapper.selectPasswordResetTokenByPrimaryKey(hashed);
+
+                assertThat(token).extracting(
+                        PasswordResetToken::getTokenHash,
+                        PasswordResetToken::getEmail,
+                        PasswordResetToken::getExpiresAt)
+                        .containsExactly(
+                                hashed,
+                                "sample@example.com",
+                                fixed.plusMinutes(expireMin));
+
+                verify(gateway).send(assertArg(msg -> msg.subject().equals(MailTemplate.PASSWORD_RESET.getSubject())));
+            }
+        }
+
+        @Test
+        void sendPasswordRestMail_userNotFound() {
+            req.setEmail("invalid");
+
+            assertThatThrownBy(() -> authService.sendPasswordRestMail(req))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        void sendPasswordRestMail_birthdayMismatch() {
+            req.setBirthday(LocalDate.of(1995, 4, 16));
+
+            assertThatThrownBy(() -> authService.sendPasswordRestMail(req))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Nested
+    class ResetPassword {
+        PasswordResetUpdateRequest req;
+        PasswordResetToken tk;
+        String raw = "a".repeat(22);
+        String hashed = RandomTokenUtil.hash(raw);
+
+        MockedStatic<RandomTokenUtil> rnd;
+        MockedStatic<LocalDateTime> time;
+
+        @BeforeEach
+        void setup() {
+            LocalDateTime ld = LocalDateTime.of(2025, 7, 2, 10, 40, 5);
+            req = new PasswordResetUpdateRequest() {
+                {
+                    setToken(raw);
+                    setEmail("test@sample.com");
+                    setNewPassword("testpass");
+                    setConfirmPassword("testpass");
+                    setToken(raw);
+                }
+            };
+            tk = new PasswordResetToken() {
+                {
+                    setTokenHash(hashed);
+                    setEmail("test@sample.com");
+                    setExpiresAt(LocalDateTime.of(2025, 7, 2, 10, 42, 5));
+                }
+            };
+            rnd = Mockito.mockStatic(RandomTokenUtil.class);
+            time = Mockito.mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS);
+            rnd.when(() -> RandomTokenUtil.hash(raw)).thenReturn(hashed);
+            time.when(LocalDateTime::now).thenReturn(ld);
+
+            doReturn(tk).when(userMapper).selectPasswordResetTokenByPrimaryKey(hashed);
+        }
+
+        @AfterEach
+        void tearDown() {
+            rnd.close();
+            time.close();
+        }
+
+        @Test
+        void resetPassword_tokenNotFound() {
+            doReturn(null).when(userMapper).selectPasswordResetTokenByPrimaryKey(hashed);
+            assertThatThrownBy(() -> authService.resetPassword(req))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        void resetPassword_emailMismatch() {
+            req.setEmail("test2@sample.com");
+            assertThatThrownBy(() -> authService.resetPassword(req))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        }
+        
+        static Stream<Arguments> provideTokenExpiryArguments(){
+            return Stream.of(
+                    Arguments.of(LocalDateTime.of(2025,7,2,10,40,0), false),
+                    Arguments.of(LocalDateTime.of(2025,7,2,10,42,5), false),
+                    Arguments.of(LocalDateTime.of(2025,7,2,10,44,2), true)
+                    );
+        }
+        
+        @ParameterizedTest
+        @MethodSource("provideTokenExpiryArguments")
+        void resetPassword_isExpired(LocalDateTime now, boolean expected) {
+            time.when(LocalDateTime::now).thenReturn(now);
+            
+            if (expected) {
+                assertThatThrownBy(() -> authService.resetPassword(req))
+                        .isInstanceOf(ResponseStatusException.class)
+                        .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+            } else {
+                assertThatCode(() -> authService.resetPassword(req))
+                .doesNotThrowAnyException();
+            }
+        }
+        
+        @Test
+        void resetPassword_success() {
+            
+            doReturn("encode").when(encoder).encode(anyString());
+            doReturn(1).when(userMapper).updatePassword(anyString(), anyString());
+            doReturn(1).when(userMapper).deletePasswordResetToken(anyString());
+            
+            authService.resetPassword(req);
+            
+            verify(encoder).encode("testpass");
+            verify(userMapper).updatePassword("test@sample.com", "encode");
+            verify(userMapper).deletePasswordResetToken(hashed);
+        }
+    }
 }

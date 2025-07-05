@@ -24,6 +24,7 @@ import com.example.enums.MailTemplate;
 import com.example.exception.BusinessException;
 import com.example.mapper.UserMapper;
 import com.example.request.PasswordResetMailRequest;
+import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.security.CustomUserDetails;
 import com.example.support.MailGateway;
@@ -34,7 +35,8 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService
+{
     /*    // TODO:
     ・メッセージをmessage.propertiesにまとめる
         有効期限切れ→「再送依頼ボタン」を同画面に置くと CS 工数減
@@ -43,6 +45,7 @@ public class AuthService {
         自動ログインにする
     ・パスワードリセットで、列挙攻撃対策としてパスワード送信時にトークンチェックする？
     ・メール送信のUtil作成したほうがよいかも
+    ・ユーザーが登録アドレス忘れた場合どうするか？
     */
     private final AuthenticationManager manager;
 
@@ -87,7 +90,7 @@ public class AuthService {
 
         String link = "http://localhost:8080/register/verify?token=" + token;
         mailGateway.send(MailTemplate.REGISTRATION.build(email, link, ttlMinutes));
-        }
+    }
 
     public PreRegistration verify(String token) {
         PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(token);
@@ -130,13 +133,31 @@ public class AuthService {
         userMapper.insertPasswordResetToken(new PasswordResetToken() {
             {
                 setTokenHash(RandomTokenUtil.hash(rawToken));
-                setUserId(user.getUserId());
+                setEmail(req.getEmail());
                 setExpiresAt(LocalDateTime.now().plusMinutes(expireMin));
             }
         });
 
+        String link = "http://localhost:8080/password-reset/form?token=" + rawToken;
+        mailGateway.send(MailTemplate.PASSWORD_RESET.build(req.getEmail(), link, expireMin));
     }
 
+    @Transactional
+    public void resetPassword(PasswordResetUpdateRequest req) {
+        String hashed = RandomTokenUtil.hash(req.getToken());
+        PasswordResetToken tk = userMapper
+                .selectPasswordResetTokenByPrimaryKey(hashed);
+        if (tk == null ||
+            LocalDateTime.now().isAfter(tk.getExpiresAt()) ||
+            !tk.getEmail().equals(req.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        userMapper.updatePassword(req.getEmail(), encoder.encode(req.getNewPassword()));
+        userMapper.deletePasswordResetToken(hashed);
+    }
+
+    
     private User toUserEntity(RegisterUserRequest r, String userId) {
         User u = new User();
         u.setUserId(userId);

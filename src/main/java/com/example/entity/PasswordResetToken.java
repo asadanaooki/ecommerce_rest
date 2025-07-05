@@ -9,7 +9,7 @@ public class PasswordResetToken {
 
     private String tokenHash;
     
-    private String userId;
+    private String email;
     
     private LocalDateTime expiresAt;
     

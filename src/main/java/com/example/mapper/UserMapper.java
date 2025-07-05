@@ -26,10 +26,10 @@ public interface UserMapper {
     
     PasswordResetToken selectPasswordResetTokenByPrimaryKey(String hash);
     
-    int deletePasswordResetToken(String hash);
+    int deletePasswordResetToken(String token);
     
     // TODO:
     // プロフィール編集クエリと統合する？
-    int updatePassword(String userId, String pw);
+    int updatePassword(String email, String pw);
 
 }

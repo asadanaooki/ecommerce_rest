@@ -160,12 +160,12 @@ CREATE TABLE review (
 
 CREATE TABLE password_reset_token (
   token_hash CHAR(64) NOT NULL,
-  user_id    CHAR(36) NOT NULL,
+  email    VARCHAR(255) NOT NULL,
   expires_at DATETIME   NOT NULL,
   created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (token_hash),
-  CONSTRAINT fk_password_reset_token_user    FOREIGN KEY (user_id)    REFERENCES `user`(user_id)
+  CONSTRAINT fk_password_reset_token_user    FOREIGN KEY (email)    REFERENCES `user`(email)
 );
 
 -- ======================

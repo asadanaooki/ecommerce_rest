@@ -25,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.service.AuthService;
 import com.example.service.CartService;
@@ -375,5 +376,70 @@ class AuthControllerTest {
             return objectMapper.writeValueAsString(m);
         }
 
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidPasswordResetArguments")
+    void request_parameter(String token, String email, String newPw, String confirmPw,
+            String expField, String expCode) throws JsonProcessingException, Exception {
+        PasswordResetUpdateRequest req = new PasswordResetUpdateRequest() {
+            {
+                setToken(token);
+                setEmail(email);
+                setNewPassword(newPw);
+                setConfirmPassword(confirmPw);
+            }
+        };
+
+        mockMvc.perform(post("/password-reset/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].field", hasItem(expField)))
+                .andExpect(jsonPath(String.format("$[?(@.field == '%s')].errorCode", expField),
+                        hasItem(expCode)));
+    }
+
+    static Stream<Arguments> provideInvalidPasswordResetArguments() {
+        String email255 = "a".repeat(64) + // ローカル部 64 文字（上限ぎりぎり）
+                "@" +
+                "b".repeat(63) + // ドメイン・ラベル 1   (63 文字)
+                "." +
+                "c".repeat(63) + // ドメイン・ラベル 2   (63 文字)
+                "." +
+                "d".repeat(62);
+        String token22 = "a".repeat(22);
+        return Stream.of(
+                // token
+                // @notBlank
+                Arguments.of("", email255, "testpass1", "testpass1", "token", "NotBlank"),
+                // @size
+                Arguments.of("a".repeat(21), email255, "testpass1", "testpass1", "token", "Size"),
+                Arguments.of(token22 + "b", email255, "testpass1", "testpass1", "token", "Size"),
+
+                // email
+                // @notBlank
+                Arguments.of(token22, "", "testpass1", "testpass1", "email", "NotBlank"),
+                // @size
+                Arguments.of(token22, email255 + "s", "testpass1", "testpass1", "email", "Size"),
+                // @email
+                Arguments.of(token22, "user@", "testpass1", "testpass1", "email", "Email"),
+
+                // newPassword
+                // @notBlank
+                Arguments.of(token22, email255, "", "testpass1", "newPassword", "NotBlank"),
+                // @size
+                Arguments.of(token22, email255, "1234567", "1234567", "newPassword", "Size"),
+                Arguments.of(token22, email255, "12345678901234567890a", "12345678901234567890a", "newPassword",
+                        "Size"),
+                // @pattern
+                Arguments.of(token22, email255, "123あい45678", "123あい45678", "newPassword", "Pattern"),
+
+                // confirmPassword
+                // @notBlank
+                Arguments.of(token22, email255, "testpass1", "", "confirmPassword", "NotBlank"),
+
+                // isMatch
+                Arguments.of(token22, email255, "testpass1", "testpass2", "match", "AssertTrue"));
     }
 }
