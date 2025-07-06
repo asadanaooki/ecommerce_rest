@@ -97,10 +97,62 @@
     where token_hash = #{token}
   </delete>
   
-  <update id="updatePassword">
+  <update id="updatePasswordByPrimaryKey">
     update `user`
-      set password_hash = #{pw}
+    set password_hash = #{pw}
+    where user_id = #{userId}
+  </update>
+  
+  <update id="updatePasswordByEmail">
+    update `user`
+    set password_hash = #{pw}
     where email = #{email}
   </update>
+  
+  <update id="saveEmailChangeRequest">
+    update `user`
+    set pending_email = #{newEmail},
+        email_token = #{token},
+        pending_expires_at = #{expiresAt}
+    where user_id = #{userId}
+  </update>
+  
+  <select id="selectUserByToken">
+    select *
+    from `user`
+    where email_token = #{token}
+  </select>
+  
+  <update id="confirmEmailChange">
+    update `user`
+    set email = pending_email,
+        pending_email = NULL,
+        email_token = NULL,
+        pending_expires_at = NULL
+    where email_token = #{token}
+  </update>
+  
+  <update id="updateProfile">
+    update `user`
+    set
+      last_name         = #{req.lastName},
+      first_name        = #{req.firstName},
+      last_name_kana    = #{req.lastNameKana},
+      first_name_kana   = #{req.firstNameKana},
+  
+      postal_code       = #{req.postalCode},
+      address_pref_city = #{req.addressPrefCity},
+      address_area      = #{req.addressArea},
+      address_block     = #{req.addressBlock},
+  
+      address_building = #{req.addressBuilding},
+      phone_number      = #{req.phoneNumber},
+      birthday          = #{req.birthday},
+      gender            = #{req.gender},
+      nickname = #{req.nickname}
+  
+    where user_id = #{userId}
+  </update>
+
   
 </mapper>

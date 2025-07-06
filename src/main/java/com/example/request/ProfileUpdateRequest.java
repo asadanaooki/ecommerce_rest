@@ -2,7 +2,6 @@ package com.example.request;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -16,24 +15,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor         // ← フレームワーク用デフォルトコンストラクタ
 @AllArgsConstructor
-public class RegisterUserRequest {
-
-    // ① トークン（22 桁固定の想定）
-    @NotBlank
-    @Size(min = 22, max = 22)
-    private String token;
-
-    // ② メールアドレス
-    @NotBlank
-    @Email
-    @Size(max = 255)
-    private String email;
-
-    // ③ パスワード（英数 8〜20 文字）
-    @NotBlank
-    @Size(min = 8, max = 20)
-    @Pattern(regexp = "^[a-zA-Z0-9]+$")
-    private String password;
+public class ProfileUpdateRequest {
+    // TODO:
+    // Mapperの引数までもっていくのやめたほうがよい？
 
     // ④ 氏名
     @NotBlank @Size(max = 50) private String lastName;
@@ -51,7 +35,7 @@ public class RegisterUserRequest {
     // ⑥ 郵便番号（7 桁）
     @NotBlank
     @Pattern(regexp = "^[0-9]{7}$")
-    private String postCode;
+    private String postalCode;
 
     // ⑦ 住所
     @NotBlank @Size(max = 100) private String addressPrefCity;
@@ -73,4 +57,7 @@ public class RegisterUserRequest {
     @NotBlank
     @Pattern(regexp = "^[MF]$")
     private String gender;
+    
+    @Size(min = 1, max = 15)
+    private String nickname;
 }

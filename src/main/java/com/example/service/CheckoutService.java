@@ -18,7 +18,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
-import com.example.exception.BusinessException;
+import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;

@@ -38,8 +38,9 @@ import com.example.entity.PasswordResetToken;
 import com.example.entity.PreRegistration;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
-import com.example.exception.BusinessException;
+import com.example.error.BusinessException;
 import com.example.mapper.UserMapper;
+import com.example.request.EmailChangeRequest;
 import com.example.request.PasswordResetMailRequest;
 import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
@@ -69,8 +70,8 @@ class AuthServiceTest {
 
     @MockitoBean
     MailGateway gateway;
-    
-    @MockitoBean
+
+    @MockitoSpyBean
     PasswordEncoder encoder;
 
     String email = "foo@example.com";
@@ -78,6 +79,8 @@ class AuthServiceTest {
     String fixedToken = "a".repeat(22);
 
     String hashed = RandomTokenUtil.hash(fixedToken);
+
+    LocalDateTime ld = LocalDateTime.of(2025, 7, 2, 10, 40, 5);
 
     @Nested
     class SendRegistrationUrl {
@@ -374,7 +377,7 @@ class AuthServiceTest {
 
         @BeforeEach
         void setup() {
-            LocalDateTime ld = LocalDateTime.of(2025, 7, 2, 10, 40, 5);
+
             req = new PasswordResetUpdateRequest() {
                 {
                     setToken(raw);
@@ -420,42 +423,113 @@ class AuthServiceTest {
                     .isInstanceOf(ResponseStatusException.class)
                     .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
         }
-        
-        static Stream<Arguments> provideTokenExpiryArguments(){
+
+        static Stream<Arguments> provideTokenExpiryArguments() {
             return Stream.of(
-                    Arguments.of(LocalDateTime.of(2025,7,2,10,40,0), false),
-                    Arguments.of(LocalDateTime.of(2025,7,2,10,42,5), false),
-                    Arguments.of(LocalDateTime.of(2025,7,2,10,44,2), true)
-                    );
+                    Arguments.of(LocalDateTime.of(2025, 7, 2, 10, 40, 0), false),
+                    Arguments.of(LocalDateTime.of(2025, 7, 2, 10, 42, 5), false),
+                    Arguments.of(LocalDateTime.of(2025, 7, 2, 10, 44, 2), true));
         }
-        
+
         @ParameterizedTest
         @MethodSource("provideTokenExpiryArguments")
         void resetPassword_isExpired(LocalDateTime now, boolean expected) {
             time.when(LocalDateTime::now).thenReturn(now);
-            
+
             if (expected) {
                 assertThatThrownBy(() -> authService.resetPassword(req))
                         .isInstanceOf(ResponseStatusException.class)
                         .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
             } else {
                 assertThatCode(() -> authService.resetPassword(req))
-                .doesNotThrowAnyException();
+                        .doesNotThrowAnyException();
             }
         }
-        
+
         @Test
         void resetPassword_success() {
-            
+
             doReturn("encode").when(encoder).encode(anyString());
-            doReturn(1).when(userMapper).updatePassword(anyString(), anyString());
+            doReturn(1).when(userMapper).updatePasswordByEmail(anyString(), anyString());
             doReturn(1).when(userMapper).deletePasswordResetToken(anyString());
-            
+
             authService.resetPassword(req);
-            
+
             verify(encoder).encode("testpass");
-            verify(userMapper).updatePassword("test@sample.com", "encode");
+            verify(userMapper).updatePasswordByEmail("test@sample.com", "encode");
             verify(userMapper).deletePasswordResetToken(hashed);
+        }
+    }
+
+    @Nested
+    class RequestEmailChange {
+        String userId = "550e8400-e29b-41d4-a716-446655440000";
+        EmailChangeRequest req;
+
+        @BeforeEach
+        void setup() {
+            req = new EmailChangeRequest() {
+                {
+                    setNewEmail("test@example.com");
+                    setConfirmEmail("test@example.com");
+                }
+            };
+        }
+
+        @Test
+        void requestEmailChange_sameEmail() {
+            req.setNewEmail("sample@example.com");
+            req.setConfirmEmail("sample@example.com");
+
+            assertThatThrownBy(() -> authService.requestEmailChange(userId, req))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.BAD_REQUEST)
+                    .hasFieldOrPropertyWithValue("errorCode", "EMAIL_SAME");
+        }
+
+        @Test
+        void requestEmailChange_emailAlreadyUsed() {
+            req.setNewEmail("bob2@example.com");
+            req.setConfirmEmail("bob2@example.com");
+
+            assertThatThrownBy(() -> authService.requestEmailChange(userId, req))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasFieldOrPropertyWithValue("status", HttpStatus.CONFLICT);
+        }
+
+        @Test
+        void requestEmailChange_success() {
+            try (
+                    MockedStatic<RandomTokenUtil> rnd = Mockito.mockStatic(RandomTokenUtil.class,
+                            Mockito.CALLS_REAL_METHODS);
+                    MockedStatic<LocalDateTime> time = Mockito.mockStatic(LocalDateTime.class,
+                            Mockito.CALLS_REAL_METHODS);) {
+                rnd.when(RandomTokenUtil::generate).thenReturn(fixedToken);
+                time.when(LocalDateTime::now).thenReturn(ld);
+
+                authService.requestEmailChange(userId, req);
+
+                User user = userMapper.selectUserByPrimaryKey(userId);
+                assertThat(user)
+                        .extracting(
+                                User::getPendingEmail,
+                                User::getEmailToken,
+                                User::getPendingExpiresAt)
+                        .containsExactly(
+                                "test@example.com",
+                                hashed,
+                                ld.plusMinutes(30));
+
+                verify(gateway).send(
+                        argThat(mail -> mail.subject().equals(MailTemplate.EMAIL_CHANGE_COMPLETE_NEW.getSubject())
+                                && mail.to().equals("test@example.com")
+                                && mail.body().contains(fixedToken)));
+
+                verify(gateway).send(
+                        argThat(mail -> mail.subject().equals(MailTemplate.EMAIL_CHANGE_ALERT_OLD.getSubject())
+                                && mail.to().equals("sample@example.com")
+                                && mail.body().contains("2025年07月02日 10時40分")));
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.dto.ReviewDto;
 import com.example.dto.ReviewPageDto;
 import com.example.entity.Review;
-import com.example.exception.BusinessException;
+import com.example.error.BusinessException;
 import com.example.mapper.ReviewMapper;
 import com.example.mapper.UserMapper;
 import com.example.request.ReviewPostRequest;

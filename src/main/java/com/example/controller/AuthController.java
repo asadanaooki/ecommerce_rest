@@ -7,22 +7,30 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.entity.PreRegistration;
+import com.example.error.FieldErrorInfo;
+import com.example.request.EmailChangeRequest;
 import com.example.request.LoginRequest;
+import com.example.request.PasswordChangeRequest;
 import com.example.request.PasswordResetMailRequest;
 import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.PreSignupRequest;
+import com.example.request.ProfileUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.response.VerifyTokenResponse;
 import com.example.service.AuthService;
@@ -32,6 +40,8 @@ import com.example.util.CookieUtil;
 
 import lombok.AllArgsConstructor;
 
+
+@Validated
 @RestController
 @AllArgsConstructor
 public class AuthController {
@@ -39,6 +49,7 @@ public class AuthController {
        ログアウトは一旦フロント破棄で行う。
        いずれはリフレッシュトークン＋短命アクセストークンにする
        ログイン方法が増えたら、SuccessHandler 使う方が良いかも
+       Rest視点でパス名どうするか？現状、動詞を含めてる
     */
     private final AuthService authService;
 
@@ -82,23 +93,14 @@ public class AuthController {
     @GetMapping("/register/verify")
     public VerifyTokenResponse verify(@RequestParam String token) {
         // TODO:
+        // tokenのバリデーションチェックする
         // Entity→Responseの詰め替えをコントローラで行ってよいものか？
         PreRegistration pr = authService.verify(token);
         return new VerifyTokenResponse(token, pr.getEmail());
     }
 
     @PostMapping("/register/complete")
-    public ResponseEntity<List<FieldErrorInfo>> register(@RequestBody @Valid RegisterUserRequest req,
-            BindingResult result) {
-        // TODO:
-        // 将来的に各フィールドfail-fastのバリデーションチェックにする
-        if (result.hasErrors()) {
-            List<FieldErrorInfo> errors = result.getFieldErrors().stream()
-                    .map(f -> new FieldErrorInfo(f.getField(),
-                            f.getCode()))
-                    .toList();
-            return ResponseEntity.badRequest().body(errors);
-        }
+    public ResponseEntity<List<FieldErrorInfo>> register(@RequestBody @Valid RegisterUserRequest req) {
         authService.register(req);
         return ResponseEntity.ok().build();
     }
@@ -111,23 +113,42 @@ public class AuthController {
     }
 
     @PostMapping("/password-reset/update")
-    public ResponseEntity<List<FieldErrorInfo>> request(@RequestBody @Valid PasswordResetUpdateRequest req,
-            BindingResult result) {
-        // TODO:
-        // 将来的に各フィールドfail-fastのバリデーションチェックにする
-        if (result.hasErrors()) {
-            List<FieldErrorInfo> errors = result.getFieldErrors().stream()
-                    .map(f -> new FieldErrorInfo(f.getField(),
-                            f.getCode()))
-                    .toList();
-            return ResponseEntity.badRequest().body(errors);
-        }
+    public ResponseEntity<List<FieldErrorInfo>> resetPassword(
+            @RequestBody @Valid PasswordResetUpdateRequest req) {
         authService.resetPassword(req);
 
         return ResponseEntity.ok().build();
     }
-    
 
-    public record FieldErrorInfo(String field, String errorCode) {}
+    @PostMapping("/profile/email-change/request")
+    public ResponseEntity<List<FieldErrorInfo>> reqeustEmailChange(@AuthenticationPrincipal String userId,
+            @RequestBody @Valid EmailChangeRequest req) {
+        authService.requestEmailChange(userId, req);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/profile/email-change/complete")
+    public ResponseEntity<Void> completeEmailChange(
+            @RequestParam @NotBlank @Size(min = 22, max = 22) String token) {
+        authService.completeEmailChange(token);
+
+        return ResponseEntity.ok().build();
+    }
+    
+    @PutMapping("/profile/password")
+    public ResponseEntity<Void> changePassword(@AuthenticationPrincipal String userId,
+            @RequestBody @Valid PasswordChangeRequest req) {
+        authService.changePassword(userId,req);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PutMapping("/profile")
+    public ResponseEntity<Void> updateProfile(@AuthenticationPrincipal String userId,
+            @RequestBody @Valid ProfileUpdateRequest req) {
+        authService.updateProfile(userId, req);
+        
+        return ResponseEntity.ok().build();
+    }
 
 }

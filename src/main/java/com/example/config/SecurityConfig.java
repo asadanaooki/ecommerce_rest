@@ -37,7 +37,13 @@ public class SecurityConfig {
                 .anonymous(a -> a.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/review/**").authenticated()
-                        .requestMatchers("/favorites/**", "/checkout/**", "/order-history/**").authenticated()
+                        .requestMatchers(
+                                "/favorites/**",
+                                "/checkout/**",
+                                "/order-history/**"
+                                ).authenticated()
+                        .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
+                        .requestMatchers("/profile/**").authenticated()
                         .anyRequest().permitAll());
 
         return http.build();

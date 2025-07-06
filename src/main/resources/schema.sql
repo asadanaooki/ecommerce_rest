@@ -41,6 +41,11 @@ CREATE TABLE `user` (
     birthday           DATE           NOT NULL,
     gender             CHAR(1)        NOT NULL,            -- M / F 
     nickname          VARCHAR(15),
+    
+    -- ===== メール変更 =====
+    pending_email       VARCHAR(255),
+    email_token         CHAR(64),
+    pending_expires_at    DATETIME,  -- TODO: カラム名リネームしたほうがわかりやすいかも
 
     -- ===== 監査 =====
     created_at         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,

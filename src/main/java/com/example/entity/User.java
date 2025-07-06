@@ -29,6 +29,10 @@ public class User {
     private LocalDate birthday;     // 生年月日
     private String     gender;      // M / F / U
     private String     nickname;
+    
+    private String pendingEmail;
+    private String emailToken;
+    private LocalDateTime pendingExpiresAt;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

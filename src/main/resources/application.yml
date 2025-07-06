@@ -44,6 +44,8 @@ settings:
     verification-ttl-min: 30
   reset:
     expire-minutes: 30
+  email-change:
+    expire-minutes: 30
   favorite:
     size: 2
   review:

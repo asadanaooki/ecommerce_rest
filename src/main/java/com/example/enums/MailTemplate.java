@@ -1,5 +1,7 @@
 package com.example.enums;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 import com.example.dto.CartDto;
@@ -61,24 +63,15 @@ public enum MailTemplate {
             NameAddress na = CheckoutService.buildNameAddress(user);
 
             /* ---------- 明細ブロック ---------- */
-            String itemsBlock = cart.getItems().stream()
-                    .map(i -> """
-                            %s
-                            数量 : %d
-                            価格 : ¥%,d
-                            小計 : ¥%,d
-                            """.formatted(i.getProductName(),
-                            i.getQty(),
-                            i.getPriceInc(),
-                            i.getSubtotal()))
+            String itemsBlock = cart.getItems().stream().map(i -> """
+                    %s
+                    数量 : %d
+                    価格 : ¥%,d
+                    小計 : ¥%,d
+                    """.formatted(i.getProductName(), i.getQty(), i.getPriceInc(), i.getSubtotal()))
                     .collect(Collectors.joining("\n"));
 
-            String body = getBody().formatted(
-                    na.fullName(),
-                    na.fullName(),
-                    na.fullAddress(),
-                    orderId,
-                    itemsBlock,
+            String body = getBody().formatted(na.fullName(), na.fullName(), na.fullAddress(), orderId, itemsBlock,
                     cart.getTotalPrice());
 
             return new EmailMessage(user.getEmail(), getSubject(), body);
@@ -104,6 +97,70 @@ public enum MailTemplate {
             long ttlMin = (Long) args[2];
 
             return new EmailMessage(to, getSubject(), getBody().formatted(link, ttlMin));
+        }
+    },
+
+    EMAIL_CHANGE_COMPLETE_NEW(
+            "【重要】新しいメールアドレスの確認をお願いします",
+            """
+                     ご登録メールアドレスの変更申請を受け付けました。下記URLから変更を確定してください。
+
+                     %s
+
+                     %d 分で無効になります。心当たりがない場合はこのメールを破棄してください。
+                    """) {
+
+        @Override
+        public EmailMessage build(Object... args) {
+            String to = (String) args[0];
+            String link = (String) args[1];
+            long ttl = (Long) args[2];
+
+            return new EmailMessage(to, getSubject(), getBody().formatted(link, ttl));
+        }
+
+    },
+
+    EMAIL_CHANGE_ALERT_OLD(
+            "メールアドレス変更が申請されました",
+            """
+                     ご登録メールアドレスの変更申請が行われました。
+
+                     変更日時 : %s
+
+                     心当たりがない場合は至急サポートまでご連絡ください。
+                    """) {
+        @Override
+        public EmailMessage build(Object... args) {
+            String to = (String) args[0];
+            LocalDateTime when = (LocalDateTime) args[1];
+
+            String body = getBody().formatted(
+                    when.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH時mm分")));
+
+            return new EmailMessage(to, getSubject(), body);
+        }
+
+    },
+
+    PROFILE_CHANGED(
+            "プロフィール情報が更新されました",
+            """
+                     プロフィール情報が更新されました。内容をご確認ください。　
+
+                     変更日時 : %s
+
+                     心当たりがない場合は至急サポートまでご連絡ください。
+                    """) {
+        @Override
+        public EmailMessage build(Object... args) {
+            String to = (String) args[0];
+            LocalDateTime when = (LocalDateTime) args[1];
+
+            String body = getBody().formatted(
+                    when.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH時mm分")));
+
+            return new EmailMessage(to, getSubject(), body);
         }
     };
 
