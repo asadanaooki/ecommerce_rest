@@ -6,11 +6,11 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class ApiResponse {
-    private final String errorCode;
+    private final String resultCode;
 
     Object data;
     
-    public ApiResponse(String errorCode) {
-        this.errorCode = errorCode;
+    public ApiResponse(String code) {
+        this.resultCode = code;
     }
 }

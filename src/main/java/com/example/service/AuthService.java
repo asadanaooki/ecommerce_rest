@@ -81,7 +81,10 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(username, password));
 
         CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
-        return new AuthResult(jwtUtil.issue(user.getUserId()), user.getUserId());
+        String authority = user.getAuthorities().iterator().next().getAuthority();
+        String role = authority.substring("ROLE_".length());
+        
+        return new AuthResult(jwtUtil.issue(user.getUserId(), role), user.getUserId());
     }
 
     @Transactional

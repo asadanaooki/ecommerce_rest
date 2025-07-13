@@ -11,21 +11,21 @@ import com.example.enums.SortType;
 
 @Mapper
 public interface ProductMapper {
-// TODO:
+    // TODO:
     // searchProductsで外部結合とサブクエリの速度比較
-    
+    // searchProductsをAND検索にする
+    // クエリでstatus = '1'を良い書き方にしたい
+
     Product selectByPrimaryKey(String productId);
-    
-    List<Product> selectAllByIds(List<String> productIds);
-    
+
     List<ProductCardDto> searchProducts(SearchCondition sc);
 
     int countProducts(List<String> keywords);
-    
+
     ProductDetailDto findProductDetail(String productId, String userId);
-    
+
     int decreaseStock(String productId, int qty);
-    
+
     record SearchCondition(String userId,
             List<String> keywords,
             SortType sort,

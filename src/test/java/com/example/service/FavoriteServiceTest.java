@@ -69,6 +69,9 @@ class FavoriteServiceTest {
 
             Product p2 = new Product();
             p2.setProductId("P-002");
+            p2.setProductName("商品A");
+            p2.setPrice(1000);          // 税込 1,100 になる想定
+            p2.setStatus("1");
             
             doReturn(3).when(favoriteMapper).countFavoritesByUser(userId);
             doReturn(List.of(p1, p2)).when(favoriteMapper)

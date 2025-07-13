@@ -1,5 +1,8 @@
 package com.example.service;
 
+import java.util.Collections;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +29,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getUserId(),
                 user.getEmail(),
                 user.getPasswordHash(),
-                null);
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+ user.getRole().name())));
     }
 }

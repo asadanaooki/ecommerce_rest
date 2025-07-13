@@ -42,6 +42,9 @@ CREATE TABLE `user` (
     gender             CHAR(1)        NOT NULL,            -- M / F 
     nickname          VARCHAR(15),
     
+    -- ===== ロール =====
+    role              VARCHAR(20)   NOT NULL DEFAULT 'USER',
+    
     -- ===== メール変更 =====
     pending_email       VARCHAR(255),
     email_token         CHAR(64),
@@ -58,10 +61,11 @@ CREATE TABLE `user` (
 -- product
 CREATE TABLE product (
     product_id          CHAR(36)       NOT NULL,
+    sku                 INT            NOT NULL  AUTO_INCREMENT UNIQUE,
     product_name        VARCHAR(100)   NOT NULL,
-    price               INT            NOT NULL,
-    product_description VARCHAR(1000)  NOT NULL,
-    stock               INT            NOT NULL,
+    price               INT,
+    product_description VARCHAR(1000),
+    stock               INT,
     status              CHAR(1)        NOT NULL,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

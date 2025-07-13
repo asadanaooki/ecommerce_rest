@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .addFilterAfter(jwtAuthFilter, SecurityContextHolderFilter.class)
                 .anonymous(a -> a.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/review/**").authenticated()
                         .requestMatchers(
                                 "/favorites/**",

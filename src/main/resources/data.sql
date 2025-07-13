@@ -14,7 +14,8 @@ INSERT INTO `user` (
     phone_number,
     birthday,
     gender,
-    nickname
+    nickname,
+    role
 ) VALUES
 -- 1件目 (sample)
 (
@@ -31,7 +32,8 @@ INSERT INTO `user` (
     '0312345678',
     '1990-04-15',
     'M',
-    'yamarou'
+    'yamarou',
+    'USER'
 ),
 -- 2件目 (bob2)
 (
@@ -48,7 +50,26 @@ INSERT INTO `user` (
     '01187654321',
     '1992-08-23',
     'F',
-    'sato'
+    'sato',
+    'USER'
+),
+-- 3件目 (ADMIN)
+(
+    '222e8400-e29b-41d4-a716-446655440222',
+    'admin@example.com',
+    '$2a$10$KhWFAYeUAWf2qX6h5XJrcuWMipwdwB5lCmDbfFJcURSpZKsj7AKk.', -- 'sample1234'
+    '管理',  '太郎',
+    'カンリ', 'タロウ',
+    '1000001',
+    '東京都千代田区',
+    '丸の内一丁目',
+    '1-1-1',
+    '東京駅ビル',
+    '0311112222',
+    '1985-12-01',
+    'M',
+    'kanri',
+    'ADMIN'
 );
 
 

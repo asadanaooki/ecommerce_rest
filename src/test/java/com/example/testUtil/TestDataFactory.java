@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.example.entity.CartItem;
+import com.example.entity.Product;
 import com.example.entity.Review;
 
 @Component
@@ -118,6 +119,38 @@ public class TestDataFactory {
             params.add(Timestamp.valueOf(r.getUpdatedAt()));
         }
         String sql = String.format("INSERT INTO review (%s) VALUES (%s)", cols, marks);
+        jdbcTemplate.update(sql, params.toArray());
+    }
+
+    public void createProduct(Product product) {
+        StringBuilder cols = new StringBuilder();
+        StringBuilder marks = new StringBuilder();
+        List<Object> params = new ArrayList<>();
+
+        // 必須カラム
+        cols.append("product_id, sku, product_name, product_description, price, stock, status");
+        marks.append("?, ?, ?, ?, ?, ?, ?");
+        params.add(product.getProductId());
+        params.add(product.getSku());
+        params.add(product.getProductName());
+        params.add(product.getProductDescription());
+        params.add(product.getPrice());
+        params.add(product.getStock());
+        params.add(product.getStatus());
+
+        // 任意カラム
+        if (product.getCreatedAt() != null) {
+            cols.append(", created_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(product.getCreatedAt()));
+        }
+        if (product.getUpdatedAt() != null) {
+            cols.append(", updated_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(product.getUpdatedAt()));
+        }
+
+        String sql = String.format("INSERT INTO product (%s) VALUES (%s)", cols, marks);
         jdbcTemplate.update(sql, params.toArray());
     }
 

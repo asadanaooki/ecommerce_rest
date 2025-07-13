@@ -3,6 +3,8 @@ package com.example.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.example.enums.Role;
+
 import lombok.Data;
 
 @Data
@@ -29,6 +31,8 @@ public class User {
     private LocalDate birthday;     // 生年月日
     private String     gender;      // M / F / U
     private String     nickname;
+    
+    private Role role;
     
     private String pendingEmail;
     private String emailToken;

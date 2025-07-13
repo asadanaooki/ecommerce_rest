@@ -24,7 +24,7 @@ public class ProductService {
      *     // TODO:
     ・総件数　XX件～XX件目表示を返す
     ・お気に入りフラグ取得するのに、JOINか2回にわけるか比較
-    ・毎回手動で税込み価格計算するか？
+    ・毎回手動で税込み価格計算するか？→ MapStruct検討
     ・カート追加時、別スレッドとの競合　 @Transactionalつけてない
     */
 

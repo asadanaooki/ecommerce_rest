@@ -50,3 +50,10 @@ settings:
     size: 2
   review:
     size: 2
+  
+  # 管理者系  
+  admin:
+    product:
+      size: 2
+      upload:
+        max-size: 5MB

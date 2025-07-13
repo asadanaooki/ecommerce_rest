@@ -6,19 +6,21 @@ import lombok.Data;
 
 @Data
 public class Product {
-    // TODO: 定数をこのクラスに定義するべきか→Enumがいいのか？
-    public static final String SALE_OFF = "0";
-    
-    public static final String SALE_ON = "1";
-
     private String productId;
+    
+    private int sku;
     
     private String productName;
     
-    private int price;
+    private String productDescription;
     
-    private int stock;
+    private Integer price;
     
+    private Integer stock;
+    
+    // TODO:
+    // ENUM型(SaleStatus)に変えたい
+    // 数値⇔ENUMのハンドラ必要かも
     private String status;
     
     private LocalDateTime createdAt;

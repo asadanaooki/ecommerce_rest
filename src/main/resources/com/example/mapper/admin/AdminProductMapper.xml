@@ -1,0 +1,102 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.admin.AdminProductMapper">
+
+  <select id="countProducts" resultType="int">
+    select count(*)
+    from product p
+    <where>
+      <if test="keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" open="(" separator="OR" close=")">
+          p.sku LIKE CONCAT('%', #{kw}, '%')
+          OR p.product_name LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+      <if test="minPrice != null">
+        AND p.price &gt;= #{minPrice}
+      </if>
+      <if test="maxPrice != null">
+        AND p.price &lt;= #{maxPrice}
+      </if>
+      <if test="minStock != null">
+        AND p.stock &gt;= #{minStock}
+      </if>
+      <if test="maxStock != null">
+        AND p.stock &lt;= #{maxStock}
+      </if>
+      <if test="createdFrom != null">
+        AND p.created_at &gt;= #{createdFrom} 
+      </if>
+      <if test="createdTo != null">
+        AND p.created_at &lt;= #{createdTo} 
+      </if>
+      <if test="updatedFrom != null">
+        AND p.updated_at &gt;= #{updatedFrom} 
+      </if>
+      <if test="updatedTo != null">
+        AND p.updated_at &lt;= #{updatedTo} 
+      </if>
+      <if test="status != null">
+        AND p.status = #{status.code}
+      </if>
+    </where>
+  </select>
+  
+  <select id="searchProducts" resultType="com.example.entity.Product">
+    select *
+    from product p
+    <where>
+      <if test="req.keywords != null and req.keywords.size() &gt; 0">
+        <foreach collection="req.keywords" item="kw" open="(" separator="OR" close=")">
+          p.sku LIKE CONCAT('%', #{kw}, '%')
+          OR p.product_name LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+      <if test="req.minPrice != null">
+        AND p.price &gt;= #{req.minPrice}
+      </if>
+      <if test="req.maxPrice != null">
+        AND p.price &lt;= #{req.maxPrice}
+      </if>
+      <if test="req.minStock != null">
+        AND p.stock &gt;= #{req.minStock}
+      </if>
+      <if test="req.maxStock != null">
+        AND p.stock &lt;= #{req.maxStock}
+      </if>
+      <if test="req.createdFrom != null">
+        AND p.created_at &gt;= #{req.createdFrom}
+      </if>
+      <if test="req.createdTo != null">
+        AND p.created_at &lt;= #{req.createdTo}
+      </if>
+      <if test="req.updatedFrom != null">
+        AND p.updated_at &gt;= #{req.updatedFrom}
+      </if>
+      <if test="req.updatedTo != null">
+        AND p.updated_at &lt;= #{req.updatedTo}
+      </if>
+      <if test="req.status != null">
+        AND p.status = #{req.status.code}
+      </if>
+    </where>
+    order by
+      ${req.sortField.field} ${req.sortOrder},
+      p.product_id ASC
+    limit #{limit}
+    offset #{offset}
+  </select>
+  
+  <insert id="insert">
+    INSERT INTO product
+      (product_id, product_name, price, product_description,
+       stock, status)
+    VALUES
+      (#{productId},
+       #{productName},
+       #{price},
+       #{productDescription},
+       #{stock},
+       #{status})
+  </insert>
+
+</mapper>

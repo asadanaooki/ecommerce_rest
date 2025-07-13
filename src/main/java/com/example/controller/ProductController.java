@@ -33,6 +33,7 @@ public class ProductController {
 ・パラメータ補正をtry-catchで行ってるが、パフォーマンス落ちるか？
 ・View作成するとき、DBからデータ取得するのか、Controllerで仮データを返すのか？
 ・サイズの追加
+・searchProductsで、フィルタリング追加する
     */
     private final ProductService productService;
     
@@ -44,6 +45,8 @@ public class ProductController {
             @RequestParam(defaultValue = "NEW") String sort,
             @RequestParam(required = false) String q,
             @AuthenticationPrincipal String userId) {
+        // TODO:
+        // DTOでパラメータ受け取るか検討
         SearchParam param = adjustSearchParam(page, sort, q);
         return productService.searchProducts(param.page, param.sort, param.keywords, userId);
     }
@@ -91,6 +94,8 @@ public class ProductController {
             sortType = SortType.NEW; // フォールバック
         }
 
+        // TODO:
+        // [\\s\\p{Zs}]を検討
         String raw = Optional.ofNullable(q).orElse("").trim();
         List<String> keywords = raw.isEmpty()
                 ? Collections.emptyList()

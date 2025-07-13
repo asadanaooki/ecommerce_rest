@@ -25,11 +25,12 @@ public class JwtUtil {
     private static final String SECRET = "myDevSecretKey1234567890_ABCDEFG";
   //  private static final long EXP = 15 * 60; // 秒（15 分）
 
-    public String issue(String subject) {
+    public String issue(String subject, String role) {
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(subject)
+                .claim("role", role)
                 .issuedAt(new Date(now))
 //                .expiration(new Date(now + EXP * 1000))
                 .signWith(key)
@@ -48,6 +49,11 @@ public class JwtUtil {
     public String subject(String token) {
         Jws<Claims> jws = parser().parseSignedClaims(token);
         return jws.getPayload().getSubject();
+    }
+    
+    public String role(String token) {
+        Jws<Claims> jws = parser().parseSignedClaims(token);
+        return jws.getPayload().get("role", String.class);
     }
 
     private JwtParser parser() {
