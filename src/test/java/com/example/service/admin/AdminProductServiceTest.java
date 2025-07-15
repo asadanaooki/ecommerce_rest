@@ -21,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
@@ -29,55 +28,60 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.converter.AdminProductConverter;
 import com.example.dto.admin.AdminProductDto;
 import com.example.dto.admin.AdminProductListDto;
 import com.example.entity.Product;
 import com.example.enums.SaleStatus;
 import com.example.mapper.admin.AdminProductMapper;
-import com.example.request.admin.ProductRegistrationRequest;
 import com.example.request.admin.ProductSearchRequest;
-import com.example.util.TaxCalculator;
+import com.example.request.admin.ProductUpsertRequest;
 
 @ExtendWith(MockitoExtension.class)
 class AdminProductServiceTest {
+    // TODO:
+    // converterを本物にするとテストできない、現状モック
 
     @InjectMocks
     AdminProductService adminProductService;
 
     @Mock
-    AdminProductMapper adminProductMapper;
+    AdminProductConverter adminProductConverter;
 
-    @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
+    @Mock
+    AdminProductMapper adminProductMapper;
 
     @TempDir
     Path imageDir;
 
     @Test
     void searchProducts() {
+//        TaxConverter tc = Mappers.getMapper(TaxConverter.class);
+//        ReflectionTestUtils.setField(tc, "taxCalculator", new TaxCalculator(10));
+//        ReflectionTestUtils.setField(adminProductConverter, "taxConverter",tc);
         ReflectionTestUtils.setField(adminProductService, "pageSize", 2);
         ProductSearchRequest req = new ProductSearchRequest();
 
-        Product p1 = new Product();
+        AdminProductDto p1 = new AdminProductDto();
         p1.setProductId("id-1");
         p1.setSku(1);
         p1.setProductName("Product One");
-        p1.setPrice(100);
+        p1.setPrice(110);
         p1.setStock(5);
-        p1.setStatus("0");
+        p1.setStatus(SaleStatus.UNPUBLISHED);
         p1.setUpdatedAt(LocalDateTime.of(2025, 7, 1, 12, 0));
 
-        Product p2 = new Product();
+        AdminProductDto p2 = new AdminProductDto();
         p2.setProductId("id-2");
         p2.setSku(2);
         p2.setProductName("Product Two");
-        p2.setPrice(200);
+        p2.setPrice(220);
         p2.setStock(10);
-        p2.setStatus("1");
+        p2.setStatus(SaleStatus.PUBLISHED);
         p2.setUpdatedAt(LocalDateTime.of(2025, 7, 2, 15, 30));
 
         doReturn(2).when(adminProductMapper).countProducts(req);
-        doReturn(List.of(p1, p2)).when(adminProductMapper).searchProducts(any(), anyInt(), anyInt());
+        doReturn(List.of(p1, p2)).when(adminProductConverter).toDtoList(anyList());
 
         AdminProductListDto res = adminProductService.searchProducts(req);
 
@@ -105,14 +109,14 @@ class AdminProductServiceTest {
 
     @Nested
     class Create {
-        ProductRegistrationRequest req;
+        ProductUpsertRequest req;
 
         @BeforeEach
         void setup() throws IOException {
             ReflectionTestUtils.setField(adminProductService, "maxSize", DataSize.ofKilobytes(128));
             ReflectionTestUtils.setField(adminProductService, "IMAGE_DIR", imageDir);
 
-            req = new ProductRegistrationRequest();
+            req = new ProductUpsertRequest();
             req.setProductName("test");
             req.setProductDescription("testDesc");
             req.setPrice(100);
@@ -133,14 +137,16 @@ class AdminProductServiceTest {
             req.setImage(null);
             adminProductService.create(req);
 
-            verify(adminProductMapper).insert(any(Product.class));
+            verify(adminProductConverter).toEntity(anyString(), any());
+            verify(adminProductMapper).insert(any());
         }
 
         @Test
         void create_withImage_success() throws IOException {
             adminProductService.create(req);
 
-            verify(adminProductMapper).insert(any(Product.class));
+            verify(adminProductConverter).toEntity(anyString(), any());
+            verify(adminProductMapper).insert(any());
             assertThat(Files.list(imageDir)).hasSize(1);
         }
 
@@ -173,7 +179,7 @@ class AdminProductServiceTest {
         @Test
         void create_resizeTooLarge() throws IOException {
             ReflectionTestUtils.setField(adminProductService, "maxSize", DataSize.ofBytes(1));
-            
+
             BufferedImage img = new BufferedImage(50, 50, BufferedImage.TYPE_INT_RGB);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(img, "png", baos);
@@ -181,7 +187,7 @@ class AdminProductServiceTest {
 
             MockMultipartFile file = new MockMultipartFile("image", "large.png", "image/png", pngBytes);
             MockMultipartFile spyFile = spy(file);
-            doReturn((long)1).when(spyFile).getSize();
+            doReturn((long) 1).when(spyFile).getSize();
             req.setImage(spyFile);
 
             assertThatThrownBy(() -> adminProductService.create(req))

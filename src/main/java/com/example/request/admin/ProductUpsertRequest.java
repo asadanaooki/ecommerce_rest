@@ -14,7 +14,7 @@ import com.example.enums.SaleStatus;
 import lombok.Data;
 
 @Data
-public class ProductRegistrationRequest {
+public class ProductUpsertRequest {
 
     @NotBlank
     @Size(max = 100)
@@ -37,6 +37,8 @@ public class ProductRegistrationRequest {
     
     @AssertTrue
     private boolean isValidForPublish() {
+        // TODO:
+        // status増えたら != にしたほうがよいかも
         if (status == SaleStatus.UNPUBLISHED) {
             return true;
         }

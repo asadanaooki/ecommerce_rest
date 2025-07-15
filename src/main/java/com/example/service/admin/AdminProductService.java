@@ -3,6 +3,7 @@ package com.example.service.admin;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,15 +19,13 @@ import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.converter.AdminProductConverter;
 import com.example.dto.admin.AdminProductDto;
 import com.example.dto.admin.AdminProductListDto;
-import com.example.entity.Product;
-import com.example.enums.SaleStatus;
 import com.example.mapper.admin.AdminProductMapper;
-import com.example.request.admin.ProductRegistrationRequest;
 import com.example.request.admin.ProductSearchRequest;
+import com.example.request.admin.ProductUpsertRequest;
 import com.example.util.PaginationUtil;
-import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
 import net.coobird.thumbnailator.Thumbnails;
@@ -38,100 +37,100 @@ public class AdminProductService {
     // 毎回countsメソッド呼ぶのか？
     // throwsで画像エラー回避してるが、フロントに500で返り何のエラーかわからん。ここどうするか検討
     // 拡張子チェックは、軽量チェックにしている。バイナリまで見た方がよりよい
+    // 同時編集時、後から更新しようとした内容がすでに変更されていたら、通知するほうがよいかも
 
     private final AdminProductMapper adminProductMapper;
-    
-    private final TaxCalculator calculator;
-    
+
+    private final AdminProductConverter adminProductConverter;
+
     @Value("${settings.admin.product.size}")
     private int pageSize;
-    
+
     @Value("${settings.admin.product.upload.max-size}")
     private DataSize maxSize;
-    
+
     private final Set<String> ALLOWED_MIME = Set.of("image/jpeg", "image/png");
-    
+
     // TODO:
     // 仮の保存先
-    private final Path IMAGE_DIR = Paths.get( "C:/pleiades/2024-06/ecommerce/ecommerce_rest/src/main/resources/static/images");
-    
+    private final Path IMAGE_DIR = Paths
+            .get("C:/pleiades/2024-06/ecommerce/ecommerce_rest/src/main/resources/static/images");
+
     public AdminProductListDto searchProducts(ProductSearchRequest req) {
         int total = adminProductMapper.countProducts(req);
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
-        
-        List<AdminProductDto> items = adminProductMapper.searchProducts(req, pageSize, offset)
-                .stream()
-                .map(e -> {
-                    AdminProductDto dto = new AdminProductDto();
-                    dto.setProductId(e.getProductId());
-                    dto.setSku(e.getSku());
-                    dto.setProductName(e.getProductName());
-                    dto.setPrice(calculator.calculatePriceIncludingTax(e.getPrice()));
-                    dto.setStock(e.getStock());
-                    dto.setStatus(SaleStatus.fromCode(e.getStatus()));
-                    dto.setUpdatedAt(e.getUpdatedAt());
-                    return dto;
-                }).toList();
-        
+
+        List<AdminProductDto> items = adminProductConverter.toDtoList(
+                adminProductMapper.searchProducts(req, pageSize, offset));
+
         return new AdminProductListDto(items, total, pageSize);
     }
-    
+
     @Transactional
-    public void create(ProductRegistrationRequest req) throws IOException {
-        MultipartFile img = req.getImage();
-        IMageData data = null;
-        
-        if (img != null) {
-            data = preprocessImage(img);
-        }
-        
+    public void create(ProductUpsertRequest req) {
+        IMageData data = preprocessImage(req.getImage());
         String productId = UUID.randomUUID().toString();
-        
-        Product product = new Product() {
-            {
-                setProductId(productId);
-                setProductName(req.getProductName());
-                setPrice(req.getPrice());
-                setProductDescription(req.getProductDescription());
-                setStock(req.getStock());
-                setStatus(req.getStatus().getCode());
-            }
-        };
-        adminProductMapper.insert(product);
-        
+
+        adminProductMapper.insert(adminProductConverter.toEntity(productId, req));
+
         if (data != null) {
-            Files.createDirectories(IMAGE_DIR);
-            Path out = IMAGE_DIR.resolve(productId + "." + data.ext());
-            Files.write(out, data.bytes());
+            saveImage(productId, data);
         }
     }
-    
-    private IMageData preprocessImage(MultipartFile file) throws IOException {
+
+    @Transactional
+    public void update(String productId, ProductUpsertRequest req) {
+        IMageData data = preprocessImage(req.getImage());
+
+        adminProductMapper.update(adminProductConverter.toEntity(productId, req));
+
+        if (data != null) {
+            saveImage(productId, data);
+        }
+    }
+
+    private IMageData preprocessImage(MultipartFile file) {
+        if (file == null) {
+            return null;
+        }
         if (file.getSize() > maxSize.toBytes()) {
             throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE);
         }
-        
+
         if (!ALLOWED_MIME.contains(file.getContentType())) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
         }
-        
+
         String ext = file.getContentType().equals("image/png") ? "png" : "jpg";
-        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try(InputStream in = file.getInputStream()){
+        try (InputStream in = file.getInputStream()) {
             Thumbnails.of(in)
-            .size(1200, 1200)
-            .outputFormat(ext)
-            .toOutputStream(baos);
+                    .size(1200, 1200)
+                    .outputFormat(ext)
+                    .toOutputStream(baos);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        
+
         byte[] data = baos.toByteArray();
         if (data.length > maxSize.toBytes()) {
             throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE);
         }
-        
+
         return new IMageData(data, ext);
     }
-    
-    private record IMageData(byte[] bytes, String ext) {}
+
+    private void saveImage(String productId, IMageData data) {
+        try {
+            Files.createDirectories(IMAGE_DIR);
+            Path out = IMAGE_DIR.resolve(productId + "." + data.ext());
+            Files.write(out, data.bytes());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private record IMageData(byte[] bytes, String ext) {
+    }
 }

@@ -15,4 +15,6 @@ public interface AdminProductMapper {
     List<Product> searchProducts(ProductSearchRequest req, int limit, int offset);
     
     int insert(Product p);
+    
+    int update(Product p);
 }

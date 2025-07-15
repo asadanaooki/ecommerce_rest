@@ -98,5 +98,16 @@
        #{stock},
        #{status})
   </insert>
+  
+  <update id="update">
+    update product
+    set
+      product_name        = #{productName},
+      price               = #{price},
+      product_description = #{productDescription},
+      stock               = #{stock},
+      status              = #{status}
+    WHERE product_id = #{productId}
+  </update>
 
 </mapper>

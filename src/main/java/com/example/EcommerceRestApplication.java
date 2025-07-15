@@ -10,6 +10,8 @@ public class EcommerceRestApplication {
       テストとかじゃなく、自分で軽く確認するとき
       PC１端末での利用を一旦前提。別タブからの操作は考慮する
       ServiceでWeb層のStatusException呼んでおり、疎結合になっていない。規模拡大とともにリファクタ必要かも
+      Mybatis plus導入する
+      MapperはEntityを返すほうがよいかも
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");
