@@ -36,7 +36,7 @@
         AND p.updated_at &lt;= #{updatedTo} 
       </if>
       <if test="status != null">
-        AND p.status = #{status.code}
+        AND p.status = #{status}
       </if>
     </where>
   </select>
@@ -76,11 +76,11 @@
         AND p.updated_at &lt;= #{req.updatedTo}
       </if>
       <if test="req.status != null">
-        AND p.status = #{req.status.code}
+        AND p.status = #{req.status}
       </if>
     </where>
     order by
-      ${req.sortField.field} ${req.sortOrder},
+      ${req.sortField.field} ${req.sortDirection},
       p.product_id ASC
     limit #{limit}
     offset #{offset}

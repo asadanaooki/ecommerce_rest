@@ -21,8 +21,6 @@ public interface CheckoutMapper {
       
       Order selectOrderByPrimaryKey(String orderId);
       
-
-      
       int insertOrderHeader(Order header);
       
       int insertOrderItems(List<OrderItem> items);

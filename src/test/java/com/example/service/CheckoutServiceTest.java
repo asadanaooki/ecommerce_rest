@@ -29,6 +29,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.CheckoutMapper;
@@ -319,7 +320,7 @@ class CheckoutServiceTest {
                         {
                             setProductId("D-001");
                             setProductName("販売停止品");
-                            setStatus("0"); // DISCONTINUED
+                            setStatus(SaleStatus.UNPUBLISHED); // DISCONTINUED
                             setStock(10);
                             setQty(1);
                             setPriceEx(100);
@@ -331,7 +332,7 @@ class CheckoutServiceTest {
                         {
                             setProductId("O-002");
                             setProductName("在庫切れ品");
-                            setStatus("1");
+                            setStatus(SaleStatus.PUBLISHED);
                             setStock(0);
                             setQty(1); // stock <= 0
                             setPriceEx(200);
@@ -343,7 +344,7 @@ class CheckoutServiceTest {
                         {
                             setProductId("L-003");
                             setProductName("在庫不足品");
-                            setStatus("1");
+                            setStatus(SaleStatus.PUBLISHED);
                             setStock(1);
                             setQty(3); // stock < qty
                             setPriceEx(120);
@@ -355,7 +356,7 @@ class CheckoutServiceTest {
                         {
                             setProductId("P-004");
                             setProductName("価格改定品");
-                            setStatus("1");
+                            setStatus(SaleStatus.PUBLISHED);
                             setStock(5);
                             setQty(1);
                             setPriceEx(150);
@@ -401,7 +402,7 @@ class CheckoutServiceTest {
                         { // 通常品1
                             setProductId("N-001");
                             setProductName("通常品1");
-                            setStatus("1");
+                            setStatus(SaleStatus.PUBLISHED);
                             setStock(10);
                             setQty(2);
                             setPriceEx(200);
@@ -412,7 +413,7 @@ class CheckoutServiceTest {
                         { // 通常品2
                             setProductId("N-002");
                             setProductName("通常品2");
-                            setStatus("1");
+                            setStatus(SaleStatus.PUBLISHED);
                             setStock(5);
                             setQty(1);
                             setPriceEx(100);

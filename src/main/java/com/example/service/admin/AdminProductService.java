@@ -20,8 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.converter.AdminProductConverter;
+import com.example.dto.admin.AdminProductDetailDto;
 import com.example.dto.admin.AdminProductDto;
 import com.example.dto.admin.AdminProductListDto;
+import com.example.entity.Product;
+import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminProductMapper;
 import com.example.request.admin.ProductSearchRequest;
 import com.example.request.admin.ProductUpsertRequest;
@@ -38,8 +41,11 @@ public class AdminProductService {
     // throwsで画像エラー回避してるが、フロントに500で返り何のエラーかわからん。ここどうするか検討
     // 拡張子チェックは、軽量チェックにしている。バイナリまで見た方がよりよい
     // 同時編集時、後から更新しようとした内容がすでに変更されていたら、通知するほうがよいかも
+    // 商品詳細画面で、レビューも出す。
 
     private final AdminProductMapper adminProductMapper;
+    
+    private final ProductMapper productMapper;
 
     private final AdminProductConverter adminProductConverter;
 
@@ -64,6 +70,14 @@ public class AdminProductService {
                 adminProductMapper.searchProducts(req, pageSize, offset));
 
         return new AdminProductListDto(items, total, pageSize);
+    }
+    
+    public AdminProductDetailDto findDetail(String productId) {
+        Product product = productMapper.selectByPrimaryKey(productId);
+        if (product == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return adminProductConverter.toDetailDto(product);
     }
 
     @Transactional

@@ -2,6 +2,9 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 
+import com.example.enums.PaymentStatus;
+import com.example.enums.ShippingStatus;
+
 import lombok.Data;
 
 /**
@@ -12,6 +15,8 @@ public class Order {
 
     /** orders.order_id */
     private String orderId;
+    
+    private int orderNumber;
 
     /** orders.user_id */
     private String userId;
@@ -30,7 +35,11 @@ public class Order {
 
     /** 合計金額（税込）（orders.total_price） */
     private int totalPrice;
-
+    
+    private ShippingStatus shippingStatus;
+    
+    private PaymentStatus paymentStatus;
+    
     /** 作成日時（orders.created_at） */
     private LocalDateTime createdAt;
 

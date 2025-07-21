@@ -1,6 +1,6 @@
 package com.example.enums;
 
-public enum SortOrder {
+public enum SortDirection {
     ASC,
     DESC;
 }

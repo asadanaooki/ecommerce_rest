@@ -49,6 +49,7 @@ class OrderHistoryServiceTest {
             // ── ① ヘッダ 2 件（order-a は 1 商品、order-b は 2 商品） ──
             Order headerA = new Order();
             headerA.setOrderId("order-a");
+            headerA.setOrderNumber(1);
             headerA.setUserId(userId);
             headerA.setName("山田 太郎");
             headerA.setPostalCode("1500000");
@@ -58,6 +59,7 @@ class OrderHistoryServiceTest {
 
             Order headerB = new Order();
             headerB.setOrderId("order-b");
+            headerB.setOrderNumber(3);
             headerB.setUserId(userId);
             headerB.setName("山田 花子");
             headerB.setPostalCode("1500001");
@@ -99,6 +101,7 @@ class OrderHistoryServiceTest {
 
             assertThat(result).hasSize(2).extracting(
                     OrderHistoryDto::getOrderId,
+                    OrderHistoryDto::getOrderNumber,
                     OrderHistoryDto::getOrderedAt,
                     OrderHistoryDto::getTotalPrice,
                     OrderHistoryDto::getName,
@@ -108,6 +111,7 @@ class OrderHistoryServiceTest {
                     .containsExactly(
                             tuple(
                                     "order-a",
+                                    "0001",
                                     LocalDate.of(2025, 6, 29),
                                     1000,
                                     "山田 太郎",
@@ -116,6 +120,7 @@ class OrderHistoryServiceTest {
                                     1),
                             tuple(
                                     "order-b",
+                                    "0003",
                                     LocalDate.of(2025, 4, 28),
                                     5000,
                                     "山田 花子",

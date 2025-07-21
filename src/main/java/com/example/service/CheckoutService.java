@@ -18,6 +18,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.CheckoutMapper;
@@ -40,6 +41,7 @@ public class CheckoutService {
     ・sendCheckoutCompleteMailの引数多い、今後どうする？
     ・支払方法増やす。希望日時や送り先変更も。
     ・diffリストを別に返す方が良いかも
+    ・送料・手数料導入
     */
 
     private final UserMapper userMapper;
@@ -132,10 +134,11 @@ public class CheckoutService {
         CartDto cart = CartService.buildCart(items, calculator);
         User user = userMapper.selectUserByPrimaryKey(userId);
         // 注文確定処理
-        finalizeOrder(orderId, user, cart);
+        int orderNumber = finalizeOrder(orderId, user, cart);
 
         // TODO:メール送信 仮実装
-        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, cart, orderId));
+        // 管理者にも通知する
+        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, cart, orderNumber));
     }
 
     /**
@@ -144,7 +147,7 @@ public class CheckoutService {
      */
     private boolean hasDiff(List<CartItemDto> items) {
         for (CartItemDto it : items) {
-            if (it.getStatus().equals("0")) {
+            if (it.getStatus() == SaleStatus.UNPUBLISHED) {
                 it.setReason(CartItemDto.DiffReason.DISCONTINUED);
             } else if (it.getStock() == null || it.getStock() <= 0) {
                 it.setReason(CartItemDto.DiffReason.OUT_OF_STOCK);
@@ -157,14 +160,14 @@ public class CheckoutService {
         return items.stream().anyMatch(i -> i.getReason() != null);
     }
 
-    private void finalizeOrder(String orderId, User user, CartDto cart) {
+    private int finalizeOrder(String orderId, User user, CartDto cart) {
         NameAddress na = buildNameAddress(user);
 
         /* ---------- 在庫減算 ---------- */
         cart.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty()));
 
         /* ---------- 注文ヘッダ ---------- */
-        checkoutMapper.insertOrderHeader(new Order() {
+        Order order = new Order() {
             {
                 setOrderId(orderId);
                 setUserId(user.getUserId()); // ← ユーザ ID は user から
@@ -174,7 +177,8 @@ public class CheckoutService {
                 setTotalQty(cart.getTotalQty());
                 setTotalPrice(cart.getTotalPrice());
             }
-        });
+        };
+        checkoutMapper.insertOrderHeader(order);
 
         /* ---------- 注文明細 ---------- */
         List<OrderItem> orderItems = cart.getItems().stream()
@@ -194,6 +198,8 @@ public class CheckoutService {
 
         // カート削除
         cartMapper.deleteCart(orderId);
+        
+        return order.getOrderNumber();
     }
 
     public static NameAddress buildNameAddress(User user) {

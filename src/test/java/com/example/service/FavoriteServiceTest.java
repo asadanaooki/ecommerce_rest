@@ -65,13 +65,13 @@ class FavoriteServiceTest {
             p1.setProductId("P-001");
             p1.setProductName("商品A");
             p1.setPrice(1000); // 税込 1,100 になる想定
-            p1.setStatus("1");
+            p1.setStatus(SaleStatus.PUBLISHED);
 
             Product p2 = new Product();
             p2.setProductId("P-002");
             p2.setProductName("商品A");
             p2.setPrice(1000); // 税込 1,100 になる想定
-            p2.setStatus("1");
+            p2.setStatus(SaleStatus.PUBLISHED);
 
             FavoritePageDto.FavoriteRow r1 = new FavoritePageDto.FavoriteRow();
             r1.setProductId("P-001");

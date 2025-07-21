@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.example.entity.CartItem;
+import com.example.entity.Order;
 import com.example.entity.Product;
 import com.example.entity.Review;
 
@@ -136,7 +137,7 @@ public class TestDataFactory {
         params.add(product.getProductDescription());
         params.add(product.getPrice());
         params.add(product.getStock());
-        params.add(product.getStatus());
+        params.add(product.getStatus().name());
 
         // 任意カラム
         if (product.getCreatedAt() != null) {
@@ -151,6 +152,54 @@ public class TestDataFactory {
         }
 
         String sql = String.format("INSERT INTO product (%s) VALUES (%s)", cols, marks);
+        jdbcTemplate.update(sql, params.toArray());
+    }
+
+    public void createOrder(Order order) {
+        // まず必須のカラムをセット
+        StringBuilder cols = new StringBuilder(
+                "order_id, user_id, name, postal_code, address, total_qty, total_price");
+        StringBuilder marks = new StringBuilder(
+                "?, ?, ?, ?, ?, ?, ?");
+        List<Object> params = new ArrayList<>(List.of(
+                order.getOrderId(),
+                order.getUserId(),
+                order.getName(),
+                order.getPostalCode(),
+                order.getAddress(),
+                order.getTotalQty(),
+                order.getTotalPrice()));
+        
+        if (order.getOrderNumber() > 0) {
+            cols.append(", order_number");
+            marks.append(", ?");
+            params.add(order.getOrderNumber());
+        }
+
+        // shipping_status が設定されていれば追加
+        if (order.getShippingStatus() != null) {
+            cols.append(", shipping_status");
+            marks.append(", ?");
+            params.add(order.getShippingStatus().name());
+        }
+        // payment_status が設定されていれば追加
+        if (order.getPaymentStatus() != null) {
+            cols.append(", payment_status");
+            marks.append(", ?");
+            params.add(order.getPaymentStatus().name());
+        }
+
+        // created_at と updated_at は必ず指定
+        cols.append(", created_at, updated_at");
+        marks.append(", ?, ?");
+        params.add(Timestamp.valueOf(order.getCreatedAt()));
+        params.add(Timestamp.valueOf(order.getUpdatedAt()));
+
+        // バッククオートで table 名を囲む点に注意
+        String sql = String.format(
+                "INSERT INTO `order` (%s) VALUES (%s)",
+                cols.toString(),
+                marks.toString());
         jdbcTemplate.update(sql, params.toArray());
     }
 

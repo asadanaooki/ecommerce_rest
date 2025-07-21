@@ -9,6 +9,9 @@ import java.util.stream.IntStream;
  * ページネーション計算用ユーティリティクラス
  */
 public class PaginationUtil {
+    // TODO:
+    // Mybatis plusのページネーション使いたい。また、毎回Pageオブジェクト生成するのやめたい
+    
     private PaginationUtil() {
     }
 

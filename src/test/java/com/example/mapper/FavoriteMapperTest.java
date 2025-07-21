@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 
 import com.example.entity.Favorite;
 import com.example.entity.Product;
+import com.example.enums.SaleStatus;
 import com.example.util.PaginationUtil;
 
 @MybatisTest
@@ -82,7 +83,7 @@ class FavoriteMapperTest {
                     .containsExactly("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68",
                             "Item19",
                             750,
-                            "1");
+                            SaleStatus.PUBLISHED);
             assertThat(list.get(1).getProductId()).isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
 
         }

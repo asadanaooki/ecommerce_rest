@@ -17,10 +17,14 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class OrderHistoryService {
     /* TODO:
+     * キャンセル機能
     ・注文履歴で、取得時order byできない。日時カラムの値がinsert時全て同じになるから。
     　できればカートと同じ順序で出したいが。
     ・注文履歴表示をN回ループで実装してる。パフォーマンス計測。別方法検討
     ・注文履歴で、全件表示、全明細表示にしてるが、今後変えた方が良いかも
+    ・Converter使う方がよいかも
+    ・SKU表示を検討
+    ・N+１回避のため、JOIN ＋ MyBatis resultMapを検討
     */
     
     private final OrderHistoryMapper orderHistoryMapper;
@@ -42,6 +46,7 @@ public class OrderHistoryService {
             result.add(new OrderHistoryDto() {
                 {
                     setOrderId(o.getOrderId());
+                    setOrderNumber(String.format("%04d", o.getOrderNumber()));
                     setOrderedAt(o.getCreatedAt().toLocalDate());
                     setTotalPrice(o.getTotalPrice());
                     setName(o.getName());

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.dto.admin.AdminProductDetailDto;
 import com.example.dto.admin.AdminProductListDto;
 import com.example.request.admin.ProductSearchRequest;
 import com.example.request.admin.ProductUpsertRequest;
@@ -29,6 +30,13 @@ public class AdminProductController {
     @GetMapping
     public ResponseEntity<AdminProductListDto> searchProducts(@Valid ProductSearchRequest req) {
         AdminProductListDto dto = adminProductService.searchProducts(req);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<AdminProductDetailDto> getDetail(@PathVariable String productId) {
+        AdminProductDetailDto dto = adminProductService.findDetail(productId);
 
         return ResponseEntity.ok(dto);
     }

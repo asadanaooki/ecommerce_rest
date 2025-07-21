@@ -29,7 +29,7 @@ public class User {
     private String phoneNumber;     // 0始まり 10-11 桁
 
     private LocalDate birthday;     // 生年月日
-    private String     gender;      // M / F / U
+    private String     gender;      // M / F
     private String     nickname;
     
     private Role role;

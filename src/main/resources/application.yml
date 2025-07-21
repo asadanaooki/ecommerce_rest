@@ -57,3 +57,6 @@ settings:
       size: 2
       upload:
         max-size: 5MB
+        
+    order:
+      size: 2

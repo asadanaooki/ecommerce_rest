@@ -9,6 +9,8 @@ import lombok.Data;
 public class OrderHistoryDto {
 
     private String orderId;
+    
+    private String orderNumber;
 
     private LocalDate orderedAt;
 

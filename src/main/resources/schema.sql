@@ -66,7 +66,7 @@ CREATE TABLE product (
     price               INT,
     product_description VARCHAR(1000),
     stock               INT,
-    status              CHAR(1)        NOT NULL,
+    status              VARCHAR(20)    NOT NULL,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (product_id)
@@ -75,7 +75,7 @@ CREATE TABLE product (
 -- favorite
 CREATE TABLE favorite (
     user_id             CHAR(36)       NOT NULL,
-    product_id          CHAR(36)   NOT NULL,
+    product_id          CHAR(36)       NOT NULL,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, product_id),
@@ -124,13 +124,16 @@ CREATE TABLE pre_registration (
 );
 
 CREATE TABLE `order` (
-  order_id          CHAR(36)        NOT NULL,
+  order_id          CHAR(36)       NOT NULL,
+  order_number      INT            NOT NULL AUTO_INCREMENT UNIQUE,
   user_id           CHAR(36)        NOT NULL,
   name              VARCHAR(100)    NOT NULL,
   postal_code       CHAR(7)         NOT NULL,
   address           VARCHAR(400)    NOT NULL,
   total_qty         INT             NOT NULL,
   total_price       INT             NOT NULL,
+  shipping_status   VARCHAR(20)     NOT NULL DEFAULT 'NOT_SHIPPED',
+  payment_status    VARCHAR(20)     NOT NULL DEFAULT 'UNPAID',
   created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (order_id),
@@ -139,7 +142,7 @@ CREATE TABLE `order` (
 );
 
 CREATE TABLE order_item (
-  order_id          CHAR(36)        NOT NULL,
+  order_id          CHAR(36)       NOT NULL,
   product_id        CHAR(36)        NOT NULL,
   product_name      VARCHAR(100)   NOT NULL,
   qty               INT             NOT NULL,

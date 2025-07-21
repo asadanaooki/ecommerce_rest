@@ -58,7 +58,7 @@ public enum MailTemplate {
         public EmailMessage build(Object... args) {
             User user = (User) args[0];
             CartDto cart = (CartDto) args[1];
-            String orderId = (String) args[2];
+            int orderNumber = (int) args[2];
 
             NameAddress na = CheckoutService.buildNameAddress(user);
 
@@ -71,7 +71,12 @@ public enum MailTemplate {
                     """.formatted(i.getProductName(), i.getQty(), i.getPriceInc(), i.getSubtotal()))
                     .collect(Collectors.joining("\n"));
 
-            String body = getBody().formatted(na.fullName(), na.fullName(), na.fullAddress(), orderId, itemsBlock,
+            String body = getBody().formatted(
+                    na.fullName(),
+                    na.fullName(),
+                    na.fullAddress(),
+                    String.format("%04d", orderNumber),
+                    itemsBlock,
                     cart.getTotalPrice());
 
             return new EmailMessage(user.getEmail(), getSubject(), body);

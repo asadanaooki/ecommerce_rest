@@ -15,6 +15,9 @@ import com.example.dto.CartItemDto;
 import com.example.entity.CartItem;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
+import com.example.enums.PaymentStatus;
+import com.example.enums.SaleStatus;
+import com.example.enums.ShippingStatus;
 import com.example.testUtil.TestDataFactory;
 
 @MybatisTest
@@ -96,7 +99,7 @@ class CheckoutMapperTest {
                 3300,
                 null,
                 0,
-                "1",
+                SaleStatus.PUBLISHED,
                 15,
                 null
                 );
@@ -116,6 +119,7 @@ class CheckoutMapperTest {
         int row = checkoutMapper.insertOrderHeader(order);
         
         assertThat(row).isOne();
+        assertThat(order.getOrderNumber()).isOne();
         Order saved = checkoutMapper.selectOrderByPrimaryKey(cartId);
         
         assertThat(saved).extracting(
@@ -125,7 +129,9 @@ class CheckoutMapperTest {
                 Order::getPostalCode,
                 Order::getAddress,
                 Order::getTotalQty,
-                Order::getTotalPrice
+                Order::getTotalPrice,
+                Order::getShippingStatus,
+                Order::getPaymentStatus
                 )
         .containsExactly(
                 cartId,
@@ -134,7 +140,9 @@ class CheckoutMapperTest {
                 "1500041",
                 "東京都渋谷区神南1-1-1",
                 3,
-                9600
+                9600,
+                ShippingStatus.NOT_SHIPPED,
+                PaymentStatus.UNPAID
                 );
     }
     

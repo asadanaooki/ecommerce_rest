@@ -22,9 +22,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 import com.example.entity.Product;
+import com.example.enums.ProductSortField;
 import com.example.enums.SaleStatus;
-import com.example.enums.SortFIeld;
-import com.example.enums.SortOrder;
+import com.example.enums.SortDirection;
 import com.example.request.admin.ProductSearchRequest;
 import com.example.testUtil.TestDataFactory;
 
@@ -58,8 +58,8 @@ class AdminProductMapperTest {
 
             ProductSearchRequest req = new ProductSearchRequest() {
                 {
-                    setSortFIeld(SortFIeld.UPDATED_AT);
-                    setSortOrder(SortOrder.DESC);
+                    setSortFIeld(ProductSortField.UPDATED_AT);
+                    setSortDirection(SortDirection.DESC);
                 }
             };
             customizeReq.accept(req);
@@ -73,7 +73,7 @@ class AdminProductMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {
                                 p.setProductName("テスト");
-                                p.setStatus("1");
+                                p.setStatus(SaleStatus.PUBLISHED);
                             })),
                             (Consumer<ProductSearchRequest>) r -> {
                             },
@@ -130,7 +130,8 @@ class AdminProductMapperTest {
                             1),
                     // status
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStatus("0"))),
+                            (Consumer<TestDataFactory>) f -> f
+                                    .createProduct(buildProduct(p -> p.setStatus(SaleStatus.UNPUBLISHED))),
                             (Consumer<ProductSearchRequest>) r -> r.setStatus(SaleStatus.PUBLISHED),
                             1),
 
@@ -193,8 +194,8 @@ class AdminProductMapperTest {
 
             ProductSearchRequest req = new ProductSearchRequest() {
                 {
-                    setSortFIeld(SortFIeld.UPDATED_AT);
-                    setSortOrder(SortOrder.DESC);
+                    setSortFIeld(ProductSortField.UPDATED_AT);
+                    setSortDirection(SortDirection.DESC);
                 }
             };
             customizeReq.accept(req);
@@ -232,48 +233,48 @@ class AdminProductMapperTest {
 
         @Test
         void searchProducts_withFilter() {
-            factory.createProduct(buildProduct(p ->{
+            factory.createProduct(buildProduct(p -> {
                 p.setProductName("aaa");
-                p.setStatus("0");
+                p.setStatus(SaleStatus.UNPUBLISHED);
             }));
             factory.createProduct(buildProduct(p -> p.setProductName("えおい")));
-            
+
             ProductSearchRequest req = new ProductSearchRequest();
             req.setStatus(SaleStatus.PUBLISHED);
-            req.setSortFIeld(SortFIeld.NAME);
-            req.setSortOrder(SortOrder.DESC);
-            
+            req.setSortFIeld(ProductSortField.NAME);
+            req.setSortDirection(SortDirection.DESC);
+
             List<Product> results = adminProductMapper.searchProducts(req, limit, 0);
-            
+
             assertThat(results).hasSize(limit)
-            .extracting(Product::getProductName)
-            .containsExactly("えおい","BaseItem");
+                    .extracting(Product::getProductName)
+                    .containsExactly("えおい", "BaseItem");
         }
-        
+
         @Test
         void searchProducts_noFilter() {
             factory.createProduct(buildProduct(p -> {
                 p.setProductId("5083a5da-4ab0-4000-a390-68c94fc58052");
                 p.setProductName("test");
                 p.setPrice(200);
-                p.setStatus("0");
+                p.setStatus(SaleStatus.UNPUBLISHED);
             }));
             factory.createProduct(buildProduct(p -> {
                 p.setProductId("c32d16ad-2e69-47bf-bc85-933169754fcd");
                 p.setProductName("test2");
                 p.setPrice(200);
-                p.setStatus("1");
+                p.setStatus(SaleStatus.PUBLISHED);
             }));
-            
+
             ProductSearchRequest req = new ProductSearchRequest();
-            req.setSortFIeld(SortFIeld.PRICE);
-            req.setSortOrder(SortOrder.ASC);
-            
+            req.setSortFIeld(ProductSortField.PRICE);
+            req.setSortDirection(SortDirection.ASC);
+
             List<Product> results = adminProductMapper.searchProducts(req, limit, 0);
-            
+
             assertThat(results).hasSize(limit)
-            .extracting(Product::getProductId)
-            .containsExactly("5083a5da-4ab0-4000-a390-68c94fc58052","c32d16ad-2e69-47bf-bc85-933169754fcd");
+                    .extracting(Product::getProductId)
+                    .containsExactly("5083a5da-4ab0-4000-a390-68c94fc58052", "c32d16ad-2e69-47bf-bc85-933169754fcd");
         }
     }
 
@@ -284,7 +285,7 @@ class AdminProductMapperTest {
         p.setProductDescription("desc");
         p.setPrice(1000);
         p.setStock(100);
-        p.setStatus("1");
+        p.setStatus(SaleStatus.PUBLISHED);
         p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
         p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 10, 40, 5));
         customizer.accept(p);

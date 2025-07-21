@@ -11,8 +11,8 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 
 import com.example.enums.SaleStatus;
-import com.example.enums.SortFIeld;
-import com.example.enums.SortOrder;
+import com.example.enums.ProductSortField;
+import com.example.enums.SortDirection;
 
 import lombok.Data;
 
@@ -22,7 +22,8 @@ public class ProductSearchRequest {
     // qの最大文字数定義したほうがよいかも？長い文字列でどれくらいパフォーマンス影響するか検証する
     // 現状日付のフィルターだが、時刻のフィルタリングまで必要か検討
     // 日付のSetterでNULLチェックしてない、管理画面で変な操作しないだろうという前提
-    // Enumのパラメータはパースできなければ、フォールバックしたい。現状エラーになる
+    // Enumのパラメータはパースできなければ、フォールバックしたい。現状エラーになる。
+    // また、フォールバック処理を他の部分でも使用するなら共通化する？
     // 未設定項目を抽出できるようにする。現状、未設定はフィルター外
 
     private String q;
@@ -47,9 +48,9 @@ public class ProductSearchRequest {
     
     private SaleStatus status;
     
-    private SortFIeld sortFIeld = SortFIeld.UPDATED_AT;
+    private ProductSortField sortFIeld = ProductSortField.UPDATED_AT;
     
-    private SortOrder sortOrder = SortOrder.DESC;
+    private SortDirection sortDirection = SortDirection.DESC;
     
     @Min(1)
     private int page = 1;
@@ -88,6 +89,7 @@ public class ProductSearchRequest {
         // 同日含めるため、以下のような書き方してる
         return !updatedFrom.isAfter(updatedTo);
     }
+    
     
     public void setCreatedFrom(LocalDate date) {
         createdFrom = date.atStartOfDay();

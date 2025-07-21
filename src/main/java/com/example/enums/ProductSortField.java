@@ -3,7 +3,7 @@ package com.example.enums;
 import lombok.Getter;
 
 @Getter
-public enum SortFIeld {
+public enum ProductSortField {
     NAME("product_name"),
     PRICE("price"),
     CREATED_AT("created_at"),
@@ -12,7 +12,7 @@ public enum SortFIeld {
     
     private final String field;
     
-    private SortFIeld(String field) {
+    private ProductSortField(String field) {
         this.field = field;
     }
 }

@@ -2,6 +2,8 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 
+import com.example.enums.SaleStatus;
+
 import lombok.Data;
 
 @Data
@@ -17,11 +19,8 @@ public class Product {
     private Integer price;
     
     private Integer stock;
-    
-    // TODO:
-    // ENUM型(SaleStatus)に変えたい
-    // 数値⇔ENUMのハンドラ必要かも
-    private String status;
+
+    private SaleStatus status;
     
     private LocalDateTime createdAt;
     

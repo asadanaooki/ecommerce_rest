@@ -1,5 +1,6 @@
 package com.example.dto;
 
+import com.example.enums.SaleStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +11,7 @@ import lombok.Data;
 public class CartItemDto {
     // TODO:
     // 色々アノテーションついててごちゃごちゃしてる。分けた方が良いかも
+    // SKU表示するほうがよい？
 
     /* ---------- 基本情報 ---------- */
 
@@ -33,7 +35,7 @@ public class CartItemDto {
 
     /* ---------- 販売状況 ---------- */
     @JsonIgnore
-    private String status;
+    private SaleStatus status;
     //    
     /* ---------- 在庫系 ---------- */
     @JsonIgnore
