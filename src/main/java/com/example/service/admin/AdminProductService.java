@@ -87,6 +87,8 @@ public class AdminProductService {
 
         adminProductMapper.insert(adminProductConverter.toEntity(productId, req));
 
+        // TODO:
+        // 画像削除の場合に対応してない
         if (data != null) {
             saveImage(productId, data);
         }

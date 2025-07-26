@@ -2,9 +2,11 @@ package com.example.enums;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.example.dto.CartDto;
+import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.service.CheckoutService;
 import com.example.service.CheckoutService.NameAddress;
@@ -13,6 +15,8 @@ import lombok.Getter;
 
 @Getter
 public enum MailTemplate {
+    // TODO:
+    // 明細部分の処理共通化する？共通のクラスを受け取って共通の処理する？
 
     REGISTRATION(
             "会員登録のご案内",
@@ -167,6 +171,57 @@ public enum MailTemplate {
 
             return new EmailMessage(to, getSubject(), body);
         }
+    },
+
+    ORDER_EDIT_COMPLETED(
+            "ご注文内容を更新しました",
+            """
+                    %s様、注文内容の変更を承りました。
+
+                    【お届け先】
+                     %s
+                     %s
+
+                    【注文番号】
+                     %s
+
+                    【変更後のご注文内容】
+                     %s
+
+                    --- 合計欄 ---
+                    変更後合計金額 : ¥%,d
+                        """) {
+        @Override
+        public EmailMessage build(Object... args) {
+            User u = (User) args[0];
+            int orderNumber = (int) args[1];
+            List<OrderItem> items = (List<OrderItem>) args[2];
+
+            NameAddress na = CheckoutService.buildNameAddress(u);
+            String itemsBlock = items.stream()
+                    .map(i -> """
+                            %s
+                            数量 : %d
+                            価格 : ¥%,d
+                            小計 : ¥%,d
+                            """.formatted(
+                            i.getProductName(),
+                            i.getQty(),
+                            i.getPrice(),
+                            i.getSubtotal()))
+                    .collect(Collectors.joining("\n"));
+
+            String body = getBody().formatted(
+                    na.fullName(),
+                    na.fullName(),
+                    na.fullAddress(),
+                    String.format("%04d", orderNumber),
+                    itemsBlock,
+                    items.stream().mapToInt(OrderItem::getSubtotal).sum());
+            
+            return new EmailMessage(u.getEmail(), getSubject(), body);
+        }
+
     };
 
     private final String subject;

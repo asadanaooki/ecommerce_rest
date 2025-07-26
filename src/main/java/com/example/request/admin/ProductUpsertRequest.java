@@ -32,6 +32,8 @@ public class ProductUpsertRequest {
     @NotNull
     private SaleStatus status;
 
+    // TODO:
+    // NULLを削除マークにしない。そもそも、現状削除処理実装されてない
     private MultipartFile image;
 
     

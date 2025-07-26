@@ -104,4 +104,63 @@
     where order_id = #{orderId}
   </update>
 
+  <select id="selectOrderForUpdate" resultType="com.example.entity.Order">
+    select *
+    from `order`
+    where order_id = #{orderId}
+    for update
+  </select>
+  
+  <select id="selectOrderItemsForUpdate" resultType="com.example.entity.OrderItem">
+    select *
+    from order_item
+    where order_id = #{orderId}
+    for update
+  </select>
+  
+  <select id="selectProductsForUpdate" resultType="com.example.entity.Product">
+    select *
+    from product
+    where product_id in
+    <foreach collection="productIds" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    for update
+  </select>
+  
+  <update id="updateItemQty">
+    update order_item
+    set qty = #{qty},
+        subtotal = #{subtotal}
+    where order_id = #{orderId}
+      and product_id = #{productId}
+  </update>
+  
+  <update id="addStock">
+    update product
+    set stock = stock + #{qty}
+    where product_id = #{productId}
+  </update>
+  
+  <update id="updateTotals">
+    update `order` o
+    join (
+      select order_id, sum(qty) as sum_qty, sum(subtotal) as sum_price
+      from order_item
+      where order_id = #{orderId}
+    ) oi on o.order_id = oi.order_id
+    set
+      o.total_qty = oi.sum_qty,
+      o.total_price = oi.sum_price
+    where o.order_id = #{orderId}
+  </update>
+  
+  <delete id="deleteOrderItem">
+    delete from order_item
+    where order_id = #{orderId}
+      and product_id = #{productId}
+  </delete>
+  
+  
+
 </mapper>

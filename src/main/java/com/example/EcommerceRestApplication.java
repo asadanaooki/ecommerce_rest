@@ -12,6 +12,8 @@ public class EcommerceRestApplication {
       ServiceでWeb層のStatusException呼んでおり、疎結合になっていない。規模拡大とともにリファクタ必要かも
       Mybatis plus導入する
       MapperはEntityを返すほうがよいかも
+      Mapperに定義してるクエリを、ドメインごとに整理する
+      ログ実装
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

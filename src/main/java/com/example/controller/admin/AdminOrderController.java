@@ -14,6 +14,7 @@ import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderListDto;
 import com.example.enums.PaymentStatus;
 import com.example.enums.ShippingStatus;
+import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.service.admin.AdminOrderService;
 
@@ -53,6 +54,13 @@ public class AdminOrderController {
             @RequestBody PaymentStatus status) {
         adminOrderService.changePaymentStatus(orderId, status);
 
+        return ResponseEntity.ok().build();
+    }
+    
+    @PatchMapping("/{orderId}/edit")
+    public ResponseEntity<Void> edit(@PathVariable String orderId, @Valid @RequestBody OrderEditRequest req){
+        adminOrderService.editOrder(orderId, req);
+        
         return ResponseEntity.ok().build();
     }
 

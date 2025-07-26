@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -22,8 +23,10 @@ import org.springframework.test.context.jdbc.Sql;
 
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.entity.Order;
+import com.example.entity.OrderItem;
 import com.example.enums.PaymentStatus;
 import com.example.enums.ShippingStatus;
+import com.example.mapper.CheckoutMapper;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.testUtil.TestDataFactory;
 
@@ -39,8 +42,10 @@ class AdminOrderMapperTest {
     AdminOrderMapper adminOrderMapper;
 
     @Autowired
-    TestDataFactory factory;
+    CheckoutMapper checkoutMapper;
 
+    @Autowired
+    TestDataFactory factory;
 
     @Nested
     class Count {
@@ -49,7 +54,7 @@ class AdminOrderMapperTest {
             factory.createOrder(buildOrder(o -> {
             }));
         }
-        
+
         @ParameterizedTest
         @MethodSource("provideSingleFilterAndBoundaryCases")
         void count_singleFilterAndBoundary(Consumer<TestDataFactory> insertMismatch,
@@ -188,9 +193,9 @@ class AdminOrderMapperTest {
             o.setOrderId(orderId);
             o.setOrderNumber(200);
         }));
-        
+
         AdminOrderDetailDto dto = adminOrderMapper.selectOrderHeader(orderId);
-        
+
         assertThat(dto).extracting(
                 AdminOrderDetailDto::getOrderId,
                 AdminOrderDetailDto::getOrderNumber,
@@ -198,35 +203,77 @@ class AdminOrderMapperTest {
                 AdminOrderDetailDto::getShippingStatus,
                 AdminOrderDetailDto::getPaymentStatus,
                 AdminOrderDetailDto::getCreatedAt,
-                
+
                 AdminOrderDetailDto::getItems,
-                
+
                 AdminOrderDetailDto::getName,
                 AdminOrderDetailDto::getNameKana,
                 AdminOrderDetailDto::getEmail,
                 AdminOrderDetailDto::getPostalCode,
                 AdminOrderDetailDto::getAddress,
-                AdminOrderDetailDto::getPhoneNumber
-                )
-        .containsExactly(
-                orderId,
-                "0200",
-                3000,
-                ShippingStatus.NOT_SHIPPED,
-                PaymentStatus.UNPAID,
-                LocalDateTime.of(2020, 1, 1, 10, 3, 4),
-                
-                null,
-                
-                "山田 太郎",
-                "ヤマダ タロウ",
-                "sample@example.com",
-                "1500041",
-                "test",
-                "0312345678"
-                );
+                AdminOrderDetailDto::getPhoneNumber)
+                .containsExactly(
+                        orderId,
+                        "0200",
+                        3000,
+                        ShippingStatus.NOT_SHIPPED,
+                        PaymentStatus.UNPAID,
+                        LocalDateTime.of(2020, 1, 1, 10, 3, 4),
+
+                        null,
+
+                        "山田 太郎",
+                        "ヤマダ タロウ",
+                        "sample@example.com",
+                        "1500041",
+                        "test",
+                        "0312345678");
     }
-    
+
+    @Test
+    void updateTotals() {
+        String orderId = "a12f3e45-6789-4abc-de01-23456789abcd";
+        factory.createOrder(buildOrder(o -> {
+            o.setOrderId(orderId);
+        }));
+        checkoutMapper.insertOrderItems(List.of(new OrderItem() {
+            {
+                setOrderId(orderId);
+                setProductId("97113c2c-719a-490c-9979-144d92905c33");
+                setProductName("test");
+                setQty(2);
+                setPrice(1000);
+                setSubtotal(2000);
+            }
+        }));
+        checkoutMapper.insertOrderItems(List.of(new OrderItem() {
+            {
+                setOrderId(orderId);
+                setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
+                setProductName("test2");
+                setQty(1);
+                setPrice(1000);
+                setSubtotal(1000);
+            }
+        }));
+
+        adminOrderMapper.updateItemQty(new OrderItem() {
+            {
+                setOrderId(orderId);
+                setProductId("97113c2c-719a-490c-9979-144d92905c33");
+                setQty(1);
+                setSubtotal(1000);
+            }
+        });
+
+        adminOrderMapper.updateTotals(orderId);
+        Order order = checkoutMapper.selectOrderByPrimaryKey(orderId);
+        
+        assertThat(order.getTotalQty()).isEqualTo(2);
+        assertThat(order.getTotalPrice()).isEqualTo(2000);
+
+    }
+
     static Order buildOrder(Consumer<Order> customizer) {
         Order o = new Order();
         o.setOrderId(UUID.randomUUID().toString());
