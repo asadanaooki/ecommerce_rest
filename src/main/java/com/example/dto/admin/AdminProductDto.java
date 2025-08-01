@@ -22,7 +22,7 @@ public class AdminProductDto {
     private int price;
 
     /** 在庫数 */
-    private int stock;
+    private int available;
 
     /** 公開ステータス */
     private SaleStatus status;

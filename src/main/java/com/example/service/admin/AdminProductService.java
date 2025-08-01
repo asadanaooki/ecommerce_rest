@@ -23,7 +23,7 @@ import com.example.converter.AdminProductConverter;
 import com.example.dto.admin.AdminProductDetailDto;
 import com.example.dto.admin.AdminProductDto;
 import com.example.dto.admin.AdminProductListDto;
-import com.example.entity.Product;
+import com.example.entity.view.ProductCoreView;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminProductMapper;
 import com.example.request.admin.ProductSearchRequest;
@@ -41,7 +41,9 @@ public class AdminProductService {
     // throwsで画像エラー回避してるが、フロントに500で返り何のエラーかわからん。ここどうするか検討
     // 拡張子チェックは、軽量チェックにしている。バイナリまで見た方がよりよい
     // 同時編集時、後から更新しようとした内容がすでに変更されていたら、通知するほうがよいかも
-    // 商品詳細画面で、レビューも出す。
+    // 商品詳細画面で、レビューも出す？
+    // 税抜きで価格表示
+    
 
     private final AdminProductMapper adminProductMapper;
     
@@ -73,7 +75,7 @@ public class AdminProductService {
     }
     
     public AdminProductDetailDto findDetail(String productId) {
-        Product product = productMapper.selectByPrimaryKey(productId);
+        ProductCoreView product = productMapper.selectViewByPrimaryKey(productId);
         if (product == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -84,8 +86,9 @@ public class AdminProductService {
     public void create(ProductUpsertRequest req) {
         IMageData data = preprocessImage(req.getImage());
         String productId = UUID.randomUUID().toString();
+       var entity= adminProductConverter.toEntity(productId, req);
 
-        adminProductMapper.insert(adminProductConverter.toEntity(productId, req));
+        adminProductMapper.insert(entity);
 
         // TODO:
         // 画像削除の場合に対応してない

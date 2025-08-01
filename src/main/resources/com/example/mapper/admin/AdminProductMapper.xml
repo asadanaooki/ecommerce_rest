@@ -3,7 +3,7 @@
 
   <select id="countProducts" resultType="int">
     select count(*)
-    from product p
+    from vw_product_core p
     <where>
       <if test="keywords.size() &gt; 0">
         <foreach collection="keywords" item="kw" open="(" separator="OR" close=")">
@@ -17,11 +17,11 @@
       <if test="maxPrice != null">
         AND p.price &lt;= #{maxPrice}
       </if>
-      <if test="minStock != null">
-        AND p.stock &gt;= #{minStock}
+      <if test="minAvailable != null">
+        AND p.available &gt;= #{minAvailable}
       </if>
-      <if test="maxStock != null">
-        AND p.stock &lt;= #{maxStock}
+      <if test="maxAvailable != null">
+        AND p.available &lt;= #{maxAvailable}
       </if>
       <if test="createdFrom != null">
         AND p.created_at &gt;= #{createdFrom} 
@@ -41,9 +41,9 @@
     </where>
   </select>
   
-  <select id="searchProducts" resultType="com.example.entity.Product">
+  <select id="searchProducts" resultType="com.example.entity.view.ProductCoreView">
     select *
-    from product p
+    from vw_product_core p
     <where>
       <if test="req.keywords != null and req.keywords.size() &gt; 0">
         <foreach collection="req.keywords" item="kw" open="(" separator="OR" close=")">
@@ -57,11 +57,11 @@
       <if test="req.maxPrice != null">
         AND p.price &lt;= #{req.maxPrice}
       </if>
-      <if test="req.minStock != null">
-        AND p.stock &gt;= #{req.minStock}
+      <if test="req.minAvailable != null">
+        AND p.available &gt;= #{req.minAvailable}
       </if>
-      <if test="req.maxStock != null">
-        AND p.stock &lt;= #{req.maxStock}
+      <if test="req.maxAvailable != null">
+        AND p.available &lt;= #{req.maxAvailable}
       </if>
       <if test="req.createdFrom != null">
         AND p.created_at &gt;= #{req.createdFrom}
@@ -88,14 +88,12 @@
   
   <insert id="insert">
     INSERT INTO product
-      (product_id, product_name, price, product_description,
-       stock, status)
+      (product_id, product_name, price, product_description,　status)
     VALUES
       (#{productId},
        #{productName},
        #{price},
        #{productDescription},
-       #{stock},
        #{status})
   </insert>
   
@@ -105,7 +103,6 @@
       product_name        = #{productName},
       price               = #{price},
       product_description = #{productDescription},
-      stock               = #{stock},
       status              = #{status}
     WHERE product_id = #{productId}
   </update>

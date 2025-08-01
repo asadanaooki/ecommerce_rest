@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
 import com.example.entity.Product;
+import com.example.entity.view.ProductCoreView;
 import com.example.enums.ProductSortField;
 import com.example.enums.SaleStatus;
 import com.example.enums.SortDirection;
@@ -97,12 +98,12 @@ class AdminProductMapperTest {
                     // minStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(50))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinStock(70),
+                            (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(70),
                             1),
                     // maxStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(200))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxStock(150),
+                            (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(150),
                             1),
                     // createdFrom
                     Arguments.of(
@@ -149,12 +150,12 @@ class AdminProductMapperTest {
                     // minStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(99))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinStock(100),
+                            (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(100),
                             1),
                     // maxStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(101))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxStock(100),
+                            (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(100),
                             1),
                     // createdFrom
                     Arguments.of(
@@ -244,10 +245,10 @@ class AdminProductMapperTest {
             req.setSortFIeld(ProductSortField.NAME);
             req.setSortDirection(SortDirection.DESC);
 
-            List<Product> results = adminProductMapper.searchProducts(req, limit, 0);
+            List<ProductCoreView> results = adminProductMapper.searchProducts(req, limit, 0);
 
             assertThat(results).hasSize(limit)
-                    .extracting(Product::getProductName)
+                    .extracting(ProductCoreView::getProductName)
                     .containsExactly("えおい", "BaseItem");
         }
 
@@ -270,10 +271,10 @@ class AdminProductMapperTest {
             req.setSortFIeld(ProductSortField.PRICE);
             req.setSortDirection(SortDirection.ASC);
 
-            List<Product> results = adminProductMapper.searchProducts(req, limit, 0);
+            List<ProductCoreView> results = adminProductMapper.searchProducts(req, limit, 0);
 
             assertThat(results).hasSize(limit)
-                    .extracting(Product::getProductId)
+                    .extracting(ProductCoreView::getProductId)
                     .containsExactly("5083a5da-4ab0-4000-a390-68c94fc58052", "c32d16ad-2e69-47bf-bc85-933169754fcd");
         }
     }

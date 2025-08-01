@@ -1,4 +1,4 @@
-package com.example.entity;
+package com.example.entity.view;
 
 import java.time.LocalDateTime;
 
@@ -7,10 +7,11 @@ import com.example.enums.SaleStatus;
 import lombok.Data;
 
 @Data
-public class Product {
-    private String productId;
+public class ProductCoreView {
+
+private String productId;
     
-    private int sku;
+    private String sku;
     
     private String productName;
     
@@ -21,6 +22,8 @@ public class Product {
     private Integer stock;
     
     private Integer reserved;
+    
+    private Integer available;
 
     private SaleStatus status;
     

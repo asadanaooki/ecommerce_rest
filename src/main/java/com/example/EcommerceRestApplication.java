@@ -14,6 +14,9 @@ public class EcommerceRestApplication {
       MapperはEntityを返すほうがよいかも
       Mapperに定義してるクエリを、ドメインごとに整理する
       ログ実装
+      データベースに設定テーブル作る　動的に変更するため
+      DBのCheck制約をどれだけ付与するか
+      クラウドを見据えて、UTCに統一するか？
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

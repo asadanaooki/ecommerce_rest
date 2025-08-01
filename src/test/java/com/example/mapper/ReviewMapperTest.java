@@ -186,7 +186,7 @@ class ReviewMapperTest {
         
         @Test
         void hasPurchased_false() {
-            assertThat(reviewMapper.hasPurchased(userId, "09d5a43a-d24c-41c7-af2b-9fb7b0c9e049"))
+            assertThat(reviewMapper.hasPurchased(userId, "4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07"))
             .isFalse();
         }
     }

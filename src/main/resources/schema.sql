@@ -67,6 +67,7 @@ CREATE TABLE product (
     price               INT,
     product_description VARCHAR(1000),
     stock               INT,
+    reserved            INT,
     status              VARCHAR(20)    NOT NULL,
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -207,4 +208,23 @@ FOR EACH ROW
   UPDATE cart
     SET version = version + 1
   WHERE cart_id = OLD.cart_id;
+
+
+
+-- View Definition 
+CREATE OR REPLACE VIEW vw_product_core AS
+SELECT
+  p.product_id,
+  -- SKU を 4 桁のゼロ埋め文字列に変換
+  LPAD(p.sku, 4, '0')             AS sku,
+  p.product_name,
+  p.price,
+  p.product_description,
+  COALESCE(p.stock, 0) AS stock,
+  COALESCE(p.reserved, 0) AS reserved,
+  p.status,
+  p.created_at,
+  p.updated_at,
+  (COALESCE(p.stock, 0) - COALESCE(p.reserved, 0)) AS available
+FROM product p;
 

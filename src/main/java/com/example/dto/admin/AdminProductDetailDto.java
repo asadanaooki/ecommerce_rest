@@ -13,7 +13,7 @@ public class AdminProductDetailDto {
     private String productId;
 
     /** SKU */
-    private int sku;
+    private String sku;
 
     /** 商品名 */
     private String productName;
@@ -21,10 +21,10 @@ public class AdminProductDetailDto {
    private String productDescription;
 
     /** 価格 (円) */
-    private int price;
+    private Integer price;
 
     /** 在庫数 */
-    private int stock;
+    private Integer available;
 
     /** 公開ステータス */
     private SaleStatus status;

@@ -5,6 +5,12 @@
     FROM product
     WHERE product_id = #{productId}
   </select>
+  
+  <select id="selectViewByPrimaryKey" resultType="com.example.entity.view.ProductCoreView">
+    SELECT *
+    FROM vw_product_core
+    WHERE product_id = #{productId}
+  </select>
 
   <select id="searchProducts" resultType="com.example.dto.ProductCardDto">
     SELECT p.product_id, p.product_name, p.price,

@@ -29,7 +29,6 @@ import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.support.MailGateway;
 import com.example.util.PaginationUtil;
-import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +44,7 @@ public class AdminOrderService {
     // ステータスの状態遷移ルールや定義。手動から自動遷移にしたい
     // Webhook or ポーリング
     // サーバー側の防御策としての SQL ガード(現在のステータスと違うときだけ更新)入れるか
+    // 税抜きで価格表示
 
     private final AdminOrderMapper adminOrderMapper;
 
@@ -53,15 +53,12 @@ public class AdminOrderService {
     @Value("${settings.admin.order.size}")
     private int pageSize;
 
-    private final TaxCalculator calculator;
-
     private final MailGateway mailGateway;
 
     public AdminOrderListDto search(OrderSearchRequest req) {
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
 
         List<AdminOrderDto> content = adminOrderMapper.selectPage(req, pageSize, offset);
-        content.forEach(d -> d.setTotalPrice(calculator.calculatePriceIncludingTax(d.getTotalPrice())));
         int total = adminOrderMapper.count(req);
 
         return new AdminOrderListDto(content, total, pageSize);

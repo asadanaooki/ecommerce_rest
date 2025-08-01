@@ -128,16 +128,21 @@ public class TestDataFactory {
         StringBuilder marks = new StringBuilder();
         List<Object> params = new ArrayList<>();
 
-        // 必須カラム
-        cols.append("product_id, sku, product_name, product_description, price, stock, status");
+        cols.append("product_id, product_name, product_description, price, stock, reserved, status");
         marks.append("?, ?, ?, ?, ?, ?, ?");
         params.add(product.getProductId());
-        params.add(product.getSku());
         params.add(product.getProductName());
         params.add(product.getProductDescription());
         params.add(product.getPrice());
         params.add(product.getStock());
+        params.add(product.getReserved());
         params.add(product.getStatus().name());
+        
+        if (product.getSku() > 0) {
+            cols.append(", sku");
+            marks.append(", ?");
+            params.add(product.getSku());
+        }
 
         // 任意カラム
         if (product.getCreatedAt() != null) {

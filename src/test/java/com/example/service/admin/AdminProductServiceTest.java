@@ -67,7 +67,7 @@ class AdminProductServiceTest {
         p1.setSku(1);
         p1.setProductName("Product One");
         p1.setPrice(110);
-        p1.setStock(5);
+        p1.setAvailable(5);
         p1.setStatus(SaleStatus.UNPUBLISHED);
         p1.setUpdatedAt(LocalDateTime.of(2025, 7, 1, 12, 0));
 
@@ -76,7 +76,7 @@ class AdminProductServiceTest {
         p2.setSku(2);
         p2.setProductName("Product Two");
         p2.setPrice(220);
-        p2.setStock(10);
+        p2.setAvailable(10);
         p2.setStatus(SaleStatus.PUBLISHED);
         p2.setUpdatedAt(LocalDateTime.of(2025, 7, 2, 15, 30));
 
@@ -94,7 +94,7 @@ class AdminProductServiceTest {
                 AdminProductDto::getSku,
                 AdminProductDto::getProductName,
                 AdminProductDto::getPrice,
-                AdminProductDto::getStock,
+                AdminProductDto::getAvailable,
                 AdminProductDto::getStatus,
                 AdminProductDto::getUpdatedAt)
                 .containsExactly(
@@ -120,7 +120,6 @@ class AdminProductServiceTest {
             req.setProductName("test");
             req.setProductDescription("testDesc");
             req.setPrice(100);
-            req.setStock(5);
             req.setStatus(SaleStatus.UNPUBLISHED);
 
             BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);

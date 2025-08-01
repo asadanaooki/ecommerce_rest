@@ -79,6 +79,7 @@ INSERT INTO product (
     price,
     product_description,
     stock,
+    reserved,
     status,
     created_at,
     updated_at
@@ -88,6 +89,7 @@ INSERT INTO product (
     2900,
     'Item4の商品説明です。',
     10,
+    NULL,  -- reserved
     'UNPUBLISHED',
     '2017-04-12 10:15:00',
     '2017-04-12 10:15:00'
@@ -98,6 +100,7 @@ INSERT INTO product (
     2500,
     'Item5の商品説明です。',
     5,
+    NULL,  -- reserved
     'PUBLISHED',
     '2019-08-25 14:40:30',
     '2019-08-25 14:40:30'
@@ -108,6 +111,7 @@ INSERT INTO product (
     250,
     'Item6の商品説明です。',
     20,
+    NULL,  -- reserved
     'PUBLISHED',
     '2021-11-03 09:05:12',
     '2021-11-03 09:05:12'
@@ -118,6 +122,7 @@ INSERT INTO product (
     1800,
     'Item7の商品説明です。',
     0,
+    NULL,  -- reserved
     'PUBLISHED',
     '2022-06-30 18:23:45',
     '2022-06-30 18:23:45'
@@ -128,6 +133,7 @@ INSERT INTO product (
     3200,
     'Item18の商品説明です。',
     15,
+    5,     -- reserved に値を設定
     'PUBLISHED',
     '2023-09-10 11:11:11',
     '2023-09-10 11:11:11'
@@ -138,6 +144,7 @@ INSERT INTO product (
     750,
     'Item19の商品説明です。',
     20,
+    NULL,  -- reserved
     'PUBLISHED',
     '2025-04-05 08:02:14',
     '2025-04-05 08:02:14'

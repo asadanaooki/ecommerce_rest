@@ -1,0 +1,101 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.admin.AdminInventoryMapper">
+
+  <select id="search" resultType="com.example.dto.admin.AdminInventoryDto">
+    SELECT v.product_id,
+           v.sku,
+           v.product_name,
+           v.price,
+           v.available,
+           v.updated_at
+     FROM vw_product_core v
+     <where>
+       <if test="req.minAvailable != null">
+        and v.available &gt;= #{req.minAvailable}
+      </if>
+      <if test="req.maxAvailable != null">
+        and v.available &lt;= #{req.maxAvailable}
+      </if>
+      <if test="req.stockStatus != null">
+        <choose>
+          <when test="req.stockStatus.name().equals('OUT_OF_STOCK')">
+            and v.available = 0
+          </when>
+          <when test="req.stockStatus.name().equals('LOW_STOCK')">
+            and v.available &gt; 0
+            and v.available &lt;= #{threshold}
+          </when>
+          <when test="req.stockStatus.name().equals('IN_STOCK')">
+            and v.available &gt; #{threshold} 
+          </when>
+        </choose>
+      </if>
+     </where>
+     order by
+      <choose>
+        <when test="req.sortField.field.equals('stock_status')">
+          field(
+            case
+              when v.available = 0 then 'OUT_OF_STOCK'
+              when v.available &lt;= #{threshold} then 'LOW_STOCK'
+              else 'IN_STOCK'
+            end,
+            'OUT_OF_STOCK','LOW_STOCK','IN_STOCK'
+          ) 
+        </when>
+        <otherwise>
+          ${req.sortField.field}
+        </otherwise>
+      </choose>
+      ${req.sortDirection},
+      v.sku asc
+      limit #{limit} offset #{offset}
+  </select>
+
+  <select id="count" resultType="int">
+    select count(*)
+    from vw_product_core v
+    <where>
+      <if test="req.minAvailable != null">
+        and v.available &gt;= #{req.minAvailable}
+      </if>
+      <if test="req.maxAvailable != null">
+        and v.available &lt;= #{req.maxAvailable}
+      </if>
+      <if test="req.stockStatus != null">
+        <choose>
+          <when test="req.stockStatus.name().equals('OUT_OF_STOCK')">
+            and v.available = 0
+          </when>
+          <when test="req.stockStatus.name().equals('LOW_STOCK')">
+            and v.available &lt;= #{threshold}
+          </when>
+          <when test="req.stockStatus.name().equals('IN_STOCK')">
+            and v.available &gt; #{threshold} 
+          </when>
+        </choose>
+      </if>
+    </where>
+  </select>
+  
+  <select id="find" resultType="com.example.dto.admin.AdminInventoryDetailDto">
+    SELECT v.product_id,
+           v.sku,
+           v.product_name,
+           v.price,
+           v.stock,
+           v.reserved,
+           v.available,
+           v.updated_at
+    FROM vw_product_core v
+    WHERE v.product_id = #{productId}
+  </select>
+  
+  <update id="updateInventory">
+    update product
+    set stock = #{req.stock},
+        reserved = #{req.reserved}
+    where product_id = #{productId}
+  </update>
+
+</mapper>

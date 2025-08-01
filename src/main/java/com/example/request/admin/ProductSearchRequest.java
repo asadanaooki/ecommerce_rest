@@ -34,9 +34,9 @@ public class ProductSearchRequest {
     private Integer maxPrice;
     
     @Min(0)
-    private Integer minStock;
+    private Integer minAvailable;
     
-    private Integer maxStock;
+    private Integer maxAvailable;
     
     private LocalDateTime createdFrom;
     
@@ -66,10 +66,10 @@ public class ProductSearchRequest {
     
     @AssertTrue
     public boolean isValidStockRange() {
-        if (minStock == null || maxStock == null) {
+        if (minAvailable == null || maxAvailable == null) {
             return true;
         }
-        return minStock <= maxStock;
+        return minAvailable <= maxAvailable;
     }
     
     @AssertTrue

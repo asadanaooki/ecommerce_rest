@@ -1,30 +1,30 @@
-package com.example.entity;
+package com.example.dto.admin;
 
 import java.time.LocalDateTime;
 
-import com.example.enums.SaleStatus;
+import com.example.enums.StockStatus;
 
 import lombok.Data;
 
 @Data
-public class Product {
+public class AdminInventoryDetailDto {
+
     private String productId;
     
-    private int sku;
+    private String sku;
     
     private String productName;
     
-    private String productDescription;
-    
-    private Integer price;
+    private int price;
     
     private Integer stock;
     
     private Integer reserved;
-
-    private SaleStatus status;
     
-    private LocalDateTime createdAt;
+    private int available;
+    
+    private StockStatus stockStatus;
     
     private LocalDateTime updatedAt;
+    
 }

@@ -60,3 +60,7 @@ settings:
         
     order:
       size: 2
+      
+    inventory:
+      size: 2
+      low-stock-threshold: 10

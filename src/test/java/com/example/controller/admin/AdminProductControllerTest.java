@@ -63,13 +63,13 @@ class AdminProductControllerTest {
                     Arguments.of(Map.of("page", "1")),
                     // minPrice
                     Arguments.of(Map.of("minPrice", "1")),
-                    // minStock
-                    Arguments.of(Map.of("minStock", "1")),
+                    // minAvailable
+                    Arguments.of(Map.of("minAvailable", "1")),
 
                     // 価格範囲
                     Arguments.of(Map.of("minPrice", "100", "maxPrice", "100")),
                     // 在庫範囲
-                    Arguments.of(Map.of("minStock", "300", "maxStock", "300")),
+                    Arguments.of(Map.of("minAvailable", "300", "maxAvailable", "300")),
                     // 作成日範囲
                     Arguments.of(Map.of("createdFrom", "2025-06-01", "createdTo", "2025-06-01")),
                     // 更新日範囲
@@ -94,13 +94,13 @@ class AdminProductControllerTest {
                     Arguments.of(Map.of("page", "0")),
                     // minPrice
                     Arguments.of(Map.of("minPrice", "0")),
-                    // minStock
-                    Arguments.of(Map.of("minStock", "-1")),
+                    // minAvailable
+                    Arguments.of(Map.of("minAvailable", "-1")),
 
                     // 価格範囲
                     Arguments.of(Map.of("minPrice", "100", "maxPrice", "50")),
                     // 在庫範囲
-                    Arguments.of(Map.of("minStock", "3000", "maxStock", "300")),
+                    Arguments.of(Map.of("minAvailable", "3000", "maxAvailable", "300")),
                     // 作成日範囲
                     Arguments.of(Map.of("createdFrom", "2025-06-01", "createdTo", "2022-06-01")),
                     // 更新日範囲
@@ -115,7 +115,6 @@ class AdminProductControllerTest {
                 "productName", "test",
                 "price", "1000",
                 "productDescription", "desc",
-                "stock", "50",
                 "status", "PUBLISHED");
 
         static final MockMultipartFile BASE_IMAGE = new MockMultipartFile("image", "img.jpg", "image/jpeg",
@@ -153,7 +152,6 @@ class AdminProductControllerTest {
                     Arguments.of((Consumer<Map<String, String>>) (m -> {
                         m.put("status", "UNPUBLISHED");
                         m.put("price", null);
-                        m.put("stock", null);
                         m.put("productDescription", null);
                     }), null),
 
@@ -165,9 +163,7 @@ class AdminProductControllerTest {
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("price", "1")), BASE_IMAGE),
                     // 商品説明
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("productDescription", "b".repeat(1000))),
-                            BASE_IMAGE),
-                    // 在庫
-                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("stock", "0")), BASE_IMAGE));
+                            BASE_IMAGE));
         }
 
         @ParameterizedTest
@@ -206,9 +202,6 @@ class AdminProductControllerTest {
                     // 価格
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("price", "0")),
                             "price", "Positive"),
-                    // 在庫
-                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("stock", "-1")),
-                            "stock", "PositiveOrZero"),
                     // ステータス
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("status", null)),
                             "status", "NotNull"),

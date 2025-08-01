@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.entity.Product;
+import com.example.entity.view.ProductCoreView;
 import com.example.enums.SortType;
 
 @Mapper
@@ -17,6 +18,8 @@ public interface ProductMapper {
     // クエリでstatus = '1'を良い書き方にしたい
 
     Product selectByPrimaryKey(String productId);
+    
+    ProductCoreView selectViewByPrimaryKey(String productId);
 
     List<ProductCardDto> searchProducts(SearchCondition sc);
 

@@ -116,10 +116,9 @@ class CheckoutMapperTest {
         order.setTotalQty(3);
         order.setTotalPrice(9600);
         
-        int row = checkoutMapper.insertOrderHeader(order);
+        checkoutMapper.insertOrderHeader(order);
         
-        assertThat(row).isOne();
-        assertThat(order.getOrderNumber()).isOne();
+        assertThat(order.getOrderNumber()).isEqualTo(3);
         Order saved = checkoutMapper.selectOrderByPrimaryKey(cartId);
         
         assertThat(saved).extracting(

@@ -8,23 +8,19 @@ import org.mapstruct.Mapping;
 import com.example.dto.admin.AdminProductDetailDto;
 import com.example.dto.admin.AdminProductDto;
 import com.example.entity.Product;
+import com.example.entity.view.ProductCoreView;
 import com.example.request.admin.ProductUpsertRequest;
 
 @Mapper(componentModel = "spring", uses = TaxConverter.class)
 public interface AdminProductConverter {
 
     @Mapping(target = "price", source="price", qualifiedByName = "withTax")
-    AdminProductDto toDto(Product product);
+    AdminProductDto toDto(ProductCoreView product);
     
-    List<AdminProductDto> toDtoList(List<Product> products);
+    List<AdminProductDto> toDtoList(List<ProductCoreView> products);
     
-    @Mapping(target = "productId", source = "productId")
-    @Mapping(target = "productName", source = "req.productName")
-    @Mapping(target = "price",       source = "req.price")
-    @Mapping(target = "productDescription", source = "req.productDescription")
-    @Mapping(target = "stock",       source = "req.stock")
     Product toEntity(String productId, ProductUpsertRequest req);
     
     @Mapping(target = "price", source="price", qualifiedByName = "withTax")
-    AdminProductDetailDto toDetailDto(Product product);
+    AdminProductDetailDto toDetailDto(ProductCoreView product);
 }
