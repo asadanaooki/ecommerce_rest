@@ -23,6 +23,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/admin/inventory")
 public class AdminInventoryController {
+    // TODO:
+    // 無効値のフォールバック
 
     private final AdminInventoryService adminInventoryService;
 

@@ -1,0 +1,30 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.admin.AdminDashboardMapper">
+
+  <select id="aggTodayHourly" resultType="com.example.dto.admin.AdminHourlyAggRow">
+    select
+      date_format(created_at, '%Y-%m-%d %H:00:00') as  bucketHour,
+      sum(total_price) as revenue,
+      count(*) as orders
+    from `order`
+    where payment_status = 'PAID'
+      and created_at &gt;= #{startInclusive}
+      and created_at &lt; #{endExclusive}
+    group by bucketHour
+    order by bucketHour
+  </select>
+  
+    <select id="aggDaily" resultType="com.example.dto.admin.AdminDailyAggRow">
+    select
+      date(created_at) as  day,
+      sum(total_price) as revenue,
+      count(*) as orders
+    from `order`
+    where payment_status = 'PAID'
+      and created_at &gt;= #{startInclusive}
+      and created_at &lt; #{endExclusive}
+    group by day
+    order by day
+  </select>
+
+</mapper>
