@@ -50,6 +50,8 @@ public class AuthController {
        いずれはリフレッシュトークン＋短命アクセストークンにする
        ログイン方法が増えたら、SuccessHandler 使う方が良いかも
        Rest視点でパス名どうするか？現状、動詞を含めてる
+       プロフィール表示(GET)のAPIがない
+       GODクラスだから、分割する
     */
     private final AuthService authService;
 

@@ -218,10 +218,62 @@ public enum MailTemplate {
                     String.format("%04d", orderNumber),
                     itemsBlock,
                     items.stream().mapToInt(OrderItem::getSubtotal).sum());
-            
+
             return new EmailMessage(u.getEmail(), getSubject(), body);
         }
 
+    },
+    INQUIRY_ADMIN_NOTIFICATION(
+            "新しいお問い合わせが届きました",
+            """
+                        【送信者】
+                          氏名 : %s %s
+                          メール : %s
+                          電話 : %s
+                          注文番号 : %s
+
+                        【メッセージ】
+                          %s
+                    """) {
+        @Override
+        public EmailMessage build(Object... args) {
+            InquiryContext ctx = (InquiryContext) args[0];
+            String body = getBody().formatted(
+                    ctx.lastName(),
+                    ctx.firstName(),
+                    ctx.email(),
+                    ctx.phoneNumber(),
+                    ctx.orderNo(),
+                    ctx.message());
+            return new EmailMessage(ctx.to(), getSubject(), body);
+        }
+    },
+    INQUIRY_AUTO_REPLY(
+            "お問い合わせ受付のお知らせ",
+            """
+                        %s %s 様
+
+                        お問い合わせを受け付けました。
+                        担当者より折り返しご連絡いたします。
+
+                        【ご入力内容】
+                        メール : %s
+                        電話 : %s
+                        注文番号 : %s
+
+                        ※本メールは自動送信です。心当たりがない場合は破棄してください。
+                    """) {
+        @Override
+        public EmailMessage build(Object... args) {
+            InquiryContext ctx = (InquiryContext) args[0];
+            String body = getBody().formatted(
+                    ctx.lastName(),
+                    ctx.firstName(),
+                    ctx.email(),
+                    ctx.phoneNumber(),
+                    ctx.orderNo());
+            return new EmailMessage(ctx.to(), getSubject(), body);
+        }
     };
 
     private final String subject;
@@ -236,6 +288,16 @@ public enum MailTemplate {
     public abstract EmailMessage build(Object... args);
 
     public record EmailMessage(String to, String subject, String body) {
+    }
+
+    public record InquiryContext(
+            String to,
+            String lastName,
+            String firstName,
+            String email,
+            String phoneNumber,
+            String orderNo,
+            String message) {
     }
 
 }

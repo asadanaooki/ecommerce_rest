@@ -19,6 +19,7 @@ public class MailGateway {
     // メール送信はローカルで仮実装
     // sendされるmsgの中身まで単体テストで見るべきか？setTextやsetSubjectなど
     // linkは仮で固定値localhost
+    // From未設定
 
     private final JavaMailSender sender;
     

@@ -17,6 +17,8 @@ public class EcommerceRestApplication {
       データベースに設定テーブル作る　動的に変更するため
       DBのCheck制約をどれだけ付与するか
       クラウドを見据えて、UTCに統一するか？
+      サニタイズ、エスケープ箇所検討
+      設定値のDIは@Valueを使うものなのか？
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

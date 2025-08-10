@@ -14,7 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor         // ← フレームワーク用デフォルトコンストラクタ
+@NoArgsConstructor
 @AllArgsConstructor
 public class RegisterUserRequest {
 
@@ -60,6 +60,8 @@ public class RegisterUserRequest {
     @Size(min = 1, max = 100) private String addressBuilding; // 任意
 
     // ⑧ 電話番号（0 始まり 10〜11 桁）
+    // TODO:
+    // 11桁のみにする
     @NotBlank
     @Pattern(regexp = "^0\\d{9,10}$")
     private String phoneNumber;
