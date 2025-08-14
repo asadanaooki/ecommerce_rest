@@ -1,0 +1,53 @@
+spring:
+    # TODO: 専用ユーザーにする
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce_dev
+    username: root
+    password: softeni0926
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#  sql:
+#    init:
+#      mode: never
+#  autoconfigure:
+#      exclude:
+#        - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+#        - org.springframework.boot.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+  mail:
+    host: localhost
+    port: 2525
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+
+#設定値
+settings:
+  product:
+    size: 2  # 商品一覧の表示件数
+    page-nav-radius: 2 # 現在ページの前後に表示するページリンク数 (±)
+  tax:
+    rate-percent: 10
+  auth:
+    verification-ttl-min: 30
+  reset:
+    expire-minutes: 30
+  email-change:
+    expire-minutes: 30
+  favorite:
+    size: 2
+  review:
+    size: 2
+  
+  # 管理者系  
+  admin:
+    product:
+      size: 2
+      upload:
+        max-size: 5MB
+        
+    order:
+      size: 2
+      
+    inventory:
+      size: 2
+      low-stock-threshold: 10

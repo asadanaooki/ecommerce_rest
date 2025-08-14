@@ -1,25 +1,28 @@
 package com.example.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.example.json.annotation.NormalizeEmail;
+import com.example.validation.constraint.EmailFormat;
+
 import lombok.Data;
 
 @Data
 public class LoginRequest {
-    /*    // TODO:
-     usernameに@Email意外に@Pattern付与する
+    /* TODO:
     アカウントロック
         一定回数連続失敗でロック → 管理画面 or メール解除
     監査ログ
         「失敗→成功」の連続など不審パターンを可視化
     */
-    @Email
+    
+    @NormalizeEmail
+    @EmailFormat
     @NotBlank
-    @Length(max = 255)
+    @Length(max = 254)
     private String username;
 
     @NotBlank

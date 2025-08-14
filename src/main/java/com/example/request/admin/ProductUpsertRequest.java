@@ -33,7 +33,7 @@ public class ProductUpsertRequest {
     private MultipartFile image;
 
     
-    @AssertTrue
+    @AssertTrue(message = "PUBLISH_REQUIREMENTS")
     private boolean isValidForPublish() {
         // TODO:
         // status増えたら != にしたほうがよいかも

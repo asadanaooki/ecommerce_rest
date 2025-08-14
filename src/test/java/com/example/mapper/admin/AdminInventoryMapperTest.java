@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,8 +23,10 @@ import com.example.enums.SaleStatus;
 import com.example.enums.SortDirection;
 import com.example.enums.StockStatus;
 import com.example.request.admin.InventorySearchRequest;
+import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
+@ExtendWith(FlywayResetExtension.class)
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestDataFactory.class)

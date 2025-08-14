@@ -5,15 +5,18 @@ import jakarta.validation.constraints.NotBlank;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.example.json.annotation.NormalizeEmail;
+
 import lombok.Data;
 
 @Data
 public class PreSignupRequest {
-    /*    // TODO:
-     @Email意外に@Pattern付与する
-    */
+    // TODO:
+    // 国際化ドメイン対応検討
+    
+    @NormalizeEmail
     @Email
     @NotBlank
-    @Length(max = 255)
+    @Length(max = 254)
     private String email;
 }

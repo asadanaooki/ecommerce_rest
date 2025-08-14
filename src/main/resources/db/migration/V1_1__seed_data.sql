@@ -189,6 +189,7 @@ INSERT INTO review (
     user_id,
     product_id,
     rating,
+    title,
     review_text,
     created_at,
     updated_at
@@ -196,6 +197,7 @@ INSERT INTO review (
     '550e8400-e29b-41d4-a716-446655440000',     -- ユーザー ID
     '09d5a43a-d24c-41c7-af2b-9fb7b0c9e049',     -- Item5
     4,                                          -- ★4
+    'good',
     '程よい甘さで家族にも好評でした！',
     '2025-06-05 09:20:15',
     '2025-06-05 09:20:15'
@@ -204,6 +206,7 @@ INSERT INTO review (
     '550e8400-e29b-41d4-a716-446655440000',     -- ユーザー ID
     '6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd',     -- Item6
     3,                                          -- ★3
+    'normal',
     'サイズが思ったより小さいですが味は満足。',
     '2024-06-10 18:42:05',
     '2024-06-10 18:42:05'

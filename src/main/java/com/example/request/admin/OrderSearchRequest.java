@@ -38,7 +38,7 @@ public class OrderSearchRequest {
     @Min(1)
     private int page = 1;
 
-    @AssertTrue
+    @AssertTrue(message = "CREATED_RANGE_VALID")
     public boolean isValidCreatedRange() {
         if (createdFrom == null || createdTo == null) {
             return true;

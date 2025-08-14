@@ -1,5 +1,6 @@
 package com.example.controller.admin;
 
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -43,14 +44,18 @@ class AdminOrderControllerTest {
                 .content(toJson(items, deleted)))
                 .andExpect(status().isOk());
     }
-    
+
     @ParameterizedTest
     @MethodSource("provideInvalidArguments")
-    void editOrder_fail(Map<String, Integer> items, List<String> deleted) throws Exception {
+    void editOrder_fail(Map<String, Integer> items, List<String> deleted,
+            String expField, String expCode) throws Exception {
         mockMvc.perform(patch("/admin/order/{orderId}/edit", "id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(items, deleted)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].field").value(expField))
+                .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
     }
 
     static Stream<Arguments> provideValidArguments() {
@@ -61,14 +66,14 @@ class AdminOrderControllerTest {
                 Arguments.of(Map.of("p1", 3, "p2", 1), List.of("p3")));
 
     }
-    
+
     static Stream<Arguments> provideInvalidArguments() {
         return Stream.of(
-                Arguments.of(Collections.EMPTY_MAP, Collections.EMPTY_LIST),
-                Arguments.of(Map.of("", 3), Collections.EMPTY_LIST),
-                Arguments.of(Map.of("p1", 0), List.of("p3")),
-                Arguments.of(Map.of("p1", 3), List.of("")),
-                Arguments.of(Map.of("p1", 3, "p2", 1), List.of("p1")));
+                Arguments.of(Collections.EMPTY_MAP, Collections.EMPTY_LIST, "items", "NotEmpty"),
+                Arguments.of(Map.of("", 3), Collections.EMPTY_LIST, "items[]", "NotBlank"),
+                Arguments.of(Map.of("p1", 0), List.of("p3"), "items[p1]", "Min"),
+                Arguments.of(Map.of("p1", 3), List.of(""), "deleted[0]", "NotBlank"),
+                Arguments.of(Map.of("p1", 3, "p2", 1), List.of("p1"), "deleted_items", "ITEMS_AND_DELETED_DISJOINT"));
 
     }
 

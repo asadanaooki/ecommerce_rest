@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,8 +25,10 @@ import com.example.dto.admin.AdminDailyAggRow;
 import com.example.dto.admin.AdminHourlyAggRow;
 import com.example.entity.Order;
 import com.example.enums.PaymentStatus;
+import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
+@ExtendWith(FlywayResetExtension.class)
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestDataFactory.class)

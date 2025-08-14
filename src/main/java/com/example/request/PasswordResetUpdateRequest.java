@@ -1,40 +1,38 @@
 package com.example.request;
 
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import com.example.json.annotation.NormalizeEmail;
+import com.example.validation.constraint.EmailFormat;
 
 import lombok.Data;
 
 @Data
 public class PasswordResetUpdateRequest {
-    
+
     @NotBlank
     @Size(min = 22, max = 22)
     private String token;
-    
-    @Email
+
+    @NormalizeEmail
+    @EmailFormat
     @NotBlank
-    @Size(max = 255)
+    @Size(max = 254)
     private String email;
 
     @NotBlank
     @Size(min = 8, max = 20)
     @Pattern(regexp = "^[0-9A-Za-z]+$")
     private String newPassword;
-    
+
     @NotBlank
     private String confirmPassword;
-    
-    @AssertTrue
+
+    @AssertTrue(message = "PASSWORDS_MATCH")
     public boolean isMatch() {
-        // TODO:
-        // fail-fastにしたら以下の判定不要
-        if (newPassword == null || confirmPassword == null) {
-            return false;
-        }
         return newPassword.equals(confirmPassword);
     }
 }

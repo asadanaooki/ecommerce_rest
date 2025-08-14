@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -18,8 +19,10 @@ import com.example.entity.OrderItem;
 import com.example.enums.PaymentStatus;
 import com.example.enums.SaleStatus;
 import com.example.enums.ShippingStatus;
+import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
+@ExtendWith(FlywayResetExtension.class)
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestDataFactory.class)

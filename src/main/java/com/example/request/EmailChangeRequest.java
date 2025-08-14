@@ -1,29 +1,28 @@
 package com.example.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import org.hibernate.validator.constraints.Length;
+
+import com.example.json.annotation.NormalizeEmail;
+import com.example.validation.constraint.EmailFormat;
 
 import lombok.Data;
 
 @Data
 public class EmailChangeRequest {
 
-    @Email
+    @NormalizeEmail
+    @EmailFormat
     @NotBlank
-    @Length(max = 255)
+    @Length(max = 254)
     private String newEmail;
 
+    @NormalizeEmail
     @NotBlank
     private String confirmEmail;
 
     public boolean isMatch() {
-        // TODO:
-        // fail-fastにしたら以下の判定不要
-        if (newEmail == null || confirmEmail == null) {
-            return false;
-        }
         return newEmail.equals(confirmEmail);
     }
 }

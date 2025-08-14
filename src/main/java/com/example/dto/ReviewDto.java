@@ -15,5 +15,7 @@ public class ReviewDto {
     
     private int rating;
     
+    private String title;
+    
     private String reviewText;
 }

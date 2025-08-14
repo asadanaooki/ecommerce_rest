@@ -121,8 +121,7 @@ public class CartService {
         }
         return new CartDto(items, totalQty, totalPrice);
     }
-    
-    
+
     private String findCartId(HttpServletRequest req, String userId) {
         String cartId;
         if (userId == null) {

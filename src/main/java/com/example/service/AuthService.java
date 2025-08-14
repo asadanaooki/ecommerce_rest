@@ -83,7 +83,7 @@ public class AuthService {
         CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
         String authority = user.getAuthorities().iterator().next().getAuthority();
         String role = authority.substring("ROLE_".length());
-        
+
         return new AuthResult(jwtUtil.issue(user.getUserId(), role), user.getUserId());
     }
 
@@ -191,25 +191,25 @@ public class AuthService {
         mailGateway.send(
                 MailTemplate.EMAIL_CHANGE_ALERT_OLD.build(u.getEmail(), LocalDateTime.now()));
     }
-    
+
     public void completeEmailChange(String token) {
         User user = userMapper.selectUserByToken(RandomTokenUtil.hash(token));
         if (user == null || user.getPendingExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-        
+
         userMapper.confirmEmailChange(RandomTokenUtil.hash(token));
     }
-    
+
     public void changePassword(String userId, PasswordChangeRequest req) {
         User user = userMapper.selectUserByPrimaryKey(userId);
-        if (user.getPasswordHash().equals(encoder.encode(req.getCurrentPassword()))){
+        if (!encoder.matches(req.getCurrentPassword(), user.getPasswordHash())) {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "INVALID_CURRENT_PASSWORD");
         }
         userMapper.updatePasswordByPrimaryKey(userId, encoder.encode(req.getNewPassword()));
         mailGateway.send(MailTemplate.PROFILE_CHANGED.build(user.getEmail(), LocalDateTime.now()));
     }
-    
+
     public void updateProfile(String userId, ProfileUpdateRequest req) {
         User user = userMapper.selectUserByPrimaryKey(userId);
         userMapper.updateProfile(userId, req);

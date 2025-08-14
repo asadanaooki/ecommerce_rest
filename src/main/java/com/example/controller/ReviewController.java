@@ -40,9 +40,6 @@ public class ReviewController {
             @AuthenticationPrincipal String userId,
             @RequestBody @Valid ReviewPostRequest req
             ) {
-        if (req.getReviewText().strip().isEmpty()) {
-            req.setReviewText(null);
-        }
         reviewService.postReview(productId, userId, req);
     }
 }

@@ -21,7 +21,7 @@ public class OrderEditRequest {
     private List<@NotBlank String> deleted = Collections.EMPTY_LIST;
     
     
-    @AssertTrue
+    @AssertTrue(message = "ITEMS_AND_DELETED_DISJOINT")
     private boolean isDisjoint() {
         return Collections.disjoint(items.keySet(), deleted);
     }

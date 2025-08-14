@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -45,9 +46,11 @@ import com.example.request.PasswordResetMailRequest;
 import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.support.MailGateway;
+import com.example.testUtil.FlywayResetExtension;
 import com.example.util.JwtUtil;
 import com.example.util.RandomTokenUtil;
 
+@ExtendWith(FlywayResetExtension.class)
 @SpringBootTest
 @Transactional
 class AuthServiceTest {

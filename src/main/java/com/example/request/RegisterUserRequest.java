@@ -2,12 +2,14 @@ package com.example.request;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import com.example.json.annotation.NormalizeEmail;
+import com.example.validation.constraint.EmailFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,8 +27,9 @@ public class RegisterUserRequest {
 
     // ② メールアドレス
     @NotBlank
-    @Email
-    @Size(max = 255)
+    @NormalizeEmail
+    @EmailFormat
+    @Size(max = 254)
     private String email;
 
     // ③ パスワード（英数 8〜20 文字）
@@ -59,11 +62,10 @@ public class RegisterUserRequest {
     @NotBlank @Size(max = 100) private String addressBlock;
     @Size(min = 1, max = 100) private String addressBuilding; // 任意
 
-    // ⑧ 電話番号（0 始まり 10〜11 桁）
-    // TODO:
-    // 11桁のみにする
+    // ⑧ 電話番号
     @NotBlank
-    @Pattern(regexp = "^0\\d{9,10}$")
+    @Size(min = 11, max = 11)
+    @Pattern(regexp = "^[0-9]+$")
     private String phoneNumber;
 
     // ⑨ 生年月日（未来日不可）

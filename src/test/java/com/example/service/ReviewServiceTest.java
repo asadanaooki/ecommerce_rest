@@ -37,12 +37,13 @@ class ReviewServiceTest {
 
     @Test
     void fetchReviews_noReview() {
+        doReturn(BigDecimal.valueOf(0.0)).when(reviewMapper).selectAvg(anyString());
         doReturn(0).when(reviewMapper).countReviews(anyString());
         doReturn(Collections.EMPTY_LIST).when(reviewMapper).selectReviews(anyString(), anyInt(), anyInt());
 
         ReviewPageDto dto = reviewService.fetchReviews("productId", 1);
 
-        assertThat(dto.getAverageRating()).isEqualTo(BigDecimal.ZERO);
+        assertThat(dto.getAverageRating()).isEqualTo(BigDecimal.valueOf(0.0));
         assertThat(dto.getTotalCount()).isZero();
         assertThat(dto.getPageSize()).isEqualTo(2);
         assertThat(dto.getItems()).isEmpty();
@@ -50,17 +51,18 @@ class ReviewServiceTest {
 
     @Test
     void fetchReviews_withReviews() {
+        doReturn(BigDecimal.valueOf(3.4)).when(reviewMapper).selectAvg(anyString());
         doReturn(2).when(reviewMapper).countReviews(anyString());
         doReturn(List.of(
                 new ReviewDto(
-                        "test1", LocalDate.of(2025, 6, 28), 3, "良かった。"),
+                        "test1", LocalDate.of(2025, 6, 28), 3, "良い", "良かった。"),
                 new ReviewDto(
-                        "test2", LocalDate.of(2025, 6, 23), 3, null)))
+                        "test2", LocalDate.of(2025, 6, 23), 3, null, null)))
                                 .when(reviewMapper).selectReviews(anyString(), anyInt(), anyInt());
 
         ReviewPageDto dto = reviewService.fetchReviews("productId", 1);
 
-        assertThat(dto.getAverageRating()).isEqualTo(BigDecimal.valueOf(3.0));
+        assertThat(dto.getAverageRating()).isEqualTo(BigDecimal.valueOf(3.4));
         assertThat(dto.getTotalCount()).isEqualTo(2);
         assertThat(dto.getPageSize()).isEqualTo(2);
         assertThat(dto.getItems()).hasSize(2);
@@ -69,41 +71,13 @@ class ReviewServiceTest {
                 .extracting(ReviewDto::getNickname,
                         ReviewDto::getCreatedDate,
                         ReviewDto::getRating,
+                        ReviewDto::getTitle,
                         ReviewDto::getReviewText)
                 .containsExactly(
                         "test1",
                         LocalDate.of(2025, 6, 28),
                         3,
+                        "良い",
                         "良かった。");
     }
-    
-    @Test
-    void fetchReviews_averageRoundsUp() {
-        ReviewDto r1 = new ReviewDto(null, null, 5, null);
-        ReviewDto r2 = new ReviewDto(null, null, 4, null);
-        ReviewDto r3 = new ReviewDto(null, null, 3, null);
-        ReviewDto r4 = new ReviewDto(null, null, 3, null);
-        
-        doReturn(4).when(reviewMapper).countReviews(anyString());
-        doReturn(List.of(r1,r2,r3,r4)).when(reviewMapper).selectReviews(anyString(), anyInt(), anyInt());
-        
-        ReviewPageDto dto = reviewService.fetchReviews("productId", 1);
-        
-        assertThat(dto.getAverageRating()).isEqualTo(BigDecimal.valueOf(3.8));
-    }
-    
-    @Test
-    void fetchReviews_averageRoundsDown() {
-        ReviewDto r1 = new ReviewDto(null, null, 4, null);
-        ReviewDto r2 = new ReviewDto(null, null, 3, null);
-        ReviewDto r3 = new ReviewDto(null, null, 3, null);
-        
-        doReturn(3).when(reviewMapper).countReviews(anyString());
-        doReturn(List.of(r1,r2,r3)).when(reviewMapper).selectReviews(anyString(), anyInt(), anyInt());
-        
-        ReviewPageDto dto = reviewService.fetchReviews("productId", 1);
-        
-        assertThat(dto.getAverageRating()).isEqualTo(BigDecimal.valueOf(3.3));
-    }
-
 }

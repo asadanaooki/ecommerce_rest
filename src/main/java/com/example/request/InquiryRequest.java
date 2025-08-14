@@ -1,10 +1,12 @@
 package com.example.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
+
+import com.example.json.annotation.NormalizeEmail;
+import com.example.validation.constraint.EmailFormat;
 
 import lombok.Data;
 
@@ -22,7 +24,8 @@ public class InquiryRequest {
     @Length(max = 50)
     private String firstName;
 
-    @Email
+    @NormalizeEmail
+    @EmailFormat
     @Length(max = 254)
     @NotBlank
     private String email;

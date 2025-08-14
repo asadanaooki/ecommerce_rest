@@ -26,7 +26,7 @@ public class InventorySearchRequest {
     @Min(1)
     private int page = 1;
 
-    @AssertTrue
+    @AssertTrue(message = "AVAILABLE_RANGE_VALID")
     public boolean isValidAvailableRange() {
         if (minAvailable == null || maxAvailable == null) {
             return true;

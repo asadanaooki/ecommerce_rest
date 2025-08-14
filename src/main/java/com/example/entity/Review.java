@@ -13,6 +13,8 @@ public class Review {
     
     private int rating;
     
+    private String title;
+    
     private String reviewText;
     
     private LocalDateTime createdAt;

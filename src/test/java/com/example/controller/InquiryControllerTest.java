@@ -123,7 +123,7 @@ class InquiryControllerTest {
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", "")),
                 // @Length
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", email255)),
-                // @Email
+                // @EmailFormat
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", "sあmple@")),
                 // phoneNumber
                 // @NotBlank

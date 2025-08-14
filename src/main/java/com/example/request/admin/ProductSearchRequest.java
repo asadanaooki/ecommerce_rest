@@ -10,8 +10,8 @@ import java.util.List;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 
-import com.example.enums.SaleStatus;
 import com.example.enums.ProductSortField;
+import com.example.enums.SaleStatus;
 import com.example.enums.SortDirection;
 
 import lombok.Data;
@@ -56,7 +56,7 @@ public class ProductSearchRequest {
     private int page = 1;
     
     
-    @AssertTrue
+    @AssertTrue(message = "PRICE_RANGE_VALID")
     public boolean isValidPriceRange() {
         if (minPrice == null || maxPrice == null) {
             return true;
@@ -64,7 +64,7 @@ public class ProductSearchRequest {
         return minPrice <= maxPrice;
     }
     
-    @AssertTrue
+    @AssertTrue(message = "STOCK_RANGE_VALID")
     public boolean isValidStockRange() {
         if (minAvailable == null || maxAvailable == null) {
             return true;
@@ -72,7 +72,7 @@ public class ProductSearchRequest {
         return minAvailable <= maxAvailable;
     }
     
-    @AssertTrue
+    @AssertTrue(message = "CREATED_RANGE_VALID")
     public boolean isValidCreatedRange() {
         if (createdFrom == null || createdTo == null) {
             return true;
@@ -81,7 +81,7 @@ public class ProductSearchRequest {
         return !createdFrom.isAfter(createdTo);
     }
     
-    @AssertTrue
+    @AssertTrue(message = "UPDATED_RANGE_VALID")
     public boolean isValidUpdatedRange() {
         if (updatedFrom == null || updatedTo == null) {
             return true;

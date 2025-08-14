@@ -82,7 +82,7 @@ class AuthControllerTest {
     }
 
     static Stream<Arguments> provideArguments() {
-        String email = "a".repeat(64) + // ローカル部 64 文字（上限ぎりぎり）
+        String email254 = "a".repeat(63) + // ローカル部 63文字
                 "@" +
                 "b".repeat(63) + // ドメイン・ラベル 1   (63 文字)
                 "." +
@@ -94,9 +94,9 @@ class AuthControllerTest {
                 // @notBlank
                 Arguments.of("", "12345678", false),
                 // @Length
-                Arguments.of(email, "12345678", true),
-                Arguments.of(email + "a", "12345678", false),
-                // @email
+                Arguments.of(email254, "12345678", true),
+                Arguments.of(email254 + "a", "12345678", false),
+                // @EmailFormat
                 Arguments.of("test4@gmai.com", "12345678", true),
 
                 // password
@@ -108,7 +108,7 @@ class AuthControllerTest {
                 Arguments.of("test4@gmai.com", "12345678", true),
                 Arguments.of("test4@gmai.com", "12345678901234567890", true),
                 Arguments.of("test4@gmai.com", "123456789012345678901", false),
-                // @email
+                // @Pattern
                 Arguments.of("test4@gmai.com", "12345678sofTENI", true),
                 Arguments.of("test4@gmai.com", "12345678あい", false));
     }
@@ -141,7 +141,7 @@ class AuthControllerTest {
                   "addressArea": "神南",
                   "addressBlock": "1-19-11",
                   "addressBuilding": "パークビル201",
-                  "phoneNumber": "0312345678",
+                  "phoneNumber": "08012345678",
                   "birthday": "1990-04-01",
                   "gender": "M"
                 }
@@ -217,7 +217,7 @@ class AuthControllerTest {
         }
 
         static Stream<Arguments> provideValidRegistrationArguments() {
-            String email255 = "a".repeat(64) + // ローカル部 64 文字（上限ぎりぎり）
+            String email254 = "a".repeat(63) + // ローカル部 63 文字
                     "@" +
                     "b".repeat(63) + // ドメイン・ラベル 1   (63 文字)
                     "." +
@@ -229,9 +229,9 @@ class AuthControllerTest {
                     // @Length
                     Arguments.of(Map.of("token", "a".repeat(22))),
 
-                    // @email
+                    // @EmailFormat
                     // @Length
-                    Arguments.of(Map.of("email", email255)),
+                    Arguments.of(Map.of("email", email254)),
 
                     // password
                     // @Length
@@ -269,8 +269,6 @@ class AuthControllerTest {
                     Arguments.of(Map.of("addressBuilding", "い".repeat(100))),
 
                     // phoneNumber
-                    // @Pattern
-                    Arguments.of(Map.of("phoneNumber", "0123456789")),
                     Arguments.of(Map.of("phoneNumber", "01234567890")),
 
                     // gender
@@ -280,8 +278,8 @@ class AuthControllerTest {
         }
 
         static Stream<Arguments> provideInvalidRegistrationArguments() {
-            // メール全体 256 文字（= 64 + 1 + 63 + 1 + 63 + 1 + 63）
-            String email256 = "a".repeat(64) + "@" +
+            // メール全体 255 文字（= 63 + 1 + 63 + 1 + 63 + 1 + 63）
+            String email255 = "a".repeat(63) + "@" +
                     "b".repeat(63) + "." +
                     "c".repeat(63) + "." +
                     "d".repeat(63);
@@ -294,7 +292,7 @@ class AuthControllerTest {
 
                     /* email -------------------------------------------------------------- */
                     Arguments.of(Map.of("email", ""), "NotBlank"),
-                    Arguments.of(Map.of("email", email256), "Size"), // >255
+                    Arguments.of(Map.of("email", email255), "Size"), // >255
 
                     /* password ----------------------------------------------------------- */
                     Arguments.of(Map.of("password", ""), "NotBlank"),
@@ -340,9 +338,8 @@ class AuthControllerTest {
                     /* phoneNumber -------------------------------------------------------- */
                     Arguments.of(Map.of("phoneNumber", ""), "NotBlank"),
                     Arguments.of(Map.of("phoneNumber", "09012A4567"), "Pattern"), // 非数字
-                    Arguments.of(Map.of("phoneNumber", "012345678"), "Pattern"), // 9 桁
-                    Arguments.of(Map.of("phoneNumber", "012345678901"), "Pattern"), // 12 桁
-                    Arguments.of(Map.of("phoneNumber", "11234567890"), "Pattern"), // 先頭 0 でない
+                    Arguments.of(Map.of("phoneNumber", "0123456789"), "Size"), // 10 桁
+                    Arguments.of(Map.of("phoneNumber", "012345678901"), "Size"), // 12 桁
 
                     /* birthday ----------------------------------------------------------- */
                     Arguments.of(new HashMap<>() {
@@ -405,7 +402,7 @@ class AuthControllerTest {
     }
 
     static Stream<Arguments> provideInvalidPasswordResetArguments() {
-        String email255 = "a".repeat(64) + // ローカル部 64 文字（上限ぎりぎり）
+        String email254 = "a".repeat(63) + // ローカル部 63 文字
                 "@" +
                 "b".repeat(63) + // ドメイン・ラベル 1   (63 文字)
                 "." +
@@ -416,35 +413,35 @@ class AuthControllerTest {
         return Stream.of(
                 // token
                 // @notBlank
-                Arguments.of("", email255, "testpass1", "testpass1", "token", "NotBlank"),
+                Arguments.of("", email254, "testpass1", "testpass1", "token", "NotBlank"),
                 // @size
-                Arguments.of("a".repeat(21), email255, "testpass1", "testpass1", "token", "Size"),
-                Arguments.of(token22 + "b", email255, "testpass1", "testpass1", "token", "Size"),
+                Arguments.of("a".repeat(21), email254, "testpass1", "testpass1", "token", "Size"),
+                Arguments.of(token22 + "b", email254, "testpass1", "testpass1", "token", "Size"),
 
                 // email
                 // @notBlank
                 Arguments.of(token22, "", "testpass1", "testpass1", "email", "NotBlank"),
                 // @size
-                Arguments.of(token22, email255 + "s", "testpass1", "testpass1", "email", "Size"),
-                // @email
-                Arguments.of(token22, "user@", "testpass1", "testpass1", "email", "Email"),
+                Arguments.of(token22, email254 + "s", "testpass1", "testpass1", "email", "Size"),
+                // @EmailFormat
+                Arguments.of(token22, "user@", "testpass1", "testpass1", "email", "EmailFormat"),
 
                 // newPassword
                 // @notBlank
-                Arguments.of(token22, email255, "", "testpass1", "newPassword", "NotBlank"),
+                Arguments.of(token22, email254, "", "testpass1", "newPassword", "NotBlank"),
                 // @size
-                Arguments.of(token22, email255, "1234567", "1234567", "newPassword", "Size"),
-                Arguments.of(token22, email255, "12345678901234567890a", "12345678901234567890a", "newPassword",
+                Arguments.of(token22, email254, "1234567", "1234567", "newPassword", "Size"),
+                Arguments.of(token22, email254, "12345678901234567890a", "12345678901234567890a", "newPassword",
                         "Size"),
                 // @pattern
-                Arguments.of(token22, email255, "123あい45678", "123あい45678", "newPassword", "Pattern"),
+                Arguments.of(token22, email254, "123あい45678", "123あい45678", "newPassword", "Pattern"),
 
                 // confirmPassword
                 // @notBlank
-                Arguments.of(token22, email255, "testpass1", "", "confirmPassword", "NotBlank"),
+                Arguments.of(token22, email254, "testpass1", "", "confirmPassword", "NotBlank"),
 
                 // isMatch
-                Arguments.of(token22, email255, "testpass1", "testpass2", "match", "AssertTrue"));
+                Arguments.of(token22, email254, "testpass1", "testpass2", "match", "AssertTrue"));
     }
     
     @ParameterizedTest

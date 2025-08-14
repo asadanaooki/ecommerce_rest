@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.Length;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,9 +45,10 @@ public class ProfileUpdateRequest {
     @NotBlank @Size(max = 100) private String addressBlock;
     @Size(min = 1, max = 100) private String addressBuilding; // 任意
 
-    // ⑧ 電話番号（0 始まり 10〜11 桁）
+    // ⑧ 電話番号
     @NotBlank
-    @Pattern(regexp = "^0\\d{9,10}$")
+    @Length(min = 11, max = 11)
+    @Pattern(regexp = "^[0-9]+$")
     private String phoneNumber;
 
     // ⑨ 生年月日（未来日不可）

@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
@@ -22,8 +23,10 @@ import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
 import com.example.entity.CartItem;
 import com.example.request.AddCartRequest;
+import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
+@ExtendWith(FlywayResetExtension.class)
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestDataFactory.class)

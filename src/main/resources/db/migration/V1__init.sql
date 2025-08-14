@@ -1,4 +1,4 @@
---TODO:
+-- TODO:
 -- 価格は税込みか税抜き分かるようにした方が良いかも
 
 
@@ -164,6 +164,7 @@ CREATE TABLE review (
   product_id CHAR(36) NOT NULL,
   user_id    CHAR(36) NOT NULL,
   rating     INT  NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  title       VARCHAR(50),
   review_text VARCHAR(500),
   created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

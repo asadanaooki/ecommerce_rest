@@ -23,13 +23,8 @@ public class PasswordChangeRequest {
     @NotBlank
     private String confirmPassword;
     
-    @AssertTrue
+    @AssertTrue(message = "PASSWORDS_MATCH")
     public boolean isMatch() {
-        // TODO:
-        // fail-fastにしたら以下の判定不要
-        if (newPassword == null || confirmPassword == null) {
-            return false;
-        }
         return newPassword.equals(confirmPassword);
     }
 }

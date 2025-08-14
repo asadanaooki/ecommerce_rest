@@ -17,7 +17,7 @@ public class InventoryAdjustRequest {
     @PositiveOrZero
     private Integer reserved;
 
-    @AssertTrue
+    @AssertTrue(message = "STOCK_GE_RESERVED")
     private boolean isValidRelation() {
         if (stock == null || reserved == null) {
             return true;
