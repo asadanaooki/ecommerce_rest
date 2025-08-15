@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,7 +40,7 @@ class ReviewControllerTest {
         @ParameterizedTest
         @MethodSource("provideArguments")
         void postReview_parameter(Integer rating, String title, String reviewText, boolean expected) throws Exception {
-            mockMvc.perform(post("/review/{productId}", productId)
+            var action = mockMvc.perform(post("/review/{productId}", productId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                             {
@@ -47,8 +48,13 @@ class ReviewControllerTest {
                               "title": "%s",
                               "reviewText": "%s"
                             }
-                            """.formatted(rating, title, reviewText)))
-                    .andExpect(expected ? status().isOk() : status().isBadRequest());
+                            """.formatted(rating, title, reviewText)));
+            if (expected) {
+                action.andExpect(status().isOk());
+            } else {
+                action.andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.data", hasSize(1)));
+            }
         }
 
         static Stream<Arguments> provideArguments() {

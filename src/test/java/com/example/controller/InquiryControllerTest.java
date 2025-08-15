@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -91,11 +92,12 @@ class InquiryControllerTest {
         Map<String, Object> m = base();
         override.accept(m);
         String json = objectMapper.writeValueAsString(m);
-        
+
         mockMvc.perform(post("/inquiry")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.data", hasSize(1)));
     }
 
     static Stream<Arguments> provideInvalidArguments() {

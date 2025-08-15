@@ -1,6 +1,7 @@
 package com.example.controller.admin;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -79,32 +80,35 @@ class AdminProductControllerTest {
 
         @ParameterizedTest
         @MethodSource("provideInvalidQueries")
-        void searchProducts_invalid(Map<String, String> map) throws Exception {
+        void searchProducts_invalid(Map<String, String> map, String expField, String expCode) throws Exception {
             LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
             params.setAll(map);
 
             mockMvc.perform(get("/admin/product").params(params)
                     .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data", hasSize(1)))
+                    .andExpect(jsonPath("$.data[0].field").value(expField))
+                    .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
         }
 
         static Stream<Arguments> provideInvalidQueries() {
             return Stream.of(
                     // page
-                    Arguments.of(Map.of("page", "0")),
+                    Arguments.of(Map.of("page", "0"), "page", "Min"),
                     // minPrice
-                    Arguments.of(Map.of("minPrice", "0")),
+                    Arguments.of(Map.of("minPrice", "0"), "minPrice", "Min"),
                     // minAvailable
-                    Arguments.of(Map.of("minAvailable", "-1")),
+                    Arguments.of(Map.of("minAvailable", "-1"), "minAvailable", "Min"),
 
                     // 価格範囲
-                    Arguments.of(Map.of("minPrice", "100", "maxPrice", "50")),
+                    Arguments.of(Map.of("minPrice", "100", "maxPrice", "50"), "price_range", "PRICE_RANGE_VALID"),
                     // 在庫範囲
-                    Arguments.of(Map.of("minAvailable", "3000", "maxAvailable", "300")),
+                    Arguments.of(Map.of("minAvailable", "3000", "maxAvailable", "300"), "stock_range", "STOCK_RANGE_VALID"),
                     // 作成日範囲
-                    Arguments.of(Map.of("createdFrom", "2025-06-01", "createdTo", "2022-06-01")),
+                    Arguments.of(Map.of("createdFrom", "2025-06-01", "createdTo", "2022-06-01"), "created_range", "CREATED_RANGE_VALID"),
                     // 更新日範囲
-                    Arguments.of(Map.of("updatedFrom", "2025-06-01", "updatedTo", "2021-06-01")));
+                    Arguments.of(Map.of("updatedFrom", "2025-06-01", "updatedTo", "2021-06-01"), "updated_range", "UPDATED_RANGE_VALID"));
 
         }
     }
@@ -183,10 +187,11 @@ class AdminProductControllerTest {
                 }
             }
 
-            mockMvc.perform(req).andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$..field", hasItem(expField)))
-                    .andExpect(jsonPath(String.format("$..[?(@.field== '%s')].errorCode", expField), hasItem(expCode)))
-                    .andExpect(jsonPath("$..resultCode", hasItem("VALIDATION_ERROR")));
+            mockMvc.perform(req)
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.data", hasSize(1)))
+                    .andExpect(jsonPath("$.data[0].field").value(expField))
+                    .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
         }
 
         static Stream<Arguments> provideRegistrationInvalidArguments() {
