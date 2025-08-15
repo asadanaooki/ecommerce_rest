@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -87,7 +88,7 @@ class InquiryControllerTest {
     
     @ParameterizedTest
     @MethodSource("provideInvalidArguments")
-    void submit_failure(Consumer<Map<String, Object>> override) throws Exception {
+    void submit_failure(Consumer<Map<String, Object>> override, String expField, String expCode) throws Exception {
         Map<String, Object> m = base();
         override.accept(m);
         String json = objectMapper.writeValueAsString(m);
@@ -95,7 +96,10 @@ class InquiryControllerTest {
         mockMvc.perform(post("/inquiry")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.data", hasSize(1)))
+        .andExpect(jsonPath("$.data[0].field").value(expField))
+        .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
     }
 
     static Stream<Arguments> provideInvalidArguments() {
@@ -110,40 +114,40 @@ class InquiryControllerTest {
         return Stream.of(
                 // lastName
                 // @NotBlank
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("lastName", "")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("lastName", ""), "lastName", "NotBlank"),
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("lastName", "a".repeat(51))),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("lastName", "a".repeat(51)), "lastName", "Length"),
                 // firstName
                 // @NotBlank
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("firstName", "")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("firstName", ""), "firstName", "NotBlank"),
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("firstName", "a".repeat(51))),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("firstName", "a".repeat(51)), "firstName", "Length"),
                 // email
                 // @NotBlank
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", "")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", ""), "email", "NotBlank"),
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", email255)),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", email255), "email", "Length"),
                 // @EmailFormat
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", "sあmple@")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("email", "sあmple@"), "email", "EmailFormat"),
                 // phoneNumber
                 // @NotBlank
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", ""), "phoneNumber", "NotBlank"),
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "0123456789")),
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "012345678901")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "0123456789"), "phoneNumber", "Length"),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "012345678901"), "phoneNumber", "Length"),
                 // @Pattern
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "0123456７89")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "0123456７89"), "phoneNumber", "Length"),
                 // orderNo
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "")),
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "12345")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", ""), "orderNo", "Length"),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "12345"), "orderNo", "Length"),
                 // @Pattern
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "123４")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "123４"), "orderNo", "Pattern"),
                 // message
                 // @NotBlank
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("message", "")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("message", ""), "message", "NotBlank"),
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("message", "a".repeat(1001))));
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("message", "a".repeat(1001)), "message", "Length"));
     }
 
     static Map<String, Object> base() {

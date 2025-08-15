@@ -1,6 +1,7 @@
 package com.example.controller.admin;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -184,9 +185,9 @@ class AdminProductControllerTest {
             }
 
             mockMvc.perform(req).andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$..field", hasItem(expField)))
-                    .andExpect(jsonPath(String.format("$..[?(@.field== '%s')].errorCode", expField), hasItem(expCode)))
-                    .andExpect(jsonPath("$..resultCode", hasItem("VALIDATION_ERROR")));
+                    .andExpect(jsonPath("$.data", hasSize(1)))
+                    .andExpect(jsonPath("$.data[0].field").value(expField))
+                    .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
         }
 
         static Stream<Arguments> provideRegistrationInvalidArguments() {
@@ -208,7 +209,7 @@ class AdminProductControllerTest {
 
                     // 公開
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("price", null)),
-                            "validForPublish", "AssertTrue"));
+                            "publish_requirements", "PUBLISH_REQUIREMENTS"));
 
         }
     }
