@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -207,13 +208,15 @@ class AuthControllerTest {
 
         @ParameterizedTest
         @MethodSource("provideInvalidRegistrationArguments")
-        void register_parameterFail(Map<String, ?> diff, String errorCode)
+        void register_parameterFail(Map<String, ?> diff, String expField, String expCode)
                 throws JsonProcessingException, Exception {
             mockMvc.perform(post("/register/complete")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(breakJson(diff)))
                     .andExpect(status().isBadRequest())
-                    .andExpect((jsonPath("$..errorCode", hasItem(errorCode))));
+                    .andExpect(jsonPath("$.data", hasSize(1)))
+                    .andExpect(jsonPath("$.data[0].field").value(expField))
+                    .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
         }
 
         static Stream<Arguments> provideValidRegistrationArguments() {
@@ -286,73 +289,73 @@ class AuthControllerTest {
 
             return Stream.of(
                     /* token -------------------------------------------------------------- */
-                    Arguments.of(Map.of("token", ""), "NotBlank"),
-                    Arguments.of(Map.of("token", "a".repeat(21)), "Size"), // <22
-                    Arguments.of(Map.of("token", "a".repeat(23)), "Size"), // >22
+                    Arguments.of(Map.of("token", ""), "token", "NotBlank"),
+                    Arguments.of(Map.of("token", "a".repeat(21)), "token", "Size"), // <22
+                    Arguments.of(Map.of("token", "a".repeat(23)), "token", "Size"), // >22
 
                     /* email -------------------------------------------------------------- */
-                    Arguments.of(Map.of("email", ""), "NotBlank"),
-                    Arguments.of(Map.of("email", email255), "Size"), // >255
+                    Arguments.of(Map.of("email", ""), "email", "NotBlank"),
+                    Arguments.of(Map.of("email", email255), "email", "Size"), // >255
 
                     /* password ----------------------------------------------------------- */
-                    Arguments.of(Map.of("password", ""), "NotBlank"),
-                    Arguments.of(Map.of("password", "1234567"), "Size"), // <8
-                    Arguments.of(Map.of("password", "123456789012345678901"), "Size"), // >20
-                    Arguments.of(Map.of("password", "testあい"), "Pattern"),
+                    Arguments.of(Map.of("password", ""), "password", "NotBlank"),
+                    Arguments.of(Map.of("password", "1234567"), "password", "Size"), // <8
+                    Arguments.of(Map.of("password", "123456789012345678901"), "password", "Size"), // >20
+                    Arguments.of(Map.of("password", "testあい"), "password", "Size"),
 
                     /* lastName ----------------------------------------------------------- */
-                    Arguments.of(Map.of("lastName", ""), "NotBlank"),
-                    Arguments.of(Map.of("lastName", "あ".repeat(51)), "Size"),
+                    Arguments.of(Map.of("lastName", ""), "lastName", "NotBlank"),
+                    Arguments.of(Map.of("lastName", "あ".repeat(51)), "lastName", "Size"),
 
                     /* firstName ---------------------------------------------------------- */
-                    Arguments.of(Map.of("firstName", ""), "NotBlank"),
-                    Arguments.of(Map.of("firstName", "あ".repeat(51)), "Size"),
+                    Arguments.of(Map.of("firstName", ""), "firstName", "NotBlank"),
+                    Arguments.of(Map.of("firstName", "あ".repeat(51)), "firstName", "Size"),
 
                     /* lastNameKana ------------------------------------------------------- */
-                    Arguments.of(Map.of("lastNameKana", ""), "NotBlank"),
-                    Arguments.of(Map.of("lastNameKana", "ア".repeat(51)), "Size"),
-                    Arguments.of(Map.of("lastNameKana", "テスト3"), "Pattern"),
+                    Arguments.of(Map.of("lastNameKana", ""), "lastNameKana", "NotBlank"),
+                    Arguments.of(Map.of("lastNameKana", "ア".repeat(51)), "lastNameKana", "Size"),
+                    Arguments.of(Map.of("lastNameKana", "テスト3"), "lastNameKana", "Pattern"),
 
                     /* firstNameKana ------------------------------------------------------ */
-                    Arguments.of(Map.of("firstNameKana", ""), "NotBlank"),
-                    Arguments.of(Map.of("firstNameKana", "ア".repeat(51)), "Size"),
-                    Arguments.of(Map.of("firstNameKana", "テストな"), "Pattern"),
+                    Arguments.of(Map.of("firstNameKana", ""), "firstNameKana", "NotBlank"),
+                    Arguments.of(Map.of("firstNameKana", "ア".repeat(51)), "firstNameKana", "Size"),
+                    Arguments.of(Map.of("firstNameKana", "テストな"), "firstNameKana", "Pattern"),
 
                     /* postCode ----------------------------------------------------------- */
-                    Arguments.of(Map.of("postCode", ""), "NotBlank"),
-                    Arguments.of(Map.of("postCode", "12345678"), "Pattern"), // 8 桁
-                    Arguments.of(Map.of("postCode", "123456a"), "Pattern"), // 英字混入
+                    Arguments.of(Map.of("postCode", ""), "postCode", "NotBlank"),
+                    Arguments.of(Map.of("postCode", "12345678"), "postCode", "Pattern"), // 8 桁
+                    Arguments.of(Map.of("postCode", "123456a"), "postCode", "Pattern"), // 英字混入
 
                     /* addressPrefCity ---------------------------------------------------- */
-                    Arguments.of(Map.of("addressPrefCity", ""), "NotBlank"),
-                    Arguments.of(Map.of("addressPrefCity", "い".repeat(101)), "Size"),
+                    Arguments.of(Map.of("addressPrefCity", ""), "addressPrefCity", "NotBlank"),
+                    Arguments.of(Map.of("addressPrefCity", "い".repeat(101)), "addressPrefCity", "Size"),
 
                     /* addressArea -------------------------------------------------------- */
-                    Arguments.of(Map.of("addressArea", ""), "NotBlank"),
-                    Arguments.of(Map.of("addressArea", "い".repeat(101)), "Size"),
+                    Arguments.of(Map.of("addressArea", ""), "addressArea", "NotBlank"),
+                    Arguments.of(Map.of("addressArea", "い".repeat(101)), "addressArea", "Size"),
 
                     /* addressBuilding (任意) -------------------------------------------- */
-                    Arguments.of(Map.of("addressBuilding", ""), "Size"),
-                    Arguments.of(Map.of("addressBuilding", "い".repeat(101)), "Size"),
+                    Arguments.of(Map.of("addressBuilding", ""), "addressBuilding", "Size"),
+                    Arguments.of(Map.of("addressBuilding", "い".repeat(101)), "addressBuilding", "Size"),
 
                     /* phoneNumber -------------------------------------------------------- */
-                    Arguments.of(Map.of("phoneNumber", ""), "NotBlank"),
-                    Arguments.of(Map.of("phoneNumber", "09012A4567"), "Pattern"), // 非数字
-                    Arguments.of(Map.of("phoneNumber", "0123456789"), "Size"), // 10 桁
-                    Arguments.of(Map.of("phoneNumber", "012345678901"), "Size"), // 12 桁
+                    Arguments.of(Map.of("phoneNumber", ""), "phoneNumber", "NotBlank"),
+                    Arguments.of(Map.of("phoneNumber", "09012A4567"), "phoneNumber", "Size"), // 非数字
+                    Arguments.of(Map.of("phoneNumber", "0123456789"), "phoneNumber", "Size"), // 10 桁
+                    Arguments.of(Map.of("phoneNumber", "012345678901"), "phoneNumber", "Size"), // 12 桁
 
                     /* birthday ----------------------------------------------------------- */
                     Arguments.of(new HashMap<>() {
                         {
                             put("birthday", null);
                         }
-                    }, "NotNull"),
-                    Arguments.of(Map.of("birthday", LocalDate.now().plusYears(3)), "Past"),
+                    }, "birthday", "NotNull"),
+                    Arguments.of(Map.of("birthday", LocalDate.now().plusYears(3)), "birthday", "Past"),
 
                     /* gender ------------------------------------------------------------- */
-                    Arguments.of(Map.of("gender", ""), "NotBlank"),
-                    Arguments.of(Map.of("gender", "U"), "Pattern"),
-                    Arguments.of(Map.of("gender", "MM"), "Pattern"));
+                    Arguments.of(Map.of("gender", ""), "gender", "NotBlank"),
+                    Arguments.of(Map.of("gender", "U"), "gender", "Pattern"),
+                    Arguments.of(Map.of("gender", "MM"), "gender", "Pattern"));
         }
 
         private RegisterUserRequest createValid() {
@@ -396,9 +399,9 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$..field", hasItem(expField)))
-                .andExpect(jsonPath(String.format("$..[?(@.field == '%s')].errorCode", expField),
-                        hasItem(expCode)));
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].field").value(expField))
+                .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
     }
 
     static Stream<Arguments> provideInvalidPasswordResetArguments() {
@@ -428,7 +431,7 @@ class AuthControllerTest {
 
                 // newPassword
                 // @notBlank
-                Arguments.of(token22, email254, "", "testpass1", "newPassword", "NotBlank"),
+                Arguments.of(token22, email254, "", "validpass123", "newPassword", "NotBlank"),
                 // @size
                 Arguments.of(token22, email254, "1234567", "1234567", "newPassword", "Size"),
                 Arguments.of(token22, email254, "12345678901234567890a", "12345678901234567890a", "newPassword",
@@ -441,7 +444,7 @@ class AuthControllerTest {
                 Arguments.of(token22, email254, "testpass1", "", "confirmPassword", "NotBlank"),
 
                 // isMatch
-                Arguments.of(token22, email254, "testpass1", "testpass2", "match", "AssertTrue"));
+                Arguments.of(token22, email254, "testpass1", "testpass2", "confirmPassword", "PASSWORDS_MATCH"));
     }
     
     @ParameterizedTest
