@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Mapper;
 import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
 import com.example.entity.CartItem;
-import com.example.request.AddCartRequest;
 
 @Mapper
 public interface CartMapper {
@@ -23,8 +22,7 @@ public interface CartMapper {
     
     int insertCartIfAbsent(String cartId, String userId);
     
-   // int upsertCartItem(@Param("cartId") String cartId, @Param("req") AddCartRequest req, int price);
-    int upsertCartItem(String cartId, AddCartRequest req, int price);
+    int upsertCartItem(CartItem item);
     
     int findOrCreateCartIdByUser(Map<String, String> cartKeyMap);
     

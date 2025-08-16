@@ -70,7 +70,7 @@ public class AuthController {
 
         Optional<String> guestCartId = cookieUtil.extractCartId(httpReq);
         if (guestCartId.isPresent()) {
-            String userCartId = cartService.findOrCreateUserCart(res.userId());
+            String userCartId = cartService.getOrCreateCartId(res.userId());
             cartService.mergeGuestToUser(guestCartId.get(), userCartId);
             cookieUtil.clearCartCookie(response);
         }

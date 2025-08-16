@@ -1,14 +1,16 @@
 package com.example.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
-import com.example.entity.Favorite;
 import com.example.enums.SortType;
 import com.example.mapper.FavoriteMapper;
 import com.example.mapper.ProductMapper;
@@ -56,21 +58,9 @@ public class ProductService {
         return new ProductListDto(products, totalPage, pageNumbers);
     }
 
-    public void addFavorite(String productId, String userId) {
-        favoriteMapper.insert(new Favorite() {
-            {
-                setUserId(userId);
-                setProductId(productId);
-            }
-        });
-    }
-
-    public void deleteFavorite(String productId, String userId) {
-        favoriteMapper.deleteByPrimaryKey(userId, productId);
-    }
-
     public ProductDetailDto getProductDetail(String productId, String userId) {
-        ProductDetailDto dto = productMapper.findProductDetail(productId, userId);
+        ProductDetailDto dto = Optional.ofNullable(productMapper.findProductDetail(productId, userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         dto.setPrice(taxCalculator.calculatePriceIncludingTax(dto.getPrice()));
 
         return dto;

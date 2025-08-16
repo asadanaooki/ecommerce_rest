@@ -68,9 +68,16 @@ class CartMapperTest {
     class upsertCartItem {
         @Test
         void upsertCartItem_insert() {
-            AddCartRequest req = new AddCartRequest(productId, 13);
+            AddCartRequest req = new AddCartRequest(13);
             factory.deleteCartItemByCartId(cartId);
-            int row = cartMapper.upsertCartItem(cartId, req, 300);
+            int row = cartMapper.upsertCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId(productId);
+                    setQty(req.getQty());
+                    setPrice(300);
+                }
+            });
 
             CartItem ci = cartMapper.selectCartItemByPrimaryKey(cartId, productId);
 
@@ -89,8 +96,15 @@ class CartMapperTest {
                 "19, 200, 20"
         })
         void upsertCartItem_update(int qty, int price, int expectedQty) {
-            AddCartRequest req = new AddCartRequest(productId, qty);
-            int row = cartMapper.upsertCartItem(cartId, req, price);
+            AddCartRequest req = new AddCartRequest(qty);
+            int row = cartMapper.upsertCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId(productId);
+                    setQty(req.getQty());
+                    setPrice(price);
+                }
+            });
 
             CartItem ci = cartMapper.selectCartItemByPrimaryKey(cartId, productId);
 

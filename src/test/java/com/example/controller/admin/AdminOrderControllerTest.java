@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ class AdminOrderControllerTest {
     @ParameterizedTest
     @MethodSource("provideValidArguments")
     void editOrder_success(Map<String, Integer> items, List<String> deleted) throws Exception {
-        mockMvc.perform(patch("/admin/order/{orderId}/edit", "id")
+        mockMvc.perform(patch("/admin/order/{orderId}/edit", UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(items, deleted)))
                 .andExpect(status().isOk());
@@ -49,7 +50,7 @@ class AdminOrderControllerTest {
     @MethodSource("provideInvalidArguments")
     void editOrder_fail(Map<String, Integer> items, List<String> deleted,
             String expField, String expCode) throws Exception {
-        mockMvc.perform(patch("/admin/order/{orderId}/edit", "id")
+        mockMvc.perform(patch("/admin/order/{orderId}/edit", UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(items, deleted)))
                 .andExpect(status().isBadRequest())

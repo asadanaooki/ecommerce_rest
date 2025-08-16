@@ -36,7 +36,7 @@
     insert into cart_item
       (cart_id, product_id, qty, price)
     values
-      (#{cartId}, #{req.productId}, #{req.qty}, #{price})
+      (#{cartId}, #{productId}, #{qty}, #{price})
     on duplicate key update
       qty = least(qty + VALUES(qty), 20),
       price = VALUES(price)
@@ -73,7 +73,7 @@
     where cart_id = #{cartId}
   </delete>
   
-    <delete id="deleteCartItem">
+  <delete id="deleteCartItem">
     delete from cart_item
     where cart_id = #{cartId}
       and product_id = #{productId}

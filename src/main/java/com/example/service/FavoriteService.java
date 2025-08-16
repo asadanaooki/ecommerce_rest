@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.converter.FavoriteConverter;
 import com.example.dto.FavoritePageDto;
+import com.example.entity.Favorite;
 import com.example.mapper.FavoriteMapper;
 import com.example.util.PaginationUtil;
 
@@ -34,6 +35,15 @@ public class FavoriteService {
                 favoriteMapper.findFavoritesPage(userId, pageSize, offset));
         
         return new FavoritePageDto(rows, pageSize, total);
+    }
+    
+    public void addFavorite(String productId, String userId) {
+        favoriteMapper.insert(new Favorite() {
+            {
+                setUserId(userId);
+                setProductId(productId);
+            }
+        });
     }
     
     public void deleteFavorite(String userId, String productId) {

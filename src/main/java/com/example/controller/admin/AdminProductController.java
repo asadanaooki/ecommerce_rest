@@ -1,6 +1,7 @@
 package com.example.controller.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import com.example.dto.admin.AdminProductListDto;
 import com.example.request.admin.ProductSearchRequest;
 import com.example.request.admin.ProductUpsertRequest;
 import com.example.service.admin.AdminProductService;
+import com.example.validation.constraint.HexUuid;
 
 import lombok.AllArgsConstructor;
 
@@ -35,7 +37,7 @@ public class AdminProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<AdminProductDetailDto> getDetail(@PathVariable String productId) {
+    public ResponseEntity<AdminProductDetailDto> getDetail(@PathVariable @HexUuid @NotBlank String productId) {
         AdminProductDetailDto dto = adminProductService.findDetail(productId);
 
         return ResponseEntity.ok(dto);
@@ -49,7 +51,8 @@ public class AdminProductController {
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<Void> update(@PathVariable String productId, @Valid ProductUpsertRequest req) {
+    public ResponseEntity<Void> update(@PathVariable @HexUuid @NotBlank String productId,
+            @Valid ProductUpsertRequest req) {
         adminProductService.update(productId, req);
 
         return ResponseEntity.ok().build();

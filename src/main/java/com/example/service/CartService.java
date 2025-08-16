@@ -3,21 +3,22 @@ package com.example.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
+import com.example.entity.CartItem;
+import com.example.entity.Product;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
-import com.example.util.CookieUtil;
 import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
@@ -38,24 +39,59 @@ public class CartService {
 
     private final ProductMapper productMapper;
 
-    private final CookieUtil cookieUtil;
-
     private final TaxCalculator calculator;
 
+    public Optional<String> findUserCartId(String userId) {
+        return Optional.ofNullable(cartMapper.selectCartByUser(userId))
+                .map(Cart::getCartId);
+    }
+
+    public String getOrCreateCartId(String userId) {
+        String candidate = UUID.randomUUID().toString();
+        Map<String, String> p = new HashMap<>();
+        p.put("userId", userId);
+        p.put("candidateCartId", candidate);
+        cartMapper.findOrCreateCartIdByUser(p);
+
+        return p.get("cartId");
+    }
+
+    /** カート参照 */
+    public CartDto showCart(String cartId) {
+        List<CartItemDto> items = cartMapper.selectCartItems(cartId);
+        return buildCart(items, calculator);
+    }
+
+    // TODO:
+    // 引数おおい。リファクタリングする？
+    /** 追加（idempotent） */
     public void addToCart(
-            HttpServletRequest req,
-            HttpServletResponse res,
+            String cartId,
             String userId,
+            String productId,
             AddCartRequest body) {
-        String cartId;
-        if (userId == null) {
-            cartId = cookieUtil.ensureCartId(req, res);
-        } else {
-            cartId = findOrCreateUserCart(userId);
-        }
         cartMapper.insertCartIfAbsent(cartId, userId);
-        int price = productMapper.selectByPrimaryKey(body.getProductId()).getPrice();
-        cartMapper.upsertCartItem(cartId, body, price);
+        int price = Optional.ofNullable(productMapper.selectByPrimaryKey(productId))
+                .map(Product::getPrice)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        cartMapper.upsertCartItem(new CartItem() {
+            {
+                setCartId(cartId);
+                setProductId(productId);
+                setQty(body.getQty());
+                setPrice(price);
+            }
+        });
+    }
+
+    @Transactional
+    public void removeItem(String cartId, String productId) {
+        cartMapper.deleteCartItem(cartId, productId);
+    }
+
+    @Transactional
+    public void changeQty(String cartId, String productId, int qty) {
+        cartMapper.updateCartItemQty(cartId, productId, qty);
     }
 
     public void mergeGuestToUser(String guestCartId, String userCartId) {
@@ -63,52 +99,8 @@ public class CartService {
         cartMapper.deleteCart(guestCartId);
     }
 
-    public CartDto showCart(int page, String userId, HttpServletRequest req) {
-        String cartId = findCartId(req, userId);
-        if (cartId == null) {
-            return new CartDto();
-        }
-        List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items, calculator);
-    }
-
-    public String findOrCreateUserCart(String userId) {
-        String candidate = UUID.randomUUID().toString();
-        Map<String, String> p = new HashMap();
-        p.put("userId", userId);
-        p.put("candidateCartId", candidate);
-
-        cartMapper.findOrCreateCartIdByUser(p);
-
-        return p.get("cartId");
-    }
-
-    @Transactional
-    public CartDto removeItem(String productId, String userId, HttpServletRequest req) {
-        String cartId = findCartId(req, userId);
-        if (cartId == null) {
-            return new CartDto();
-        }
-        cartMapper.deleteCartItem(cartId, productId);
-        List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items, calculator);
-    }
-
-    @Transactional
-    public CartDto changeQty(String productId, int qty,
-            String userId, HttpServletRequest httpReq) {
-        String cartId = findCartId(httpReq, userId);
-        if (cartId == null) {
-            return new CartDto();
-        }
-        cartMapper.updateCartItemQty(cartId, productId, qty);
-
-        List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items, calculator);
-    }
-
+    
     public static CartDto buildCart(List<CartItemDto> items, TaxCalculator calculator) {
-
         int totalQty = 0;
         int totalPrice = 0;
         for (CartItemDto it : items) {
@@ -120,16 +112,5 @@ public class CartService {
             totalPrice += subtotal;
         }
         return new CartDto(items, totalQty, totalPrice);
-    }
-
-    private String findCartId(HttpServletRequest req, String userId) {
-        String cartId;
-        if (userId == null) {
-            cartId = cookieUtil.extractCartId(req).orElse(null);
-        } else {
-            Cart c = cartMapper.selectCartByUser(userId);
-            cartId = c == null ? null : c.getCartId();
-        }
-        return cartId;
     }
 }

@@ -1,8 +1,10 @@
 package com.example.controller.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,9 +19,11 @@ import com.example.enums.ShippingStatus;
 import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.service.admin.AdminOrderService;
+import com.example.validation.constraint.HexUuid;
 
 import lombok.AllArgsConstructor;
 
+@Validated
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin/order")
@@ -35,32 +39,33 @@ public class AdminOrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<AdminOrderDetailDto> getDetail(@PathVariable String orderId) {
+    public ResponseEntity<AdminOrderDetailDto> getDetail(@PathVariable @HexUuid @NotBlank String orderId) {
         AdminOrderDetailDto dto = adminOrderService.findDetail(orderId);
 
         return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("/{orderId}/shipping-status")
-    public ResponseEntity<Void> updateShippingStatus(@PathVariable String orderId,
+    public ResponseEntity<Void> updateShippingStatus(@PathVariable @HexUuid @NotBlank String orderId,
             @RequestBody ShippingStatus status) {
         adminOrderService.changeShippingStatus(orderId, status);
 
         return ResponseEntity.ok().build();
     }
-    
+
     @PatchMapping("/{orderId}/payment-status")
-    public ResponseEntity<Void> updateShippingStatus(@PathVariable String orderId,
+    public ResponseEntity<Void> updateShippingStatus(@PathVariable @HexUuid @NotBlank String orderId,
             @RequestBody PaymentStatus status) {
         adminOrderService.changePaymentStatus(orderId, status);
 
         return ResponseEntity.ok().build();
     }
-    
+
     @PatchMapping("/{orderId}/edit")
-    public ResponseEntity<Void> edit(@PathVariable String orderId, @Valid @RequestBody OrderEditRequest req){
+    public ResponseEntity<Void> edit(@PathVariable @HexUuid @NotBlank String orderId,
+            @Valid @RequestBody OrderEditRequest req) {
         adminOrderService.editOrder(orderId, req);
-        
+
         return ResponseEntity.ok().build();
     }
 

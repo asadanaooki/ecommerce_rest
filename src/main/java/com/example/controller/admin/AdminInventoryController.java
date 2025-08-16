@@ -1,6 +1,7 @@
 package com.example.controller.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import com.example.dto.admin.AdminInventoryListDto;
 import com.example.request.admin.InventoryAdjustRequest;
 import com.example.request.admin.InventorySearchRequest;
 import com.example.service.admin.AdminInventoryService;
+import com.example.validation.constraint.HexUuid;
 
 import lombok.AllArgsConstructor;
 
@@ -36,14 +38,15 @@ public class AdminInventoryController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<AdminInventoryDetailDto> find(@PathVariable String productId) {
+    public ResponseEntity<AdminInventoryDetailDto> find(@PathVariable @HexUuid @NotBlank String productId) {
         AdminInventoryDetailDto dto = adminInventoryService.getDetail(productId);
 
         return ResponseEntity.ok(dto);
     }
     
     @PutMapping("/{productId}/levels")
-    public ResponseEntity<Void> adjust(@PathVariable String productId, @Valid @RequestBody InventoryAdjustRequest req) {
+    public ResponseEntity<Void> adjust(@PathVariable @HexUuid @NotBlank String productId,
+            @Valid @RequestBody InventoryAdjustRequest req) {
         adminInventoryService.adjust(productId, req);
         
         return ResponseEntity.ok().build();

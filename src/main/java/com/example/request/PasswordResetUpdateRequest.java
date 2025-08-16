@@ -1,5 +1,6 @@
 package com.example.request;
 
+import jakarta.validation.GroupSequence;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -10,6 +11,7 @@ import com.example.validation.constraint.EmailFormat;
 
 import lombok.Data;
 
+@GroupSequence({PasswordResetUpdateRequest.class, MatchCheck.class})
 @Data
 public class PasswordResetUpdateRequest {
 
@@ -31,8 +33,11 @@ public class PasswordResetUpdateRequest {
     @NotBlank
     private String confirmPassword;
 
-    @AssertTrue(message = "PASSWORDS_MATCH")
+    @AssertTrue(message = "PASSWORDS_MATCH", groups = MatchCheck.class)
     public boolean isMatch() {
         return newPassword.equals(confirmPassword);
     }
+}
+
+interface MatchCheck {
 }

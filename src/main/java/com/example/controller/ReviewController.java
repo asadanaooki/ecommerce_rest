@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.dto.ReviewPageDto;
 import com.example.request.ReviewPostRequest;
 import com.example.service.ReviewService;
+import com.example.validation.constraint.HexUuid;
 
 import lombok.AllArgsConstructor;
 
@@ -29,17 +30,15 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/{productId}")
-    public ReviewPageDto showReviews(@PathVariable @NotBlank String productId,
-            @RequestParam(defaultValue = "1") @Min(1) int page
-            ) {
+    public ReviewPageDto showReviews(@PathVariable @HexUuid @NotBlank String productId,
+            @RequestParam(defaultValue = "1") @Min(1) int page) {
         return reviewService.fetchReviews(productId, page);
     }
-    
+
     @PostMapping("/{productId}")
-    public void postReview(@PathVariable @NotBlank String productId,
+    public void postReview(@PathVariable @HexUuid @NotBlank String productId,
             @AuthenticationPrincipal String userId,
-            @RequestBody @Valid ReviewPostRequest req
-            ) {
+            @RequestBody @Valid ReviewPostRequest req) {
         reviewService.postReview(productId, userId, req);
     }
 }
