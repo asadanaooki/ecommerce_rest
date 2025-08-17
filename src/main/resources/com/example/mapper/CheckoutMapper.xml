@@ -2,7 +2,7 @@
 <mapper namespace="com.example.mapper.CheckoutMapper">
 
   <select id="selectCheckoutItems"
-    resultType="com.example.dto.CartItemDto">
+    resultType="com.example.dto.CheckoutItemDto">
     select ci.product_id, p.product_name, ci.qty, p.price as
       priceEx, ci.price as priceAtCartAddition, p.stock, p.status
     from cart_item ci

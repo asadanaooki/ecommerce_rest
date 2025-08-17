@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.example.dto.CartItemDto;
+import com.example.dto.CheckoutItemDto;
 import com.example.dto.OrderItemDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
@@ -17,7 +17,7 @@ public interface CheckoutMapper {
      * 小規模やから、注文関連はすべてこのmapperに定義
      */
 
-      List<CartItemDto> selectCheckoutItems(String cartId);
+      List<CheckoutItemDto> selectCheckoutItems(String cartId);
       
       Order selectOrderByPrimaryKey(String orderId);
       

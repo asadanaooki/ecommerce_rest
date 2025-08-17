@@ -1,14 +1,12 @@
 package com.example.controller;
 
 import jakarta.mail.MessagingException;
-import jakarta.validation.constraints.Min;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,11 +33,9 @@ public class CheckoutController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> checkout(@AuthenticationPrincipal String userId,
-            @RequestBody @Min(0) int version) throws MessagingException {
-        checkoutService.checkout(userId, version);
+    public ResponseEntity<Void> checkout(@AuthenticationPrincipal String userId) throws MessagingException {
+        checkoutService.checkout(userId);
         return ResponseEntity.ok().build();
     }
-    
-    
+
 }

@@ -8,12 +8,12 @@ import lombok.Data;
 public class Cart {
 
     private String cartId;
-    
+
     private String userId;
-    
-    private int version;
-    
+
+    // private int version;
+
     private LocalDateTime createdAt;
-    
+
     private LocalDateTime updatedAt;
 }

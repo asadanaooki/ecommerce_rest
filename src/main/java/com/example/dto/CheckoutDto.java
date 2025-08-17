@@ -15,7 +15,7 @@ public class CheckoutDto {
     
     private CartDto cart;
     
-    private int version;
+  //  private int version;
     
 //    private List<CartItemDto> items;
 //    

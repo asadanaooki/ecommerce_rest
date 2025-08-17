@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.dto.CheckoutDto;
+import com.example.dto.CheckoutItemDto;
 import com.example.entity.Cart;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
@@ -42,6 +43,7 @@ public class CheckoutService {
     ・支払方法増やす。希望日時や送り先変更も。
     ・diffリストを別に返す方が良いかも
     ・送料・手数料導入
+    ・カートのバージョン一致導入する？カートの内容が変わってないことを保証する
     */
 
     private final UserMapper userMapper;
@@ -71,8 +73,7 @@ public class CheckoutService {
         return new CheckoutDto(na.fullName,
                 user.getPostalCode(),
                 na.fullAddress,
-                CartService.buildCart(items, calculator),
-                c.getVersion());
+                CartService.buildCart(items, calculator));
         // TODO:
         // 以下、購入不可判定入れるときに必要かも
         //   List<CartItemDto> items = new ArrayList<CartItemDto>();
@@ -117,14 +118,14 @@ public class CheckoutService {
     }
 
     @Transactional
-    public void checkout(String userId, int version) throws MessagingException {
+    public void checkout(String userId) throws MessagingException {
         Cart c = cartMapper.selectCartByUser(userId);
-        // カートが更新されてる場合
-        if (c.getVersion() != version) {
-            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
-        }
+//        // カートが更新されてる場合
+//        if (c.getVersion() != version) {
+//            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
+//        }
         String orderId = c.getCartId();
-        List<CartItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
+        List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
 
         // 要確認商品がある場合
         if (hasDiff(items)) {
