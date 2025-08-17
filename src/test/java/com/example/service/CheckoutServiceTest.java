@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 
 import com.example.dto.CartItemDto;
 import com.example.dto.CheckoutDto;
+import com.example.dto.CheckoutItemDto;
 import com.example.entity.Cart;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
@@ -160,7 +161,6 @@ class CheckoutServiceTest {
                             setProductName("通常品");
                             setQty(2);
                             setPriceEx(200);
-                            setPriceAtCartAddition(200);
                         }
                     },
                     new CartItemDto() {
@@ -169,7 +169,6 @@ class CheckoutServiceTest {
                             setProductName("通常品2");
                             setQty(1);
                             setPriceEx(100);
-                            setPriceAtCartAddition(400);
                         }
                     });
             doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
@@ -313,10 +312,10 @@ class CheckoutServiceTest {
 
         @Test
         void checkout_diffItemsAllKinds() {
-            // diff が発生する 4 件分の CartItemDto
-            List<CartItemDto> diffItems = List.of(
+            // diff が発生する 4 件分の CheckoutItemDto
+            List<CheckoutItemDto> diffItems = List.of(
                     // ① 販売停止
-                    new CartItemDto() {
+                    new CheckoutItemDto() {
                         {
                             setProductId("D-001");
                             setProductName("販売停止品");
@@ -328,7 +327,7 @@ class CheckoutServiceTest {
                         }
                     },
                     // ② 在庫切れ
-                    new CartItemDto() {
+                    new CheckoutItemDto() {
                         {
                             setProductId("O-002");
                             setProductName("在庫切れ品");
@@ -340,7 +339,7 @@ class CheckoutServiceTest {
                         }
                     },
                     // ③ 在庫不足
-                    new CartItemDto() {
+                    new CheckoutItemDto() {
                         {
                             setProductId("L-003");
                             setProductName("在庫不足品");
@@ -352,7 +351,7 @@ class CheckoutServiceTest {
                         }
                     },
                     // ④ 価格改定
-                    new CartItemDto() {
+                    new CheckoutItemDto() {
                         {
                             setProductId("P-004");
                             setProductName("価格改定品");
@@ -378,12 +377,12 @@ class CheckoutServiceTest {
                         BusinessException e = (BusinessException) t;
                         assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
                         assertThat(e.getErrorCode()).isEqualTo("diff");
-                        assertThat((List<CartItemDto>) e.getData()).extracting(CartItemDto::getReason)
+                        assertThat((List<CheckoutItemDto>) e.getData()).extracting(CheckoutItemDto::getReason)
                                 .containsExactly(
-                                        CartItemDto.DiffReason.DISCONTINUED,
-                                        CartItemDto.DiffReason.OUT_OF_STOCK,
-                                        CartItemDto.DiffReason.LOW_STOCK,
-                                        CartItemDto.DiffReason.PRICE_CHANGED);
+                                        CheckoutItemDto.DiffReason.DISCONTINUED,
+                                        CheckoutItemDto.DiffReason.OUT_OF_STOCK,
+                                        CheckoutItemDto.DiffReason.LOW_STOCK,
+                                        CheckoutItemDto.DiffReason.PRICE_CHANGED);
                     });
 
         }
@@ -397,8 +396,8 @@ class CheckoutServiceTest {
                     //    setVersion(2);
                 }
             };
-            List<CartItemDto> items = List.of(
-                    new CartItemDto() {
+            List<CheckoutItemDto> items = List.of(
+                    new CheckoutItemDto() {
                         { // 通常品1
                             setProductId("N-001");
                             setProductName("通常品1");
@@ -409,7 +408,7 @@ class CheckoutServiceTest {
                             setPriceAtCartAddition(200);
                         }
                     },
-                    new CartItemDto() {
+                    new CheckoutItemDto() {
                         { // 通常品2
                             setProductId("N-002");
                             setProductName("通常品2");

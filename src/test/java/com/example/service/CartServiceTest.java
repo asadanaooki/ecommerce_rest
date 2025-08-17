@@ -69,7 +69,6 @@ class CartServiceTest {
                             setProductName("Item A");
                             setQty(3);
                             setPriceEx(100); // 税抜 100 円
-                            setPriceAtCartAddition(100);
                         }
                     },
                     new CartItemDto() {
@@ -79,7 +78,6 @@ class CartServiceTest {
                             setQty(1);
                             setPriceEx(200); // 税抜 200 円
                             setSubtotal(220); // 220 * 1
-                            setPriceAtCartAddition(190);
                         }
                     });
             doReturn(items).when(cartMapper).selectCartItems(anyString());
@@ -95,14 +93,12 @@ class CartServiceTest {
                             CartItemDto::getProductName,
                             CartItemDto::getQty,
                             CartItemDto::getPriceEx,
-                            CartItemDto::getPriceAtCartAddition,
                             CartItemDto::getPriceInc,
                             CartItemDto::getSubtotal)
                     .containsExactly(
                             "A-001",
                             "Item A",
                             3,
-                            100,
                             100,
                             110,
                             330);

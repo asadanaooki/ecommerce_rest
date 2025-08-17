@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 
-import com.example.dto.CartItemDto;
+import com.example.dto.CheckoutItemDto;
 import com.example.entity.CartItem;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
@@ -79,20 +79,20 @@ class CheckoutMapperTest {
             }
         });
         
-        List<CartItemDto> items = checkoutMapper.selectCheckoutItems("bbbbeeee-cccc-dddd-aaaa-111122223333");
+        List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems("bbbbeeee-cccc-dddd-aaaa-111122223333");
         
         assertThat(items).hasSize(3);
         assertThat(items.get(0)).extracting(
-                CartItemDto::getProductId,
-                CartItemDto::getProductName,
-                CartItemDto::getQty,
-                CartItemDto::getPriceEx,
-                CartItemDto::getPriceAtCartAddition,
-                CartItemDto::getPriceInc,
-                CartItemDto::getSubtotal,
-                CartItemDto::getStatus,
-                CartItemDto::getStock,
-                CartItemDto::getReason
+                CheckoutItemDto::getProductId,
+                CheckoutItemDto::getProductName,
+                CheckoutItemDto::getQty,
+                CheckoutItemDto::getPriceEx,
+                CheckoutItemDto::getPriceAtCartAddition,
+                CheckoutItemDto::getPriceInc,
+                CheckoutItemDto::getSubtotal,
+                CheckoutItemDto::getStatus,
+                CheckoutItemDto::getStock,
+                CheckoutItemDto::getReason
                 )
         .containsExactly(
                 "f9c9cfb2-0893-4f1c-b508-f9e909ba5274",
