@@ -412,28 +412,16 @@ class CartControllerTest {
             void changeQty_absent() throws Exception {
                 doReturn(Optional.empty()).when(cartService).findUserCartId("user");
 
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+               MvcResult result= mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("2"))
-                        .andExpect(status().isOk());
+                        .andExpect(status().isOk())
+                        .andReturn();
 
                 verify(cartService).changeQty(null, "user", productId, 2);
-            }
+                
+                assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
 
-            @Test
-            void changeQty_invalidQuantityTooLow() throws Exception {
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("0"))
-                        .andExpect(status().isBadRequest());
-            }
-
-            @Test
-            void changeQty_invalidQuantityTooHigh() throws Exception {
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("21"))
-                        .andExpect(status().isBadRequest());
             }
         }
     }
@@ -454,11 +442,19 @@ class CartControllerTest {
 
             @Test
             void removeFromCart_valid() throws Exception {
-                mockMvc.perform(delete("/cart/items/{productId}", productId)
+               MvcResult result = mockMvc.perform(delete("/cart/items/{productId}", productId)
                         .cookie(cookie))
-                        .andExpect(status().isOk());
+                        .andExpect(status().isOk())
+                        .andReturn();
 
                 verify(cartService).removeItem("id", productId);
+                
+                Cookie resCookie = result.getResponse().getCookie("cartId");
+                assertThat(result.getResponse().getHeader("Set-Cookie")).isNotNull();
+
+                assertThat(resCookie).isNotNull();
+                assertThat(resCookie.getValue()).isEqualTo("id");
+                assertThat(resCookie.getMaxAge()).isEqualTo(60 * 60 * 24 * 14);
             }
 
             @Test

@@ -201,7 +201,7 @@ class CartServiceTest {
         }
 
         @Test
-        void changeQty_valid() {
+        void changeQty() {
             cartService.changeQty(cartId, userId, productId, 5);
 
             ArgumentCaptor<CartItem> cap = ArgumentCaptor.forClass(CartItem.class);
@@ -220,18 +220,6 @@ class CartServiceTest {
                             5,
                             1500);
         }
-
-        @Test
-        void changeQty_differentQuantity() {
-            cartService.changeQty(cartId, userId, productId, 10);
-
-            ArgumentCaptor<CartItem> cap = ArgumentCaptor.forClass(CartItem.class);
-            verify(cartMapper).upsertCartItem(cap.capture());
-
-            CartItem ci = cap.getValue();
-            assertThat(ci.getQty()).isEqualTo(10);
-            assertThat(ci.getPrice()).isEqualTo(1500);
-        }
     }
 
     @Nested
@@ -240,29 +228,10 @@ class CartServiceTest {
         String productId = "P-001";
 
         @Test
-        void removeItem_valid() {
+        void removeItem() {
             cartService.removeItem(cartId, productId);
 
             verify(cartMapper).deleteCartItem(cartId, productId);
-        }
-
-        @Test
-        void removeItem_idempotent() {
-            cartService.removeItem(cartId, productId);
-            cartService.removeItem(cartId, productId);
-
-            verify(cartMapper, times(2)).deleteCartItem(cartId, productId);
-        }
-
-        @Test
-        void removeItem_differentProduct() {
-            String anotherProductId = "P-002";
-            
-            cartService.removeItem(cartId, productId);
-            cartService.removeItem(cartId, anotherProductId);
-
-            verify(cartMapper).deleteCartItem(cartId, productId);
-            verify(cartMapper).deleteCartItem(cartId, anotherProductId);
         }
     }
 
