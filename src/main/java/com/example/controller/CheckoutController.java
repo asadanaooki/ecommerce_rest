@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.dto.CheckoutDto;
+import com.example.dto.CheckoutConfirmDto;
 import com.example.service.CheckoutService;
 
 import lombok.AllArgsConstructor;
@@ -28,7 +28,7 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
 
     @GetMapping
-    public CheckoutDto showCheckout(@AuthenticationPrincipal String userId) {
+    public CheckoutConfirmDto showCheckout(@AuthenticationPrincipal String userId) {
         return checkoutService.loadCheckout(userId);
     }
 

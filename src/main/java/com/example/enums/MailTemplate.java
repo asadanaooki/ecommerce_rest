@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.dto.CartDto;
+import com.example.dto.CheckoutProcessDto;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.service.CheckoutService;
@@ -61,13 +61,13 @@ public enum MailTemplate {
         @Override
         public EmailMessage build(Object... args) {
             User user = (User) args[0];
-            CartDto cart = (CartDto) args[1];
+            CheckoutProcessDto ck = (CheckoutProcessDto) args[1];
             int orderNumber = (int) args[2];
 
-            NameAddress na = CheckoutService.buildNameAddress(user);
+            
 
             /* ---------- 明細ブロック ---------- */
-            String itemsBlock = cart.getItems().stream().map(i -> """
+            String itemsBlock = ck.getItems().stream().map(i -> """
                     %s
                     数量 : %d
                     価格 : ¥%,d
@@ -76,12 +76,12 @@ public enum MailTemplate {
                     .collect(Collectors.joining("\n"));
 
             String body = getBody().formatted(
-                    na.fullName(),
-                    na.fullName(),
-                    na.fullAddress(),
+                    ck.getFullName(),
+                    ck.getFullName(),
+                    ck.getFullAddress(),
                     String.format("%04d", orderNumber),
                     itemsBlock,
-                    cart.getTotalPrice());
+                    ck.getTotalPrice());
 
             return new EmailMessage(user.getEmail(), getSubject(), body);
 

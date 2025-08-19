@@ -10,10 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
-import com.example.dto.CheckoutDto;
+import com.example.dto.CheckoutConfirmDto;
 import com.example.dto.CheckoutItemDto;
+import com.example.dto.CheckoutProcessDto;
 import com.example.entity.Cart;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
@@ -58,7 +58,8 @@ public class CheckoutService {
 
     private final MailGateway mailGateway;
 
-    public CheckoutDto loadCheckout(String userId) {
+    
+    public CheckoutConfirmDto loadCheckout(String userId) {
         String cartId = cartMapper.selectCartByUser(userId).getCartId();
         Cart c = cartMapper.selectCartByPrimaryKey(cartId);
         if (c == null) {
@@ -70,7 +71,7 @@ public class CheckoutService {
 
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
 
-        return new CheckoutDto(na.fullName,
+        return new CheckoutConfirmDto(na.fullName,
                 user.getPostalCode(),
                 na.fullAddress,
                 CartService.buildCart(items, calculator));
@@ -120,69 +121,81 @@ public class CheckoutService {
     @Transactional
     public void checkout(String userId) throws MessagingException {
         Cart c = cartMapper.selectCartByUser(userId);
-//        // カートが更新されてる場合
-//        if (c.getVersion() != version) {
-//            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
-//        }
+        //        // カートが更新されてる場合
+        //        if (c.getVersion() != version) {
+        //            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
+        //        }
         String orderId = c.getCartId();
         List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
+        items.forEach(it -> it.setPriceInc(calculator.calculatePriceIncludingTax(it.getPriceEx())));
 
         // 要確認商品がある場合
         if (hasDiff(items)) {
             throw new BusinessException(HttpStatus.CONFLICT, "diff", items);
         }
 
-        CartDto cart = CartService.buildCart(items, calculator);
         User user = userMapper.selectUserByPrimaryKey(userId);
+        NameAddress na = buildNameAddress(user);
+
+        CheckoutProcessDto ck = new CheckoutProcessDto(
+                na.fullName,
+                user.getPostalCode(),
+                na.fullAddress,
+                items,
+                items.stream()
+                        .mapToInt(CheckoutItemDto::getQty)
+                        .sum(),
+                items.stream()
+                        .mapToInt(CheckoutItemDto::getSubtotal)
+                        .sum());
         // 注文確定処理
-        int orderNumber = finalizeOrder(orderId, user, cart);
+        int orderNumber = finalizeOrder(orderId, user, ck);
 
         // TODO:メール送信 仮実装
         // 管理者にも通知する
-        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, cart, orderNumber));
+        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, ck, orderNumber));
     }
 
     /**
      * 差分を検知し、各 Item に Reason を付与。
      * 差分が 1 件でもあれば true を返す。
      */
-    private boolean hasDiff(List<CartItemDto> items) {
-        for (CartItemDto it : items) {
+    private boolean hasDiff(List<CheckoutItemDto> items) {
+        for (CheckoutItemDto it : items) {
             if (it.getStatus() == SaleStatus.UNPUBLISHED) {
-                it.setReason(CartItemDto.DiffReason.DISCONTINUED);
+                it.setReason(CheckoutItemDto.DiffReason.DISCONTINUED);
             } else if (it.getStock() == null || it.getStock() <= 0) {
-                it.setReason(CartItemDto.DiffReason.OUT_OF_STOCK);
+                it.setReason(CheckoutItemDto.DiffReason.OUT_OF_STOCK);
             } else if (it.getStock() < it.getQty()) {
-                it.setReason(CartItemDto.DiffReason.LOW_STOCK);
+                it.setReason(CheckoutItemDto.DiffReason.LOW_STOCK);
             } else if (it.getPriceEx() != it.getPriceAtCartAddition()) {
-                it.setReason(CartItemDto.DiffReason.PRICE_CHANGED);
+                it.setReason(CheckoutItemDto.DiffReason.PRICE_CHANGED);
             }
         }
         return items.stream().anyMatch(i -> i.getReason() != null);
     }
 
-    private int finalizeOrder(String orderId, User user, CartDto cart) {
-        NameAddress na = buildNameAddress(user);
+    private int finalizeOrder(String orderId, User user, CheckoutProcessDto ck) {
 
         /* ---------- 在庫減算 ---------- */
-        cart.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty()));
+        ck.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty()));
 
         /* ---------- 注文ヘッダ ---------- */
         Order order = new Order() {
             {
                 setOrderId(orderId);
                 setUserId(user.getUserId()); // ← ユーザ ID は user から
-                setName(na.fullName);
+                setName(ck.getFullName());
                 setPostalCode(user.getPostalCode());
-                setAddress(na.fullAddress);
-                setTotalQty(cart.getTotalQty());
-                setTotalPrice(cart.getTotalPrice());
+                setAddress(ck.getFullAddress());
+                setTotalQty(ck.getTotalQty());
+                setTotalPrice(ck.getTotalPrice());
             }
         };
         checkoutMapper.insertOrderHeader(order);
 
         /* ---------- 注文明細 ---------- */
-        List<OrderItem> orderItems = cart.getItems().stream()
+        List<OrderItem> orderItems = ck.getItems().stream()
                 .map(i -> {
                     OrderItem oi = new OrderItem();
                     oi.setOrderId(orderId);
@@ -199,7 +212,7 @@ public class CheckoutService {
 
         // カート削除
         cartMapper.deleteCart(orderId);
-        
+
         return order.getOrderNumber();
     }
 

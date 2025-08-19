@@ -15,7 +15,6 @@ import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
 import com.example.entity.CartItem;
-import com.example.entity.Product;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
@@ -34,6 +33,8 @@ public class CartService {
       ・販売ステータス定数を共通化したほうが良いかも。
       ・価格計算、重複して書いてるが共通化したほうが良いのか
       ・buildCartメソッドstaticで定義しているが、ちゃんと共通化したほうがよいかも
+       isCartExpiredの戻り値がNULLを考慮するか？
+       productIdが不正値の場合を考慮するか？addやupdateなどで
     */
     private final CartMapper cartMapper;
 
@@ -58,6 +59,9 @@ public class CartService {
 
     /** カート参照 */
     public CartDto showCart(String cartId) {
+        if (cartMapper.isCartExpired(cartId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
         return buildCart(items, calculator);
     }
@@ -65,33 +69,58 @@ public class CartService {
     // TODO:
     // 引数おおい。リファクタリングする？
     /** 追加（idempotent） */
-    public void addToCart(
-            String cartId,
+    public Optional<String> addToCart(
+            String candidateCartId,
             String userId,
             String productId,
             AddCartRequest body) {
-        cartMapper.insertCartIfAbsent(cartId, userId);
-        int price = Optional.ofNullable(productMapper.selectByPrimaryKey(productId))
-                .map(Product::getPrice)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        boolean expiredOrAbsent = (candidateCartId == null)
+                || cartMapper.isCartExpired(candidateCartId);
+        String cid = expiredOrAbsent ? UUID.randomUUID().toString() : candidateCartId;
+
+        cartMapper.insertCartIfAbsent(cid, userId);
+
+        int price = productMapper.selectByPrimaryKey(productId).getPrice();
         cartMapper.upsertCartItem(new CartItem() {
             {
-                setCartId(cartId);
+                setCartId(cid);
                 setProductId(productId);
                 setQty(body.getQty());
                 setPrice(price);
             }
         });
+
+        return expiredOrAbsent ? Optional.of(cid) : Optional.empty();
     }
 
+    // --- PATCH 数量変更：期限切れなら新規発行してから反映 ---
+    @Transactional
+    public void changeQty(
+            String cartId,
+            String userId,
+            String productId,
+            int qty) {
+        // TODO:
+        // show→updateしてる想定なので、カートIDがあり、期限内の想定
+        // いきなりAPI叩くケースなどのガード検討
+        int price = productMapper.selectByPrimaryKey(productId).getPrice();
+        cartMapper.upsertCartItem(new CartItem() {
+            {
+                setCartId(cartId);
+                setProductId(productId);
+                setQty(qty);
+                setPrice(price);
+            }
+        });
+    }
+
+    // --- DELETE：冪等。存在しなくても期限切れでも OK ---
     @Transactional
     public void removeItem(String cartId, String productId) {
+        // TODO:
+        // show→Deleteしてる想定なので、カートIDがあり、期限内の想定
+        // いきなりAPI叩くケースなどのガード検討
         cartMapper.deleteCartItem(cartId, productId);
-    }
-
-    @Transactional
-    public void changeQty(String cartId, String productId, int qty) {
-        cartMapper.updateCartItemQty(cartId, productId, qty);
     }
 
     public void mergeGuestToUser(String guestCartId, String userCartId) {
@@ -99,7 +128,6 @@ public class CartService {
         cartMapper.deleteCart(guestCartId);
     }
 
-    
     public static CartDto buildCart(List<CartItemDto> items, TaxCalculator calculator) {
         int totalQty = 0;
         int totalPrice = 0;

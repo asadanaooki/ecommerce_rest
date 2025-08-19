@@ -1,6 +1,8 @@
 package com.example.testUtil;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.example.entity.Cart;
 import com.example.entity.CartItem;
 import com.example.entity.Order;
 import com.example.entity.Product;
@@ -34,16 +37,32 @@ public class TestDataFactory {
                 "INSERT INTO favorite (user_id, product_id) VALUES (?, ?)", userId, productId);
     }
 
-    public void createCart(String cartId, String userId) {
-        String sql = (userId == null)
-                ? "insert into cart (cart_id) values (?)"
-                : "insert into cart (cart_id, user_id) values (?, ?)";
-        if (userId == null) {
-            jdbcTemplate.update(sql, cartId);
-        } else {
-            jdbcTemplate.update(sql, cartId, userId);
+    public void createCart(Cart cart) {
+        StringBuilder cols = new StringBuilder("cart_id, ttl_days");
+        StringBuilder marks = new StringBuilder("?, ?");
+        List<Object> params = new ArrayList<>(
+                List.of(cart.getCartId(), cart.getTtlDays()));
+
+        if (cart.getUserId() != null) {
+            cols.append(", user_id");
+            marks.append(", ?");
+            params.add(cart.getUserId());
         }
+        if (cart.getCreatedAt() != null) {
+            cols.append(", created_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(cart.getCreatedAt()));
+        }
+        if (cart.getUpdatedAt() != null) {
+            cols.append(", updated_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(cart.getUpdatedAt()));
+        }
+
+        String sql = String.format("insert into cart (%s) values (%s)", cols, marks);
+        jdbcTemplate.update(sql, params.toArray());
     }
+
 
     public void createCartItem(CartItem item) {
         StringBuilder cols = new StringBuilder("cart_id, product_id, qty, price");
@@ -137,7 +156,7 @@ public class TestDataFactory {
         params.add(product.getStock());
         params.add(product.getReserved());
         params.add(product.getStatus().name());
-        
+
         if (product.getSku() > 0) {
             cols.append(", sku");
             marks.append(", ?");
@@ -174,7 +193,7 @@ public class TestDataFactory {
                 order.getAddress(),
                 order.getTotalQty(),
                 order.getTotalPrice()));
-        
+
         if (order.getOrderNumber() > 0) {
             cols.append(", order_number");
             marks.append(", ?");
@@ -206,6 +225,15 @@ public class TestDataFactory {
                 cols.toString(),
                 marks.toString());
         jdbcTemplate.update(sql, params.toArray());
+    }
+
+    public void freezeNow(LocalDateTime time) {
+        String formatted = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        jdbcTemplate.execute("set timestamp = unix_timestamp('" + formatted + "')");
+    }
+
+    public void unfreezeNow() {
+        jdbcTemplate.execute("set timestamp = 0");
     }
 
 }

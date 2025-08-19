@@ -12,6 +12,8 @@ public class Cart {
     private String userId;
 
     // private int version;
+    
+    private int ttlDays;
 
     private LocalDateTime createdAt;
 

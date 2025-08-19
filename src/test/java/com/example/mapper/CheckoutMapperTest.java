@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 
 import com.example.dto.CheckoutItemDto;
+import com.example.entity.Cart;
 import com.example.entity.CartItem;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
@@ -30,24 +31,31 @@ class CheckoutMapperTest {
 
     @Autowired
     CheckoutMapper checkoutMapper;
-    
+
     @Autowired
     OrderHistoryMapper orderHistoryMapper;
-    
+
     @Autowired
     TestDataFactory factory;
-    
+
     String userId = "550e8400-e29b-41d4-a716-446655440000";
-    
+
     String cartId = "bbbbeeee-cccc-dddd-aaaa-111122223333";
-    
+
     @Test
     void selectCheckoutItems() {
         LocalDateTime time1 = LocalDateTime.of(2025, 6, 22, 10, 40, 3);
         LocalDateTime time2 = LocalDateTime.of(2025, 6, 21, 15, 42, 3);
-        
+
         factory.deleteCart(cartId);
-        factory.createCart(cartId, userId);
+
+        factory.createCart(new Cart() {
+            {
+                setCartId(cartId);
+                setUserId(userId);
+                setTtlDays(60);
+            }
+        });
         factory.createCartItem(new CartItem() {
             {
                 setCartId(cartId);
@@ -78,9 +86,9 @@ class CheckoutMapperTest {
                 setUpdatedAt(time2);
             }
         });
-        
+
         List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems("bbbbeeee-cccc-dddd-aaaa-111122223333");
-        
+
         assertThat(items).hasSize(3);
         assertThat(items.get(0)).extracting(
                 CheckoutItemDto::getProductId,
@@ -92,22 +100,20 @@ class CheckoutMapperTest {
                 CheckoutItemDto::getSubtotal,
                 CheckoutItemDto::getStatus,
                 CheckoutItemDto::getStock,
-                CheckoutItemDto::getReason
-                )
-        .containsExactly(
-                "f9c9cfb2-0893-4f1c-b508-f9e909ba5274",
-                "Item18",
-                1,
-                3200,
-                3300,
-                null,
-                0,
-                SaleStatus.PUBLISHED,
-                15,
-                null
-                );
+                CheckoutItemDto::getReason)
+                .containsExactly(
+                        "f9c9cfb2-0893-4f1c-b508-f9e909ba5274",
+                        "Item18",
+                        1,
+                        3200,
+                        3300,
+                        null,
+                        null,
+                        SaleStatus.PUBLISHED,
+                        15,
+                        null);
     }
-    
+
     @Test
     void insertOrderHeader() {
         Order order = new Order();
@@ -118,12 +124,12 @@ class CheckoutMapperTest {
         order.setAddress("東京都渋谷区神南1-1-1");
         order.setTotalQty(3);
         order.setTotalPrice(9600);
-        
+
         checkoutMapper.insertOrderHeader(order);
-        
+
         assertThat(order.getOrderNumber()).isEqualTo(3);
         Order saved = checkoutMapper.selectOrderByPrimaryKey(cartId);
-        
+
         assertThat(saved).extracting(
                 Order::getOrderId,
                 Order::getUserId,
@@ -133,21 +139,19 @@ class CheckoutMapperTest {
                 Order::getTotalQty,
                 Order::getTotalPrice,
                 Order::getShippingStatus,
-                Order::getPaymentStatus
-                )
-        .containsExactly(
-                cartId,
-                userId,
-                "山田 太郎",
-                "1500041",
-                "東京都渋谷区神南1-1-1",
-                3,
-                9600,
-                ShippingStatus.NOT_SHIPPED,
-                PaymentStatus.UNPAID
-                );
+                Order::getPaymentStatus)
+                .containsExactly(
+                        cartId,
+                        userId,
+                        "山田 太郎",
+                        "1500041",
+                        "東京都渋谷区神南1-1-1",
+                        3,
+                        9600,
+                        ShippingStatus.NOT_SHIPPED,
+                        PaymentStatus.UNPAID);
     }
-    
+
     @Test
     void insertOrderItems() {
         // ---------- arrange ----------
@@ -181,10 +185,10 @@ class CheckoutMapperTest {
         it2.setSubtotal(6400);
 
         List<OrderItem> items = List.of(it1, it2);
-        
+
         int rows = checkoutMapper.insertOrderItems(items);
         assertThat(rows).isEqualTo(2);
-        
+
         List<OrderItem> saved = orderHistoryMapper.selectOrderItems(orderId);
         assertThat(saved).hasSize(2);
         OrderItem order1 = saved.get(0);
@@ -196,117 +200,117 @@ class CheckoutMapperTest {
         assertThat(order1.getSubtotal()).isEqualTo(750);
         assertThat(order1.getCreatedAt()).isNotNull();
         assertThat(order1.getUpdatedAt()).isNotNull();
-        
+
         assertThat(saved.get(1).getProductId()).isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
     }
-    
-//    @Test
-//    void selectHeadersByUser() throws InterruptedException {
-//        String orderId2 = "22222222-2222-2222-2222-222222222222";
-//        Order o2 = new Order();
-//        o2.setOrderId(orderId2);
-//        o2.setUserId(userId);
-//        o2.setName("山田 次郎");
-//        o2.setPostalCode("1600000");
-//        o2.setAddress("東京都新宿区西新宿2-2-2");
-//        o2.setTotalQty(1);
-//        o2.setTotalPrice(3200);
-//        checkoutMapper.insertOrderHeader(o2);
-//        
-//        Thread.sleep(2000);           // 1 秒待機（テスト用なので簡易に）
-//        
-//        String orderId1 = "11111111-1111-1111-1111-111111111111";
-//        Order o1 = new Order();
-//        o1.setOrderId(orderId1);
-//        o1.setUserId(userId);
-//        o1.setName("山田 太郎");
-//        o1.setPostalCode("1500041");
-//        o1.setAddress("東京都渋谷区神南1-1-1");
-//        o1.setTotalQty(3);
-//        o1.setTotalPrice(9600);
-//        checkoutMapper.insertOrderHeader(o1);
-//        
-//        List<OrderHeaderDto> headers = checkoutMapper.selectHeadersByUser(userId);
-//        
-//        assertThat(headers).hasSize(2);
-//        assertThat(headers.get(1).getOrderId()).isEqualTo(orderId2);
-//        
-//        assertThat(headers.get(0)).extracting(
-//                OrderHeaderDto::getOrderId,
-//                OrderHeaderDto::getTotalPrice,
-//                OrderHeaderDto::getName,
-//                OrderHeaderDto::getPostalCode,
-//                OrderHeaderDto::getAddress
-//                )
-//        .containsExactly(
-//                orderId1,
-//                9600,
-//                "山田 太郎",
-//                "1500041",
-//                "東京都渋谷区神南1-1-1"
-//                );
-//        assertThat(headers.get(0).getCreatedAt()).isNotNull();
-//    }
-//    
-//    @Test
-//    void selectItemsByOrderIds() {
-//     // ---------- arrange ----------
-//        // 注文ヘッダ 1（明細は 2 商品）
-//        String orderId1 = "33333333-3333-3333-3333-333333333333";
-//        Order h1 = new Order();
-//        h1.setOrderId(orderId1);
-//        h1.setUserId(userId);
-//        h1.setName("山田 花子");
-//        h1.setPostalCode("1000001");
-//        h1.setAddress("東京都千代田区千代田1-1-1");
-//        h1.setTotalQty(3);
-//        h1.setTotalPrice(7150);
-//        checkoutMapper.insertOrderHeader(h1);
-//
-//        OrderItem h1i1 = new OrderItem();
-//        h1i1.setOrderId(orderId1);
-//        h1i1.setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
-//        h1i1.setProductName("testC");
-//        h1i1.setQty(1);
-//        h1i1.setPrice(750);
-//        h1i1.setSubtotal(750);
-//
-//        OrderItem h1i2 = new OrderItem();
-//        h1i2.setOrderId(orderId1);
-//        h1i2.setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
-//        h1i2.setProductName("testD");
-//        h1i2.setQty(2);
-//        h1i2.setPrice(3200);
-//        h1i2.setSubtotal(6400);
-//
-//        checkoutMapper.insertOrderItems(List.of(h1i1, h1i2));
-//
-//        // 注文ヘッダ 2（明細は 1 商品）
-//        String orderId2 = "44444444-4444-4444-4444-444444444444";
-//        Order h2 = new Order();
-//        h2.setOrderId(orderId2);
-//        h2.setUserId(userId);
-//        h2.setName("山田 三郎");
-//        h2.setPostalCode("1000002");
-//        h2.setAddress("東京都千代田区丸の内2-2-2");
-//        h2.setTotalQty(1);
-//        h2.setTotalPrice(1800);
-//        checkoutMapper.insertOrderHeader(h2);
-//
-//        OrderItem h2i1 = new OrderItem();
-//        h2i1.setOrderId(orderId2);
-//        h2i1.setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
-//        h2i1.setProductName("testE");
-//        h2i1.setQty(1);
-//        h2i1.setPrice(1800);
-//        h2i1.setSubtotal(1800);
-//
-//        checkoutMapper.insertOrderItems(List.of(h2i1));
-//        List<String> orderIds = List.of(orderId1, orderId2);
-//        
-//        List<OrderItemDto> items = checkoutMapper.selectItemsByOrderIds(orderIds);
-//        
-//        
-//    }
+
+    //    @Test
+    //    void selectHeadersByUser() throws InterruptedException {
+    //        String orderId2 = "22222222-2222-2222-2222-222222222222";
+    //        Order o2 = new Order();
+    //        o2.setOrderId(orderId2);
+    //        o2.setUserId(userId);
+    //        o2.setName("山田 次郎");
+    //        o2.setPostalCode("1600000");
+    //        o2.setAddress("東京都新宿区西新宿2-2-2");
+    //        o2.setTotalQty(1);
+    //        o2.setTotalPrice(3200);
+    //        checkoutMapper.insertOrderHeader(o2);
+    //        
+    //        Thread.sleep(2000);           // 1 秒待機（テスト用なので簡易に）
+    //        
+    //        String orderId1 = "11111111-1111-1111-1111-111111111111";
+    //        Order o1 = new Order();
+    //        o1.setOrderId(orderId1);
+    //        o1.setUserId(userId);
+    //        o1.setName("山田 太郎");
+    //        o1.setPostalCode("1500041");
+    //        o1.setAddress("東京都渋谷区神南1-1-1");
+    //        o1.setTotalQty(3);
+    //        o1.setTotalPrice(9600);
+    //        checkoutMapper.insertOrderHeader(o1);
+    //        
+    //        List<OrderHeaderDto> headers = checkoutMapper.selectHeadersByUser(userId);
+    //        
+    //        assertThat(headers).hasSize(2);
+    //        assertThat(headers.get(1).getOrderId()).isEqualTo(orderId2);
+    //        
+    //        assertThat(headers.get(0)).extracting(
+    //                OrderHeaderDto::getOrderId,
+    //                OrderHeaderDto::getTotalPrice,
+    //                OrderHeaderDto::getName,
+    //                OrderHeaderDto::getPostalCode,
+    //                OrderHeaderDto::getAddress
+    //                )
+    //        .containsExactly(
+    //                orderId1,
+    //                9600,
+    //                "山田 太郎",
+    //                "1500041",
+    //                "東京都渋谷区神南1-1-1"
+    //                );
+    //        assertThat(headers.get(0).getCreatedAt()).isNotNull();
+    //    }
+    //    
+    //    @Test
+    //    void selectItemsByOrderIds() {
+    //     // ---------- arrange ----------
+    //        // 注文ヘッダ 1（明細は 2 商品）
+    //        String orderId1 = "33333333-3333-3333-3333-333333333333";
+    //        Order h1 = new Order();
+    //        h1.setOrderId(orderId1);
+    //        h1.setUserId(userId);
+    //        h1.setName("山田 花子");
+    //        h1.setPostalCode("1000001");
+    //        h1.setAddress("東京都千代田区千代田1-1-1");
+    //        h1.setTotalQty(3);
+    //        h1.setTotalPrice(7150);
+    //        checkoutMapper.insertOrderHeader(h1);
+    //
+    //        OrderItem h1i1 = new OrderItem();
+    //        h1i1.setOrderId(orderId1);
+    //        h1i1.setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
+    //        h1i1.setProductName("testC");
+    //        h1i1.setQty(1);
+    //        h1i1.setPrice(750);
+    //        h1i1.setSubtotal(750);
+    //
+    //        OrderItem h1i2 = new OrderItem();
+    //        h1i2.setOrderId(orderId1);
+    //        h1i2.setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
+    //        h1i2.setProductName("testD");
+    //        h1i2.setQty(2);
+    //        h1i2.setPrice(3200);
+    //        h1i2.setSubtotal(6400);
+    //
+    //        checkoutMapper.insertOrderItems(List.of(h1i1, h1i2));
+    //
+    //        // 注文ヘッダ 2（明細は 1 商品）
+    //        String orderId2 = "44444444-4444-4444-4444-444444444444";
+    //        Order h2 = new Order();
+    //        h2.setOrderId(orderId2);
+    //        h2.setUserId(userId);
+    //        h2.setName("山田 三郎");
+    //        h2.setPostalCode("1000002");
+    //        h2.setAddress("東京都千代田区丸の内2-2-2");
+    //        h2.setTotalQty(1);
+    //        h2.setTotalPrice(1800);
+    //        checkoutMapper.insertOrderHeader(h2);
+    //
+    //        OrderItem h2i1 = new OrderItem();
+    //        h2i1.setOrderId(orderId2);
+    //        h2i1.setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
+    //        h2i1.setProductName("testE");
+    //        h2i1.setQty(1);
+    //        h2i1.setPrice(1800);
+    //        h2i1.setSubtotal(1800);
+    //
+    //        checkoutMapper.insertOrderItems(List.of(h2i1));
+    //        List<String> orderIds = List.of(orderId1, orderId2);
+    //        
+    //        List<OrderItemDto> items = checkoutMapper.selectItemsByOrderIds(orderIds);
+    //        
+    //        
+    //    }
 
 }

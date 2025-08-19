@@ -45,6 +45,11 @@ public class CheckoutItemDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private DiffReason reason;
     
+    
+    public Integer getSubtotal() {
+        return (priceInc == null) ? null : priceInc * qty;
+    }
+    
     public enum DiffReason{
         DISCONTINUED,
         OUT_OF_STOCK,

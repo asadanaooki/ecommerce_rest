@@ -14,25 +14,34 @@ public interface CartMapper {
     /*    TODO:
     ・CartとCartItemを分離する？
     */
+    
+    
+ // ========= SELECT =========
     Cart selectCartByPrimaryKey(String cartId);
-    
+
     Cart selectCartByUser(String userId);
-    
+
     CartItem selectCartItemByPrimaryKey(String cartId, String productId);
-    
-    int insertCartIfAbsent(String cartId, String userId);
-    
-    int upsertCartItem(CartItem item);
-    
-    int findOrCreateCartIdByUser(Map<String, String> cartKeyMap);
-    
-    int mergeCart(String guestCartId, String userCartId);
-    
-    int deleteCart(String cartId);
-    
-    int deleteCartItem(String cartId, String productId);
-    
+
     List<CartItemDto> selectCartItems(String cartId);
-    
-    int updateCartItemQty(String cartId, String productId, int qty);
+
+    boolean isCartExpired(String cartId);
+
+
+    // ========= INSERT =========
+    int insertCartIfAbsent(String cartId, String userId);
+
+    int findOrCreateCartIdByUser(Map<String, String> cartKeyMap);
+
+
+    // ========= UPDATE =========
+    int upsertCartItem(CartItem item);
+
+    int mergeCart(String guestCartId, String userCartId);
+
+
+    // ========= DELETE =========
+    int deleteCartItem(String cartId, String productId);
+
+    int deleteCart(String cartId);
 }

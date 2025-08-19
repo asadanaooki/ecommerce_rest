@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -169,8 +170,20 @@ class CartMapperTest {
         @BeforeEach
         void setup() {
             factory.deleteCartByUser(userId);
-            factory.createCart(guestCart, null);
-            factory.createCart(userCart, userId);
+            factory.createCart(new Cart() {
+                {
+                    setCartId(guestCart);
+                    setUserId(null);
+                    setTtlDays(14);
+                }
+            });
+            factory.createCart(new Cart() {
+                {
+                    setCartId(userCart);
+                    setUserId(userId);
+                    setTtlDays(60);
+                }
+            });
         }
 
         @Test
@@ -247,7 +260,13 @@ class CartMapperTest {
         @BeforeEach
         void setup() {
             factory.deleteCartByUser(userId);
-            factory.createCart(cartId, userId);
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setUserId(userId);
+                    setTtlDays(60);
+                }
+            });
         }
 
         @Test
@@ -309,6 +328,105 @@ class CartMapperTest {
                         assertThat(dto.getPriceEx()).isEqualTo(3200);
                         assertThat(dto.getPriceInc()).isNull();
                     });
+        }
+    }
+
+    @Nested
+    class IsCartExpired {
+
+        String cartId = UUID.randomUUID().toString();
+
+        @BeforeEach
+        void setup() {
+            factory.freezeNow(LocalDateTime.of(2025, 7, 3, 10, 0));
+        }
+
+        @AfterEach
+        void tearDown() {
+            factory.unfreezeNow();
+        }
+
+        @Test
+        void isCartExpired_within() {
+            LocalDateTime time = LocalDateTime.of(2025, 6, 22, 10, 40, 3);
+
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setUserId(null);
+                    setTtlDays(14);
+                    setUpdatedAt(time);
+                    setCreatedAt(time);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
+                    setQty(1);
+                    setPrice(750);
+                    setCreatedAt(time);
+                    setUpdatedAt(time);
+                }
+            });
+            assertThat(cartMapper.isCartExpired(cartId)).isFalse();
+        }
+
+        @Test
+        void isCartExpired_over() {
+            LocalDateTime time = LocalDateTime.of(2024, 5, 3, 10, 40, 3);
+
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setUserId("111e8400-e29b-41d4-a716-446655440111");
+                    setTtlDays(60);
+                    setUpdatedAt(time);
+                    setCreatedAt(time);
+                }
+            });
+            cartMapper.insertCartIfAbsent(cartId, "111e8400-e29b-41d4-a716-446655440111");
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
+                    setQty(1);
+                    setPrice(750);
+                    setCreatedAt(time);
+                    setUpdatedAt(time);
+                }
+            });
+            assertThat(cartMapper.isCartExpired(cartId)).isTrue();
+        }
+
+        @ParameterizedTest
+        @CsvSource(value = {
+                "2025-06-19T10:00, NULL, false",
+                "2025-06-19T09:59:59, NULL, true",
+                "2025-05-04T10:00, 111e8400-e29b-41d4-a716-446655440111, false",
+                "2025-05-04T09:59:59, 111e8400-e29b-41d4-a716-446655440111, true"
+        }, nullValues = "NULL")
+        void isCartExpired_boundary(LocalDateTime time, String userId, boolean expected) {
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setUserId(userId);
+                    setTtlDays(userId == null ? 14 : 60);
+                    setCreatedAt(time);
+                    setUpdatedAt(time);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
+                    setQty(1);
+                    setPrice(750);
+                    setCreatedAt(time);
+                    setUpdatedAt(time);
+                }
+            });
+            assertThat(cartMapper.isCartExpired(cartId)).isEqualTo(expected);
         }
     }
 }

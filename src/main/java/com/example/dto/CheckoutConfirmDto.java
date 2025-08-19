@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CheckoutDto {
+public class CheckoutConfirmDto {
 
     private String username;
     

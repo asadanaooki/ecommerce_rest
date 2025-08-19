@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import com.example.dto.CartItemDto;
-import com.example.dto.CheckoutDto;
+import com.example.dto.CheckoutConfirmDto;
 import com.example.dto.CheckoutItemDto;
 import com.example.entity.Cart;
 import com.example.entity.Order;
@@ -99,7 +99,7 @@ class CheckoutServiceTest {
         void loadCheckout_address(String value) {
             user.setAddressBuilding(value);
             doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
-            CheckoutDto dto = checkoutService.loadCheckout(userId);
+            CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
 
             assertThat(dto.getAddress())
                     .isEqualTo("東京都千代田区丸の内1-1-1" + (value == null ? "" : value));
@@ -174,7 +174,7 @@ class CheckoutServiceTest {
             doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
-            CheckoutDto dto = checkoutService.loadCheckout(userId);
+            CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
 
             assertThat(dto.getUsername()).isEqualTo("山田 太郎");
             assertThat(dto.getPostalCode()).isEqualTo("1000001");
