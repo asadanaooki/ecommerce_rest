@@ -326,6 +326,189 @@ class CartControllerTest {
         }
     }
 
+    @Nested
+    class ChangeQty {
+        String productId = "97113c2c-719a-490c-9979-144d92905c33";
+
+        @Nested
+        class Guest {
+            Cookie cookie;
+
+            @BeforeEach
+            void setup() {
+                cookie = new Cookie("cartId", "id");
+            }
+
+            @Test
+            void changeQty_valid() throws Exception {
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .cookie(cookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("5"))
+                        .andExpect(status().isOk());
+
+                verify(cartService).changeQty("id", null, productId, 5);
+            }
+
+            @Test
+            void changeQty_absent() throws Exception {
+                cookie = new Cookie("invalid", "id");
+
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .cookie(cookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("3"))
+                        .andExpect(status().isOk());
+
+                verify(cartService).changeQty(null, null, productId, 3);
+            }
+
+            @Test
+            void changeQty_invalidQuantityTooLow() throws Exception {
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .cookie(cookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("0"))
+                        .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            void changeQty_invalidQuantityTooHigh() throws Exception {
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .cookie(cookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("21"))
+                        .andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        class User {
+
+            @BeforeEach
+            void setup() {
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken("user", "N/A"));
+            }
+
+            @AfterEach
+            void tearDown() {
+                SecurityContextHolder.clearContext();
+            }
+
+            @Test
+            void changeQty_valid() throws Exception {
+                doReturn(Optional.of("cartId")).when(cartService).findUserCartId("user");
+
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("3"))
+                        .andExpect(status().isOk());
+
+                verify(cartService).changeQty("cartId", "user", productId, 3);
+            }
+
+            @Test
+            void changeQty_absent() throws Exception {
+                doReturn(Optional.empty()).when(cartService).findUserCartId("user");
+
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("2"))
+                        .andExpect(status().isOk());
+
+                verify(cartService).changeQty(null, "user", productId, 2);
+            }
+
+            @Test
+            void changeQty_invalidQuantityTooLow() throws Exception {
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("0"))
+                        .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            void changeQty_invalidQuantityTooHigh() throws Exception {
+                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("21"))
+                        .andExpect(status().isBadRequest());
+            }
+        }
+    }
+
+    @Nested
+    class RemoveFromCart {
+        String productId = "97113c2c-719a-490c-9979-144d92905c33";
+
+        @Nested
+        class Guest {
+            Cookie cookie;
+
+            @BeforeEach
+            void setup() {
+                cookie = new Cookie("cartId", "id");
+                reset(cartService);
+            }
+
+            @Test
+            void removeFromCart_valid() throws Exception {
+                mockMvc.perform(delete("/cart/items/{productId}", productId)
+                        .cookie(cookie))
+                        .andExpect(status().isOk());
+
+                verify(cartService).removeItem("id", productId);
+            }
+
+            @Test
+            void removeFromCart_absent() throws Exception {
+                cookie = new Cookie("invalid", "id");
+
+                mockMvc.perform(delete("/cart/items/{productId}", productId)
+                        .cookie(cookie))
+                        .andExpect(status().isOk());
+
+                verify(cartService).removeItem(null, productId);
+            }
+        }
+
+        @Nested
+        class User {
+
+            @BeforeEach
+            void setup() {
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken("user", "N/A"));
+            }
+
+            @AfterEach
+            void tearDown() {
+                SecurityContextHolder.clearContext();
+            }
+
+            @Test
+            void removeFromCart_valid() throws Exception {
+                doReturn(Optional.of("cartId")).when(cartService).findUserCartId("user");
+
+                mockMvc.perform(delete("/cart/items/{productId}", productId))
+                        .andExpect(status().isOk());
+
+                verify(cartService).removeItem("cartId", productId);
+            }
+
+            @Test
+            void removeFromCart_absent() throws Exception {
+                doReturn(Optional.empty()).when(cartService).findUserCartId("user");
+
+                mockMvc.perform(delete("/cart/items/{productId}", productId))
+                        .andExpect(status().isOk());
+
+                verify(cartService).removeItem(null, productId);
+            }
+        }
+    }
+
     @TestConfiguration
     static class TestConfig implements WebMvcConfigurer {
         @Autowired

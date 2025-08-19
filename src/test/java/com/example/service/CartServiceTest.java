@@ -186,4 +186,84 @@ class CartServiceTest {
         }
     }
 
+    @Nested
+    class ChangeQty {
+        String cartId = "cart-123";
+        String productId = "P-001";
+        String userId = "user-1";
+        Product p;
+
+        @BeforeEach
+        void setup() {
+            p = new Product();
+            p.setPrice(1500);
+            doReturn(p).when(productMapper).selectByPrimaryKey(productId);
+        }
+
+        @Test
+        void changeQty_valid() {
+            cartService.changeQty(cartId, userId, productId, 5);
+
+            ArgumentCaptor<CartItem> cap = ArgumentCaptor.forClass(CartItem.class);
+            verify(cartMapper).upsertCartItem(cap.capture());
+            verify(productMapper).selectByPrimaryKey(productId);
+
+            CartItem ci = cap.getValue();
+            assertThat(ci).extracting(
+                    CartItem::getCartId,
+                    CartItem::getProductId,
+                    CartItem::getQty,
+                    CartItem::getPrice)
+                    .containsExactly(
+                            cartId,
+                            productId,
+                            5,
+                            1500);
+        }
+
+        @Test
+        void changeQty_differentQuantity() {
+            cartService.changeQty(cartId, userId, productId, 10);
+
+            ArgumentCaptor<CartItem> cap = ArgumentCaptor.forClass(CartItem.class);
+            verify(cartMapper).upsertCartItem(cap.capture());
+
+            CartItem ci = cap.getValue();
+            assertThat(ci.getQty()).isEqualTo(10);
+            assertThat(ci.getPrice()).isEqualTo(1500);
+        }
+    }
+
+    @Nested
+    class RemoveItem {
+        String cartId = "cart-123";
+        String productId = "P-001";
+
+        @Test
+        void removeItem_valid() {
+            cartService.removeItem(cartId, productId);
+
+            verify(cartMapper).deleteCartItem(cartId, productId);
+        }
+
+        @Test
+        void removeItem_idempotent() {
+            cartService.removeItem(cartId, productId);
+            cartService.removeItem(cartId, productId);
+
+            verify(cartMapper, times(2)).deleteCartItem(cartId, productId);
+        }
+
+        @Test
+        void removeItem_differentProduct() {
+            String anotherProductId = "P-002";
+            
+            cartService.removeItem(cartId, productId);
+            cartService.removeItem(cartId, anotherProductId);
+
+            verify(cartMapper).deleteCartItem(cartId, productId);
+            verify(cartMapper).deleteCartItem(cartId, anotherProductId);
+        }
+    }
+
 }

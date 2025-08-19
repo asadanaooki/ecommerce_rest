@@ -107,7 +107,7 @@ public class CartController {
             HttpServletRequest req,
             HttpServletResponse res) {
         String cartId = findExistingCartId(userId, req);
-        cartService.removeItem(cartId, userId);
+        cartService.removeItem(cartId, productId);
         signalGuestTouch(userId, req);
 
         return ResponseEntity.ok().build();
