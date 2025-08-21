@@ -15,6 +15,10 @@ public class CartItem {
     
     private int unitPriceExcl;
     
+    private int unitPriceIncl;
+    
+    private int subtotalIncl;
+    
     private LocalDateTime createdAt;
     
     private LocalDateTime updatedAt;

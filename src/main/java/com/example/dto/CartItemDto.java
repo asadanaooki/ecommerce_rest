@@ -13,7 +13,7 @@ public class CartItemDto {
 
     private int qty;
 
-    private int unitPriceIncl;
+    private int priceIncl;
 
     private int subtotalIncl;
 
