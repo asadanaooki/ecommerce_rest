@@ -74,7 +74,7 @@
       p.product_id,
       p.product_name,
       p.product_description,
-      p.price_incl,
+      p.price_incl AS price,
       (p.stock &lt;= 0) AS out_of_stock,
       coalesce(rs.avg, 0) as rating_avg,
       coalesce(rs.cnt, 0) as review_count,
