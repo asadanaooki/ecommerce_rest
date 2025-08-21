@@ -23,7 +23,7 @@
 
   <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
     select ci.product_id, p.product_name, ci.qty, p.price_excl,
-      ci.unit_price_excl
+      ci.unit_price_excl as priceAtCartAddition
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}
