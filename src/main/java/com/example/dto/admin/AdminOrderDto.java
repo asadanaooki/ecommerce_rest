@@ -14,7 +14,7 @@ public class AdminOrderDto {
     
     private String orderNumber;
     
-    private int totalPrice;
+    private int totalPriceIncl;
     
     private String name;
     
