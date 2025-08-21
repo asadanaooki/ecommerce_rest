@@ -131,7 +131,7 @@
   <update id="updateItemQty">
     update order_item
     set qty = #{qty},
-        subtotal_incl = #{subtotal}
+        subtotal_incl = #{subtotalInc}
     where order_id = #{orderId}
       and product_id = #{productId}
   </update>
