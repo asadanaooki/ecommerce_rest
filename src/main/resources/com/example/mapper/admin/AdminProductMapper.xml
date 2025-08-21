@@ -17,7 +17,6 @@
       <if test="maxPrice != null">
         AND p.price_excl &lt;= #{maxPrice}
       </if>
-      </if>
       <if test="minAvailable != null">
         AND p.available &gt;= #{minAvailable}
       </if>

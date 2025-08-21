@@ -44,7 +44,7 @@ public class AdminOrderService {
     // ステータスの状態遷移ルールや定義。手動から自動遷移にしたい
     // Webhook or ポーリング
     // サーバー側の防御策としての SQL ガード(現在のステータスと違うときだけ更新)入れるか
-    // 税抜きで価格表示
+    // 現状、顧客に請求している金額（＝税込み） をベースに表示、管理や集計のための金額を考慮する場合は税込みも検討
 
     private final AdminOrderMapper adminOrderMapper;
 
