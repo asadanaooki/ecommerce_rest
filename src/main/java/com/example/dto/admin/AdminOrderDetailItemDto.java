@@ -13,6 +13,6 @@ public class AdminOrderDetailItemDto {
     
     private String qty;
     
-    private int subtotal;
+    private int subtotalIncl;
 
 }
