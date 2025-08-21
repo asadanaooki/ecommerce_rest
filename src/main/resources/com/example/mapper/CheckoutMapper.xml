@@ -4,7 +4,7 @@
   <select id="selectCheckoutItems"
     resultType="com.example.dto.CheckoutItemDto">
     select ci.product_id, p.product_name, ci.qty, p.price_excl,
-      ci.unit_price_excl as priceAtCartAddition, p.stock, p.status
+      ci.unit_price_excl, p.stock, p.status
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}

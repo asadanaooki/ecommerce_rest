@@ -2,13 +2,13 @@
 <mapper namespace="com.example.mapper.admin.AdminInventoryMapper">
 
   <select id="search" resultType="com.example.dto.admin.AdminInventoryDto">
-    SELECT p.product_id,
-           p.sku,
-           p.product_name,
-           p.price_excl,
-           (p.stock - p.reserved) as available,
-           p.updated_at
-     FROM product p
+    SELECT v.product_id,
+           v.sku,
+           v.product_name,
+           v.price_incl,
+           v.available,
+           v.updated_at
+     FROM vw_product_core v
      <where>
        <if test="req.minAvailable != null">
         and (p.stock - p.reserved) &gt;= #{req.minAvailable}
@@ -79,16 +79,16 @@
   </select>
   
   <select id="find" resultType="com.example.dto.admin.AdminInventoryDetailDto">
-    SELECT p.product_id,
-           p.sku,
-           p.product_name,
-           p.price_excl,
-           p.stock,
-           p.reserved,
-           (p.stock - p.reserved) as available,
-           p.updated_at
-    FROM product p
-    WHERE p.product_id = #{productId}
+    SELECT v.product_id,
+           v.sku,
+           v.product_name,
+           v.price_incl,
+           v.stock,
+           v.reserved,
+           v.available,
+           v.updated_at
+    FROM vw_product_core v
+    WHERE v.product_id = #{productId}
   </select>
   
   <update id="updateInventory">
