@@ -22,8 +22,8 @@
   </select>
 
   <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
-    select ci.product_id, p.product_name, ci.qty, p.price as priceEx,
-      ci.price as priceAtCartAdditon
+    select ci.product_id, p.product_name, ci.qty, p.price_excl as priceEx,
+      ci.unit_price_excl as priceAtCartAdditon
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}
@@ -60,12 +60,12 @@
 
   <insert id="upsertCartItem">
     insert into cart_item
-      (cart_id, product_id, qty, price)
+      (cart_id, product_id, qty, unit_price_excl)
     values
       (#{cartId}, #{productId}, #{qty}, #{price})
     on duplicate key update
       qty = least(qty + VALUES(qty), 20),
-      price = VALUES(price)
+      unit_price_excl = VALUES(unit_price_excl)
   </insert>
 
   <insert id="findOrCreateCartIdByUser">
@@ -86,13 +86,13 @@
   </insert>
 
   <insert id="mergeCart">
-    insert into cart_item (cart_id, product_id, qty, price)
-    select #{userCartId}, src.product_id, src.qty, src.price
+    insert into cart_item (cart_id, product_id, qty, unit_price_excl)
+    select #{userCartId}, src.product_id, src.qty, src.unit_price_excl
       from cart_item as src
     where src.cart_id = #{guestCartId}
     on duplicate key update
       cart_item.qty = least(cart_item.qty + values(qty), 20),
-      cart_item.price = values(price)
+      cart_item.unit_price_excl = values(unit_price_excl)
   </insert>
 
   <!-- ===================== UPDATE ===================== -->

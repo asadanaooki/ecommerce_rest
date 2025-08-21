@@ -5,7 +5,7 @@
     SELECT v.product_id,
            v.sku,
            v.product_name,
-           v.price,
+           v.price_incl AS priceIncl,
            v.available,
            v.updated_at
      FROM vw_product_core v
@@ -82,7 +82,7 @@
     SELECT v.product_id,
            v.sku,
            v.product_name,
-           v.price,
+           v.price_incl AS priceIncl,
            v.stock,
            v.reserved,
            v.available,

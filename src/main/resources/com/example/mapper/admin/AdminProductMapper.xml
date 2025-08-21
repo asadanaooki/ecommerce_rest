@@ -12,10 +12,10 @@
         </foreach>
       </if>
       <if test="minPrice != null">
-        AND p.price &gt;= #{minPrice}
+        AND p.price_incl &gt;= #{minPrice}
       </if>
       <if test="maxPrice != null">
-        AND p.price &lt;= #{maxPrice}
+        AND p.price_incl &lt;= #{maxPrice}
       </if>
       <if test="minAvailable != null">
         AND p.available &gt;= #{minAvailable}
@@ -52,10 +52,10 @@
         </foreach>
       </if>
       <if test="req.minPrice != null">
-        AND p.price &gt;= #{req.minPrice}
+        AND p.price_incl &gt;= #{req.minPrice}
       </if>
       <if test="req.maxPrice != null">
-        AND p.price &lt;= #{req.maxPrice}
+        AND p.price_incl &lt;= #{req.maxPrice}
       </if>
       <if test="req.minAvailable != null">
         AND p.available &gt;= #{req.minAvailable}
@@ -88,7 +88,7 @@
   
   <insert id="insert">
     INSERT INTO product
-      (product_id, product_name, price, product_description,　status)
+      (product_id, product_name, price_excl, product_description,　status)
     VALUES
       (#{productId},
        #{productName},
@@ -101,7 +101,7 @@
     update product
     set
       product_name        = #{productName},
-      price               = #{price},
+      price_excl          = #{price},
       product_description = #{productDescription},
       status              = #{status}
     WHERE product_id = #{productId}

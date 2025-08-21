@@ -3,8 +3,8 @@
 
   <select id="selectCheckoutItems"
     resultType="com.example.dto.CheckoutItemDto">
-    select ci.product_id, p.product_name, ci.qty, p.price as
-      priceEx, ci.price as priceAtCartAddition, p.stock, p.status
+    select ci.product_id, p.product_name, ci.qty, p.price_excl as
+      priceEx, ci.unit_price_excl as priceAtCartAddition, p.stock, p.status
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}
@@ -21,7 +21,7 @@
   <insert id="insertOrderHeader" useGeneratedKeys="true" keyProperty="orderNumber" keyColumn="order_number">
     insert into `order` (
       order_id, user_id, name, postal_code, address,
-      total_qty, total_price
+      total_qty, total_price_incl
     ) values (
         #{orderId}, #{userId}, #{name}, #{postalCode}, #{address},
         #{totalQty}, #{totalPrice}
@@ -30,7 +30,7 @@
   
   <insert id="insertOrderItems">
     insert into order_item (
-      order_id, product_id, product_name, qty, price, subtotal
+      order_id, product_id, product_name, qty, unit_price_incl, subtotal_incl
     ) values 
     <foreach collection="items" item="it" separator=",">
       (#{it.orderId}, #{it.productId}, #{it.productName}, #{it.qty}, #{it.price}, #{it.subtotal})
