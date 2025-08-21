@@ -11,11 +11,11 @@
           OR p.product_name LIKE CONCAT('%', #{kw}, '%')
         </foreach>
       </if>
-      <if test="minPrice != null">
-        AND p.price_excl &gt;= #{minPrice}
+      <if test="minPriceExcl != null">
+        AND p.price_excl &gt;= #{minPriceExcl}
       </if>
-      <if test="maxPrice != null">
-        AND p.price_excl &lt;= #{maxPrice}
+      <if test="maxPriceExcl != null">
+        AND p.price_excl &lt;= #{maxPriceExcl}
       </if>
       <if test="minAvailable != null">
         AND p.available &gt;= #{minAvailable}
@@ -51,11 +51,11 @@
           OR p.product_name LIKE CONCAT('%', #{kw}, '%')
         </foreach>
       </if>
-      <if test="req.minPrice != null">
-        AND p.price_excl &gt;= #{req.minPrice}
+      <if test="req.minPriceExcl != null">
+        AND p.price_excl &gt;= #{req.minPriceExcl}
       </if>
-      <if test="req.maxPrice != null">
-        AND p.price_excl &lt;= #{req.maxPrice}
+      <if test="req.maxPriceExcl != null">
+        AND p.price_excl &lt;= #{req.maxPriceExcl}
       </if>
       <if test="req.minAvailable != null">
         AND p.available &gt;= #{req.minAvailable}
@@ -92,7 +92,7 @@
     VALUES
       (#{productId},
        #{productName},
-       #{price},
+       #{priceExcl},
        #{productDescription},
        #{status})
   </insert>
@@ -101,7 +101,7 @@
     update product
     set
       product_name        = #{productName},
-      price_excl          = #{price},
+      price_excl          = #{priceExcl},
       product_description = #{productDescription},
       status              = #{status}
     WHERE product_id = #{productId}

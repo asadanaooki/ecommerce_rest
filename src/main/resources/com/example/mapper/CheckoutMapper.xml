@@ -24,7 +24,7 @@
       total_qty, total_price_incl
     ) values (
         #{orderId}, #{userId}, #{name}, #{postalCode}, #{address},
-        #{totalQty}, #{totalPrice}
+        #{totalQty}, #{totalPriceIncl}
     )
   </insert>
   
@@ -33,7 +33,7 @@
       order_id, product_id, product_name, qty, unit_price_incl, subtotal_incl
     ) values 
     <foreach collection="items" item="it" separator=",">
-      (#{it.orderId}, #{it.productId}, #{it.productName}, #{it.qty}, #{it.price}, #{it.subtotal})
+      (#{it.orderId}, #{it.productId}, #{it.productName}, #{it.qty}, #{it.unitPriceIncl}, #{it.subtotalIncl})
     </foreach>
   </insert>
 
