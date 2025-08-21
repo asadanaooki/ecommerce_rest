@@ -16,7 +16,7 @@ alter table order_item
   
 alter table cart_item
   add column unit_price_incl int
-    generated always as ((unit_price_incl * 110) div 100)
+    generated always as ((unit_price_excl * 110) div 100)
     stored,
   add column subtotal_incl int
     generated always as (qty * unit_price_incl)
