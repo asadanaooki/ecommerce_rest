@@ -29,9 +29,9 @@ public class ProductSearchRequest {
     private String q;
     
     @Min(1)
-    private Integer minPriceExcl;
+    private Integer minPrice;
     
-    private Integer maxPriceExcl;
+    private Integer maxPrice;
     
     @Min(0)
     private Integer minAvailable;
@@ -58,10 +58,10 @@ public class ProductSearchRequest {
     
     @AssertTrue(message = "PRICE_RANGE_VALID")
     public boolean isValidPriceRange() {
-        if (minPriceExcl == null || maxPriceExcl == null) {
+        if (minPrice == null || maxPrice == null) {
             return true;
         }
-        return minPriceExcl <= maxPriceExcl;
+        return minPrice <= maxPrice;
     }
     
     @AssertTrue(message = "STOCK_RANGE_VALID")
