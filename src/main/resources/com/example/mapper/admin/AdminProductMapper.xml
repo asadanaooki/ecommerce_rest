@@ -92,7 +92,7 @@
     VALUES
       (#{productId},
        #{productName},
-       #{price},
+       #{priceExcl},
        #{productDescription},
        #{status})
   </insert>
@@ -101,7 +101,7 @@
     update product
     set
       product_name        = #{productName},
-      price_excl          = #{price},
+      price_excl          = #{priceExcl},
       product_description = #{productDescription},
       status              = #{status}
     WHERE product_id = #{productId}
