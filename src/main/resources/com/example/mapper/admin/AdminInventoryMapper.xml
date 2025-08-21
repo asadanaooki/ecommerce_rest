@@ -11,22 +11,22 @@
      FROM vw_product_core v
      <where>
        <if test="req.minAvailable != null">
-        and v.available &gt;= #{req.minAvailable}
+        and (p.stock - p.reserved) &gt;= #{req.minAvailable}
       </if>
       <if test="req.maxAvailable != null">
-        and v.available &lt;= #{req.maxAvailable}
+        and (p.stock - p.reserved) &lt;= #{req.maxAvailable}
       </if>
       <if test="req.stockStatus != null">
         <choose>
           <when test="req.stockStatus.name().equals('OUT_OF_STOCK')">
-            and v.available = 0
+            and (p.stock - p.reserved) = 0
           </when>
           <when test="req.stockStatus.name().equals('LOW_STOCK')">
-            and v.available &gt; 0
-            and v.available &lt;= #{threshold}
+            and (p.stock - p.reserved) &gt; 0
+            and (p.stock - p.reserved) &lt;= #{threshold}
           </when>
           <when test="req.stockStatus.name().equals('IN_STOCK')">
-            and v.available &gt; #{threshold} 
+            and (p.stock - p.reserved) &gt; #{threshold} 
           </when>
         </choose>
       </if>
@@ -36,8 +36,8 @@
         <when test="req.sortField.field.equals('stock_status')">
           field(
             case
-              when v.available = 0 then 'OUT_OF_STOCK'
-              when v.available &lt;= #{threshold} then 'LOW_STOCK'
+              when (p.stock - p.reserved) = 0 then 'OUT_OF_STOCK'
+              when (p.stock - p.reserved) &lt;= #{threshold} then 'LOW_STOCK'
               else 'IN_STOCK'
             end,
             'OUT_OF_STOCK','LOW_STOCK','IN_STOCK'
@@ -48,30 +48,30 @@
         </otherwise>
       </choose>
       ${req.sortDirection},
-      v.sku asc
+      p.sku asc
       limit #{limit} offset #{offset}
   </select>
 
   <select id="count" resultType="int">
     select count(*)
-    from vw_product_core v
+    from product p
     <where>
       <if test="req.minAvailable != null">
-        and v.available &gt;= #{req.minAvailable}
+        and (p.stock - p.reserved) &gt;= #{req.minAvailable}
       </if>
       <if test="req.maxAvailable != null">
-        and v.available &lt;= #{req.maxAvailable}
+        and (p.stock - p.reserved) &lt;= #{req.maxAvailable}
       </if>
       <if test="req.stockStatus != null">
         <choose>
           <when test="req.stockStatus.name().equals('OUT_OF_STOCK')">
-            and v.available = 0
+            and (p.stock - p.reserved) = 0
           </when>
           <when test="req.stockStatus.name().equals('LOW_STOCK')">
-            and v.available &lt;= #{threshold}
+            and (p.stock - p.reserved) &lt;= #{threshold}
           </when>
           <when test="req.stockStatus.name().equals('IN_STOCK')">
-            and v.available &gt; #{threshold} 
+            and (p.stock - p.reserved) &gt; #{threshold} 
           </when>
         </choose>
       </if>
