@@ -13,7 +13,7 @@
   </select>
 
   <select id="searchProducts" resultType="com.example.dto.ProductCardDto">
-    SELECT p.product_id, p.product_name, p.price,
+    SELECT p.product_id, p.product_name, p.price_incl,
       (p.stock &lt;= 0) AS out_of_stock,
       <choose>
         <!-- ログイン中だけ JOIN があるので f.user_id をそのままブール式で判定 -->
@@ -26,7 +26,7 @@
          </otherwise>
       </choose>
        AS is_fav
-    FROM product p
+    FROM vw_product_core p
     <if test="userId != null">
     LEFT JOIN favorite f
       ON f.product_id = p.product_id
@@ -46,10 +46,10 @@
         p.created_at DESC 
       </when>
       <when test="sort.name() == 'HIGH'">
-        p.price DESC 
+        p.price_incl DESC 
       </when>
       <when test="sort.name() == 'LOW'">
-        p.price ASC 
+        p.price_incl ASC 
       </when>
     </choose>
     , p.product_id DESC
@@ -74,7 +74,7 @@
       p.product_id,
       p.product_name,
       p.product_description,
-      p.price,
+      p.price_incl,
       (p.stock &lt;= 0) AS out_of_stock,
       coalesce(rs.avg, 0) as rating_avg,
       coalesce(rs.cnt, 0) as review_count,
@@ -88,7 +88,7 @@
          </otherwise>
       </choose>
       as is_fav
-    from product p
+    from vw_product_core p
     left join (
         select
           r.product_id,

@@ -4,7 +4,7 @@
   <select id="aggTodayHourly" resultType="com.example.dto.admin.AdminHourlyAggRow">
     select
       date_format(created_at, '%Y-%m-%d %H:00:00') as  bucketHour,
-      sum(total_price) as revenue,
+      sum(total_price_incl) as revenue,
       count(*) as orders
     from `order`
     where payment_status = 'PAID'
@@ -17,7 +17,7 @@
     <select id="aggDaily" resultType="com.example.dto.admin.AdminDailyAggRow">
     select
       date(created_at) as  day,
-      sum(total_price) as revenue,
+      sum(total_price_incl) as revenue,
       count(*) as orders
     from `order`
     where payment_status = 'PAID'
