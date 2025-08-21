@@ -20,7 +20,7 @@ public class CartItemDto {
 
     /* ---------- 価格 ---------- */
     @JsonIgnore
-    private int priceEx;
+    private int priceExcl;
 
     @JsonProperty("price")
     private Integer priceInc;
