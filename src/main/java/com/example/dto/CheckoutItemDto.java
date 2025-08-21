@@ -47,7 +47,7 @@ public class CheckoutItemDto {
     
     
     public Integer getSubtotal() {
-        return (priceInc == null) ? null : priceInc * qty;
+        return priceEx * qty;
     }
     
     public enum DiffReason{

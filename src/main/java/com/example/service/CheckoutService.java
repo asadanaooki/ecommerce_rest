@@ -93,8 +93,6 @@ public class CheckoutService {
         //                continue;
         //            }
         //            // 以下、購入可能品
-        //            it.setPriceInc(calculator.calculatePriceIncludingTax(it.getPriceEx()));
-        //            it.setSubtotal(it.getPriceInc() * it.getQty());
         //
         //            // 在庫不足
         //            it.setLowStock(it.getStock() < it.getQty());
@@ -125,7 +123,6 @@ public class CheckoutService {
         //        }
         String orderId = c.getCartId();
         List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
-        items.forEach(it -> it.setPriceInc((int) (it.getPriceEx() * 1.1)));
 
         // 要確認商品がある場合
         if (hasDiff(items)) {
@@ -200,7 +197,7 @@ public class CheckoutService {
                     oi.setProductId(i.getProductId());
                     oi.setProductName(i.getProductName());
                     oi.setQty(i.getQty());
-                    oi.setPrice(i.getPriceInc());
+                    oi.setPrice(i.getPriceEx());
                     oi.setSubtotal(i.getSubtotal());
                     return oi;
                 })

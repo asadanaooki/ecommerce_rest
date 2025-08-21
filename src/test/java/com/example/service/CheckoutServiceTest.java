@@ -181,12 +181,11 @@ class CheckoutServiceTest {
                     CartItemDto::getProductId,
                     CartItemDto::getProductName,
                     CartItemDto::getQty,
-                    CartItemDto::getPriceInc,
                     CartItemDto::getSubtotal)
-                    .containsExactly(tuple("N-005", "通常品", 2, 220, 440),
-                            tuple("N-006", "通常品2", 1, 110, 110));
+                    .containsExactly(tuple("N-005", "通常品", 2, 400),
+                            tuple("N-006", "通常品2", 1, 100));
 
-            assertThat(dto.getCart().getTotalPrice()).isEqualTo(550);
+            assertThat(dto.getCart().getTotalPrice()).isEqualTo(500);
             assertThat(dto.getCart().getTotalQty()).isEqualTo(3);
         }
 
@@ -242,7 +241,6 @@ class CheckoutServiceTest {
         //                    CartItemDto::getProductId,
         //                    CartItemDto::getProductName,
         //                    CartItemDto::getQty,
-        //                    CartItemDto::getPriceInc,
         //                    CartItemDto::getSubtotal,
         //                    CartItemDto::getStatus,
         //                    CartItemDto::getLowStock,
@@ -452,7 +450,7 @@ class CheckoutServiceTest {
                             "1000001",
                             "東京都千代田区丸の内1-1-1",
                             3,
-                            550);
+                            500);
 
             ArgumentCaptor<List<OrderItem>> itemsCap = ArgumentCaptor.forClass(List.class);
             verify(checkoutMapper).insertOrderItems(itemsCap.capture());
@@ -470,8 +468,8 @@ class CheckoutServiceTest {
                             "N-001",
                             "通常品1",
                             2,
-                            220,
-                            440);
+                            200,
+                            400);
 
             verify(productMapper, times(2)).decreaseStock(anyString(), anyInt());
             verify(cartMapper).deleteCart(cartId);

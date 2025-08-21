@@ -8,7 +8,7 @@ public class ProductCardDto {
     
     private String productName;
     
-    private int priceIncl;
+    private int price;
     
     private boolean outOfStock;
     

@@ -44,8 +44,6 @@ public class ProductService {
 
         List<ProductCardDto> products = productMapper
                 .searchProducts(new ProductMapper.SearchCondition(userId, keywords, sort, pageSize, offset));
-        // 税込み価格へ変換
-        products.forEach(p -> p.setPrice((int) (p.getPrice() * 1.1)));
 
         int totalCount = productMapper.countProducts(keywords);
 
@@ -58,7 +56,6 @@ public class ProductService {
     public ProductDetailDto getProductDetail(String productId, String userId) {
         ProductDetailDto dto = Optional.ofNullable(productMapper.findProductDetail(productId, userId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        dto.setPrice((int) (dto.getPrice() * 1.1));
 
         return dto;
     }

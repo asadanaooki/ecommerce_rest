@@ -21,9 +21,9 @@ public class OrderItem {
     /** 数量（order_item.qty） */
     private int qty;
 
-    private int unitPriceIncl;
+    private int price;
 
-    private int subtotalIncl;
+    private int subtotal;
 
     /** 作成日時（order_item.created_at） */
     private LocalDateTime createdAt;

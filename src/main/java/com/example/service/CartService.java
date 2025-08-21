@@ -130,9 +130,7 @@ public class CartService {
         int totalQty = 0;
         int totalPrice = 0;
         for (CartItemDto it : items) {
-            int priceInc = (int) (it.getPriceEx() * 1.1);
-            int subtotal = priceInc * it.getQty();
-            it.setPriceInc(priceInc);
+            int subtotal = it.getPriceEx() * it.getQty();
             it.setSubtotal(subtotal);
             totalQty += it.getQty();
             totalPrice += subtotal;

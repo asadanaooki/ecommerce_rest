@@ -33,8 +33,8 @@ public class Order {
     /** 合計数量（orders.total_qty） */
     private int totalQty;
 
-    /** 合計金額（税込）（orders.total_price） */
-    private int totalPriceIncl;
+    /** 合計金額（orders.total_price） */
+    private int totalPrice;
     
     private ShippingStatus shippingStatus;
     

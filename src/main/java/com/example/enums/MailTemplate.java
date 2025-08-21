@@ -72,7 +72,7 @@ public enum MailTemplate {
                     数量 : %d
                     価格 : ¥%,d
                     小計 : ¥%,d
-                    """.formatted(i.getProductName(), i.getQty(), i.getPriceInc(), i.getSubtotal()))
+                    """.formatted(i.getProductName(), i.getQty(), i.getPriceEx(), i.getSubtotal()))
                     .collect(Collectors.joining("\n"));
 
             String body = getBody().formatted(

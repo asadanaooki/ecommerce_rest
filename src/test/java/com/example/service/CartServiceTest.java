@@ -89,7 +89,7 @@ class CartServiceTest {
             CartDto dto = cartService.showCart(cartId);
 
             assertThat(dto.getTotalQty()).isEqualTo(4);
-            assertThat(dto.getTotalPrice()).isEqualTo(550);
+            assertThat(dto.getTotalPrice()).isEqualTo(500);
 
             assertThat(dto.getItems()).hasSize(2).first()
                     .extracting(
@@ -97,15 +97,13 @@ class CartServiceTest {
                             CartItemDto::getProductName,
                             CartItemDto::getQty,
                             CartItemDto::getPriceEx,
-                            CartItemDto::getPriceInc,
                             CartItemDto::getSubtotal)
                     .containsExactly(
                             "A-001",
                             "Item A",
                             3,
                             100,
-                            110,
-                            330);
+                            300);
             assertThat(dto.getItems().get(1).getProductId()).isEqualTo("B-002");
 
         }
