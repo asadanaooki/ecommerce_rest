@@ -23,10 +23,10 @@ public class CheckoutItemDto {
 
     /* ---------- 価格 ---------- */
     @JsonIgnore
-    private int priceEx;
+    private int priceExcl;
 
     @JsonIgnore
-    private int priceAtCartAddition;
+    private int unitPriceExcl;
 
     @JsonProperty("price")
     private Integer priceInc;
