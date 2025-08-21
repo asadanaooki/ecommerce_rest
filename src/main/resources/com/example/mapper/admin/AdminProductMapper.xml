@@ -12,10 +12,10 @@
         </foreach>
       </if>
       <if test="minPrice != null">
-        AND p.price_incl &gt;= #{minPrice}
+        AND p.price_excl &gt;= #{minPrice}
       </if>
       <if test="maxPrice != null">
-        AND p.price_incl &lt;= #{maxPrice}
+        AND p.price_excl &lt;= #{maxPrice}
       </if>
       <if test="minAvailable != null">
         AND p.available &gt;= #{minAvailable}
@@ -52,10 +52,10 @@
         </foreach>
       </if>
       <if test="req.minPrice != null">
-        AND p.price_incl &gt;= #{req.minPrice}
+        AND p.price_excl &gt;= #{req.minPrice}
       </if>
       <if test="req.maxPrice != null">
-        AND p.price_incl &lt;= #{req.maxPrice}
+        AND p.price_excl &lt;= #{req.maxPrice}
       </if>
       <if test="req.minAvailable != null">
         AND p.available &gt;= #{req.minAvailable}
