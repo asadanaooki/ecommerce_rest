@@ -34,7 +34,7 @@
     ) values 
     <foreach collection="items" item="it" separator=",">
       (#{it.orderId}, #{it.productId}, #{it.productName}, #{it.qty},
-         #{it.unitPriceIncl}, #{it.subtotal})
+         #{it.unitPriceIncl}, #{it.subtotalIncl})
     </foreach>
   </insert>
 
