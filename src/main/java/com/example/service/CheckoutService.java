@@ -26,7 +26,6 @@ import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
-import com.example.util.TaxCalculator;
 
 import lombok.AllArgsConstructor;
 
@@ -54,7 +53,6 @@ public class CheckoutService {
 
     private final ProductMapper productMapper;
 
-    private final TaxCalculator calculator;
 
     private final MailGateway mailGateway;
 
@@ -74,7 +72,7 @@ public class CheckoutService {
         return new CheckoutConfirmDto(na.fullName,
                 user.getPostalCode(),
                 na.fullAddress,
-                CartService.buildCart(items, calculator));
+                CartService.buildCart(items));
         // TODO:
         // 以下、購入不可判定入れるときに必要かも
         //   List<CartItemDto> items = new ArrayList<CartItemDto>();
@@ -127,7 +125,7 @@ public class CheckoutService {
         //        }
         String orderId = c.getCartId();
         List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
-        items.forEach(it -> it.setPriceInc(calculator.calculatePriceIncludingTax(it.getPriceEx())));
+        items.forEach(it -> it.setPriceInc((int) (it.getPriceEx() * 1.1)));
 
         // 要確認商品がある場合
         if (hasDiff(items)) {

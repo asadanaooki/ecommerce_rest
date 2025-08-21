@@ -27,7 +27,6 @@ import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
 import com.example.request.admin.OrderEditRequest;
 import com.example.support.MailGateway;
-import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class AdminOrderServiceTest {
@@ -44,8 +43,6 @@ class AdminOrderServiceTest {
     @Mock
     MailGateway gateway;
 
-    @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
 
     @Nested
     class editOrder {

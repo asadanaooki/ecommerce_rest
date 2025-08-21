@@ -37,7 +37,6 @@ import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
-import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class CheckoutServiceTest {
@@ -54,8 +53,6 @@ class CheckoutServiceTest {
     @Mock
     CheckoutMapper checkoutMapper;
 
-    @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
 
     @InjectMocks
     CheckoutService checkoutService;

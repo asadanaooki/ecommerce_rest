@@ -56,9 +56,6 @@ class AdminProductServiceTest {
 
     @Test
     void searchProducts() {
-//        TaxConverter tc = Mappers.getMapper(TaxConverter.class);
-//        ReflectionTestUtils.setField(tc, "taxCalculator", new TaxCalculator(10));
-//        ReflectionTestUtils.setField(adminProductConverter, "taxConverter",tc);
         ReflectionTestUtils.setField(adminProductService, "pageSize", 2);
         ProductSearchRequest req = new ProductSearchRequest();
 

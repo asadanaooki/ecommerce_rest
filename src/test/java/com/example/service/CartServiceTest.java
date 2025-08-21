@@ -27,7 +27,6 @@ import com.example.entity.Product;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
-import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class CartServiceTest {
@@ -38,8 +37,6 @@ class CartServiceTest {
     @Mock
     ProductMapper productMapper;
 
-    @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
 
     @InjectMocks
     CartService cartService;

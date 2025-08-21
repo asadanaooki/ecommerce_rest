@@ -18,7 +18,6 @@ import com.example.entity.CartItem;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
-import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +39,6 @@ public class CartService {
 
     private final ProductMapper productMapper;
 
-    private final TaxCalculator calculator;
 
     public Optional<String> findUserCartId(String userId) {
         return Optional.ofNullable(cartMapper.selectCartByUser(userId))
@@ -63,7 +61,7 @@ public class CartService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items, calculator);
+        return buildCart(items);
     }
 
     // TODO:
@@ -128,11 +126,11 @@ public class CartService {
         cartMapper.deleteCart(guestCartId);
     }
 
-    public static CartDto buildCart(List<CartItemDto> items, TaxCalculator calculator) {
+    public static CartDto buildCart(List<CartItemDto> items) {
         int totalQty = 0;
         int totalPrice = 0;
         for (CartItemDto it : items) {
-            int priceInc = calculator.calculatePriceIncludingTax(it.getPriceEx());
+            int priceInc = (int) (it.getPriceEx() * 1.1);
             int subtotal = priceInc * it.getQty();
             it.setPriceInc(priceInc);
             it.setSubtotal(subtotal);
