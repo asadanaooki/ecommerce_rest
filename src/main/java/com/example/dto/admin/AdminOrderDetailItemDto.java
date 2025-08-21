@@ -9,7 +9,7 @@ public class AdminOrderDetailItemDto {
     
     private String productName;
     
-    private int price;
+    private int unitPriceIncl;
     
     private String qty;
     

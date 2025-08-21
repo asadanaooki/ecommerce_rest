@@ -14,7 +14,7 @@ public class ProductDetailDto {
     
     private String productDescription;
     
-    private int price;
+    private int priceIncl;
     
     private boolean outOfStock;
     

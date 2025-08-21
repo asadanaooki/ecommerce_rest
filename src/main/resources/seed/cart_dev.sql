@@ -5,7 +5,7 @@ INSERT INTO cart_item (
     cart_id,
     product_id,
     qty,
-    price
+    unit_price_excl
 ) VALUES (
     'bbbbeeee-cccc-dddd-aaaa-111122223333',      -- cart_id
     '1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68',      -- Item19

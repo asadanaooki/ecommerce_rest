@@ -14,7 +14,7 @@ public class OrderHistoryDto {
 
     private LocalDate orderedAt;
 
-    int totalPrice;
+    int totalPriceIncl;
 
     private String name;
 

@@ -26,7 +26,7 @@ public class FavoritePageDto {
 
         private String productName;
 
-        private int price;
+        private int priceIncl;
 
         private SaleStatus status;
     }

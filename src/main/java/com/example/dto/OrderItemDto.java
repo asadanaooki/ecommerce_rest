@@ -11,7 +11,7 @@ public class OrderItemDto {
     
     private String productName;
     
-    private int price;
+    private int unitPriceIncl;
     
     private int qty;
     

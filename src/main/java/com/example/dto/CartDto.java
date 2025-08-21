@@ -15,5 +15,5 @@ public class CartDto {
 
     private int totalQty;
     
-    private int totalPrice;
+    private int totalPriceIncl;
 }

@@ -30,10 +30,8 @@ public class Order {
     /** 住所 1 行まとめ（orders.address） */
     private String address;
 
-    /** 合計数量（orders.total_qty） */
     private int totalQty;
 
-    /** 合計金額（税込）（orders.total_price） */
     private int totalPriceIncl;
     
     private ShippingStatus shippingStatus;

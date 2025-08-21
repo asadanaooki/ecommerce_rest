@@ -19,7 +19,7 @@ public class AdminProductDto {
     private String productName;
 
     /** 価格 (円) */
-    private int price;
+    private int priceExcl;
 
     /** 在庫数 */
     private int available;

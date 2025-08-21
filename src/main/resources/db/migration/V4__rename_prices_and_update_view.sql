@@ -14,6 +14,14 @@ alter table order_item
   rename column subtotal to subtotal_incl;
   
   
+alter table cart_item
+  add column unit_price_incl int
+    generated always as ((unit_price_incl * 110) div 100)
+    stored,
+  add column subtotal_incl int
+    generated always as (qty * unit_price_incl)
+    virtual;
+  
   
 create or replace view vw_product_core as
 SELECT

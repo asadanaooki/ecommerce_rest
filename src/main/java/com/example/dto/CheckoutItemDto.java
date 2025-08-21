@@ -3,14 +3,12 @@ package com.example.dto;
 import com.example.enums.SaleStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
 @Data
 public class CheckoutItemDto {
     // TODO:
-    // 色々アノテーションついててごちゃごちゃしてる。分けた方が良いかも
     // SKU表示するほうがよい？
 
     /* ---------- 基本情報 ---------- */
@@ -22,16 +20,13 @@ public class CheckoutItemDto {
     private int qty;
 
     /* ---------- 価格 ---------- */
-    @JsonIgnore
-    private int priceEx;
+    private int unitPriceExcl;
 
-    @JsonIgnore
-    private int priceAtCartAddition;
+    private int unitPriceAtCartAddition;
 
-    @JsonProperty("price")
-    private Integer priceInc;
+    private int unitPriceIncl;
 
-    private int subtotal;
+    private int subtotalIncl;
 
     /* ---------- 販売状況 ---------- */
     @JsonIgnore
@@ -45,10 +40,6 @@ public class CheckoutItemDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private DiffReason reason;
     
-    
-    public Integer getSubtotal() {
-        return (priceInc == null) ? null : priceInc * qty;
-    }
     
     public enum DiffReason{
         DISCONTINUED,
