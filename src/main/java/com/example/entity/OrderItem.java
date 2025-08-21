@@ -21,11 +21,9 @@ public class OrderItem {
     /** 数量（order_item.qty） */
     private int qty;
 
-    /** 単価（税込 or 税抜は業務ルールに合わせて）（order_item.price） */
-    private int price;
+    private int unitPriceIncl;
 
-    /** 小計（price × qty）（order_item.subtotal） */
-    private int subtotal;
+    private int subtotalIncl;
 
     /** 作成日時（order_item.created_at） */
     private LocalDateTime createdAt;

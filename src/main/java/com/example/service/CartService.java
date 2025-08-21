@@ -80,13 +80,13 @@ public class CartService {
 
         cartMapper.insertCartIfAbsent(cid, userId);
 
-        int price = productMapper.selectByPrimaryKey(productId).getPrice();
+        int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
                 setCartId(cid);
                 setProductId(productId);
                 setQty(body.getQty());
-                setPrice(price);
+                setUnitPriceExcl(unitPriceExcl);
             }
         });
 
@@ -103,13 +103,13 @@ public class CartService {
         // TODO:
         // show→updateしてる想定なので、カートIDがあり、期限内の想定
         // いきなりAPI叩くケースなどのガード検討
-        int price = productMapper.selectByPrimaryKey(productId).getPrice();
+        int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
                 setCartId(cartId);
                 setProductId(productId);
                 setQty(qty);
-                setPrice(price);
+                setUnitPriceExcl(unitPriceExcl);
             }
         });
     }

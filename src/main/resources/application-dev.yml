@@ -7,9 +7,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   flyway:
     clean-disabled: false
-#  sql:
-#    init:
-#      mode: never
+  sql:
+    init:
+      mode: never
 #  autoconfigure:
 #      exclude:
 #        - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
@@ -53,3 +53,7 @@ settings:
     inventory:
       size: 2
       low-stock-threshold: 10
+      
+  batch:
+    cart:
+      cron: "0 0 3 * * *"

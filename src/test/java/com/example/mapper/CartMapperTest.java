@@ -429,4 +429,124 @@ class CartMapperTest {
             assertThat(cartMapper.isCartExpired(cartId)).isEqualTo(expected);
         }
     }
+
+    @Nested
+    class DeleteExpiredCarts {
+        String cartA = UUID.randomUUID().toString(); // updated_at=2025/07/30 10:40:10, ttl=14, user=null -> 期限 = 8/20 10:40:10
+        String cartB = UUID.randomUUID().toString(); // updated_at=2025/06/03 10:40:10, ttl=60, user=有り -> 期限 = 8/09 10:40:10
+        String cartC = UUID.randomUUID().toString();
+        String productId = "97113c2c-719a-490c-9979-144d92905c33";
+
+        @BeforeEach
+        void setup() {
+            // A: updated_at=2025/7/30 10:40:10, userId=null, ttl_days=14 → 期限=8/20 10:40:10（=境界）
+            LocalDateTime a = LocalDateTime.of(2025, 7, 30, 10, 40, 10);
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartA);
+                    setUserId(null);
+                    setTtlDays(14);
+                    setCreatedAt(a);
+                    setUpdatedAt(a);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartA);
+                    setProductId(productId);
+                    setQty(1);
+                    setPrice(1000);
+                    setCreatedAt(a);
+                    setUpdatedAt(a);
+                }
+            });
+
+            // B: updated_at=2025/6/3 10:40:10, userId=有り, ttl_days=60 → 期限=8/9 10:40:10（すでに期限切れ）
+            LocalDateTime b = LocalDateTime.of(2025, 6, 3, 10, 40, 10);
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartB);
+                    setUserId("111e8400-e29b-41d4-a716-446655440111");
+                    setTtlDays(60);
+                    setCreatedAt(b);
+                    setUpdatedAt(b);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartB);
+                    setProductId(productId);
+                    setQty(2);
+                    setPrice(2000);
+                    setCreatedAt(b);
+                    setUpdatedAt(b);
+                }
+            });
+
+            // C: updated_at=2025/8/16 10:40:10, userId=null, ttl_days=14 → 期限=9/6 10:40:10（未来）
+            LocalDateTime c = LocalDateTime.of(2025, 8, 16, 10, 40, 10);
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartC);
+                    setUserId(null);
+                    setTtlDays(14);
+                    setCreatedAt(c);
+                    setUpdatedAt(c);
+                }
+            });
+            factory.createCartItem(new CartItem() {
+                {
+                    setCartId(cartC);
+                    setProductId(productId);
+                    setQty(3);
+                    setPrice(3000);
+                    setCreatedAt(c);
+                    setUpdatedAt(c);
+                }
+            });
+        }
+
+        @AfterEach
+        void tearDown() {
+            factory.unfreezeNow();
+        }
+
+        @Test
+        void deleteExpiredCarts_equalBoundary() {
+            factory.freezeNow(LocalDateTime.of(2025, 8, 20, 10, 40, 10));
+            
+            int deleted = cartMapper.deleteExpiredCarts();
+            
+            assertThat(deleted).isOne();
+            
+         // 残存確認：cartAは等号なので残る、cartBは期限切れで消える、cartCは未来で残る
+            assertThat(cartMapper.selectCartByPrimaryKey(cartA)).isNotNull();
+            assertThat(cartMapper.selectCartByPrimaryKey(cartB)).isNull();     // 削除済
+            assertThat(cartMapper.selectCartByPrimaryKey(cartC)).isNotNull();
+
+            // カスケード確認：cartB の cart_item は削除、他は残る
+            assertThat(cartMapper.selectCartItemByPrimaryKey(cartA, productId)).isNotNull();
+            assertThat(cartMapper.selectCartItemByPrimaryKey(cartB, productId)).isNull(); // 削除済
+            assertThat(cartMapper.selectCartItemByPrimaryKey(cartC, productId)).isNotNull();
+        }
+        
+        @Test
+        void deleteExpiredCarts_overBoundary() {
+            factory.freezeNow(LocalDateTime.of(2025, 8, 20, 10, 40, 11));
+            
+            int deleted = cartMapper.deleteExpiredCarts();
+            
+            assertThat(deleted).isEqualTo(2);
+            
+         // 残存確認：cartAは等号なので残る、cartBは期限切れで消える、cartCは未来で残る
+            assertThat(cartMapper.selectCartByPrimaryKey(cartA)).isNull();
+            assertThat(cartMapper.selectCartByPrimaryKey(cartB)).isNull();     // 削除済
+            assertThat(cartMapper.selectCartByPrimaryKey(cartC)).isNotNull();
+
+            // カスケード確認：cartB の cart_item は削除、他は残る
+            assertThat(cartMapper.selectCartItemByPrimaryKey(cartA, productId)).isNull();
+            assertThat(cartMapper.selectCartItemByPrimaryKey(cartB, productId)).isNull(); // 削除済
+            assertThat(cartMapper.selectCartItemByPrimaryKey(cartC, productId)).isNotNull();
+        }
+    }
 }

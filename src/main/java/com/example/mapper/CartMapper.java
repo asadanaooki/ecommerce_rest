@@ -44,4 +44,8 @@ public interface CartMapper {
     int deleteCartItem(String cartId, String productId);
 
     int deleteCart(String cartId);
+    
+    
+    // バッチ系
+    int deleteExpiredCarts();
 }

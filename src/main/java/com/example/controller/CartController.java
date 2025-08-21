@@ -14,8 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,7 +70,7 @@ public class CartController {
         }
     }
 
-    @PutMapping("/items/{productId}")
+    @PostMapping("/items/{productId}")
     public ResponseEntity<Void> addToCart(@PathVariable @HexUuid @NotBlank String productId,
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody AddCartRequest req,
@@ -88,7 +88,7 @@ public class CartController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("items/{productId}/quantity")
+    @PutMapping("items/{productId}/quantity")
     public ResponseEntity<Void> changeQty(@PathVariable @HexUuid @NotBlank String productId,
             @RequestBody @Min(1) @Max(20) int qty,
             @AuthenticationPrincipal String userId,

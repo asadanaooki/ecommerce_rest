@@ -83,13 +83,11 @@ class CartControllerTest {
 
             @Test
             void showCart_valid() throws Exception {
-                CartDto dto = new CartDto() {
-                    {
-                        setItems(List.of(new CartItemDto()));
-                        setTotalQty(2);
-                        setTotalPrice(5000);
-                    }
-                };
+                CartDto dto = new CartDto() {{
+                    setItems(List.of(new CartItemDto()));
+                    setTotalQty(2);
+                    setTotalPrice(5000);
+                }};
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 MvcResult result = mockMvc.perform(get("/cart").cookie(cookie))
@@ -99,8 +97,7 @@ class CartControllerTest {
                         .andExpect(jsonPath("$.totalPrice").value(5000))
                         .andReturn();
 
-                assertThat(result.getResponse().getHeader("Set-Cookie"))
-                        .isNull();
+                assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
             }
 
             @Test
@@ -147,12 +144,10 @@ class CartControllerTest {
             void showCart_valid() throws Exception {
                 doReturn(Optional.of("id")).when(cartService).findUserCartId(anyString());
 
-                CartDto dto = new CartDto() {
-                    {
-                        setTotalQty(2);
-                        setTotalPrice(5000);
-                    }
-                };
+                CartDto dto = new CartDto() {{
+                    setTotalQty(2);
+                    setTotalPrice(5000);
+                }};
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 mockMvc.perform(get("/cart"))
@@ -200,7 +195,7 @@ class CartControllerTest {
                         anyString(),
                         any());
 
-                MvcResult result = mockMvc.perform(put("/cart/items/{productId}", productId)
+                MvcResult result = mockMvc.perform(post("/cart/items/{productId}", productId) // PUT→POST
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -224,7 +219,7 @@ class CartControllerTest {
                         anyString(),
                         any());
 
-                MvcResult result = mockMvc.perform(put("/cart/items/{productId}", productId)
+                MvcResult result = mockMvc.perform(post("/cart/items/{productId}", productId) // PUT→POST
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -265,7 +260,7 @@ class CartControllerTest {
                         anyString(),
                         any());
 
-                MvcResult result = mockMvc.perform(put("/cart/items/{productId}", productId)
+                MvcResult result = mockMvc.perform(post("/cart/items/{productId}", productId) // PUT→POST
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -285,7 +280,7 @@ class CartControllerTest {
                         anyString(),
                         any());
 
-                MvcResult result = mockMvc.perform(put("/cart/items/{productId}", productId)
+                MvcResult result = mockMvc.perform(post("/cart/items/{productId}", productId) // PUT→POST
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -294,7 +289,7 @@ class CartControllerTest {
                                 """))
                         .andExpect(status().isOk())
                         .andReturn();
-                
+
                 assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
             }
 
@@ -308,7 +303,7 @@ class CartControllerTest {
                 try (MockedStatic<UUID> mocked = mockStatic(UUID.class)) {
                     mocked.when(UUID::randomUUID).thenReturn(u);
 
-                    MvcResult result = mockMvc.perform(put("/cart/items/{productId}", productId)
+                    MvcResult result = mockMvc.perform(post("/cart/items/{productId}", productId) // PUT→POST
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
@@ -316,10 +311,10 @@ class CartControllerTest {
                                     }
                                     """))
                             .andExpect(status().isOk())
-                            .andExpect(header().string(CartController.HEADER_CART_EVENT, 
+                            .andExpect(header().string(CartController.HEADER_CART_EVENT,
                                     CartController.EVENT_CART_EXPIRED))
                             .andReturn();
-                    
+
                     assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
                 }
             }
@@ -341,7 +336,7 @@ class CartControllerTest {
 
             @Test
             void changeQty_valid() throws Exception {
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                mockMvc.perform(put("/cart/items/{productId}/quantity", productId) // PATCH→PUT
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("5"))
@@ -354,7 +349,7 @@ class CartControllerTest {
             void changeQty_absent() throws Exception {
                 cookie = new Cookie("invalid", "id");
 
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                mockMvc.perform(put("/cart/items/{productId}/quantity", productId) // PATCH→PUT
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("3"))
@@ -365,7 +360,7 @@ class CartControllerTest {
 
             @Test
             void changeQty_invalidQuantityTooLow() throws Exception {
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                mockMvc.perform(put("/cart/items/{productId}/quantity", productId) // PATCH→PUT
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("0"))
@@ -374,7 +369,7 @@ class CartControllerTest {
 
             @Test
             void changeQty_invalidQuantityTooHigh() throws Exception {
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                mockMvc.perform(put("/cart/items/{productId}/quantity", productId) // PATCH→PUT
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("21"))
@@ -400,7 +395,7 @@ class CartControllerTest {
             void changeQty_valid() throws Exception {
                 doReturn(Optional.of("cartId")).when(cartService).findUserCartId("user");
 
-                mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                mockMvc.perform(put("/cart/items/{productId}/quantity", productId) // PATCH→PUT
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("3"))
                         .andExpect(status().isOk());
@@ -412,16 +407,15 @@ class CartControllerTest {
             void changeQty_absent() throws Exception {
                 doReturn(Optional.empty()).when(cartService).findUserCartId("user");
 
-               MvcResult result= mockMvc.perform(patch("/cart/items/{productId}/quantity", productId)
+                MvcResult result = mockMvc.perform(put("/cart/items/{productId}/quantity", productId) // PATCH→PUT
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("2"))
                         .andExpect(status().isOk())
                         .andReturn();
 
                 verify(cartService).changeQty(null, "user", productId, 2);
-                
-                assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
 
+                assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
             }
         }
     }
@@ -442,13 +436,13 @@ class CartControllerTest {
 
             @Test
             void removeFromCart_valid() throws Exception {
-               MvcResult result = mockMvc.perform(delete("/cart/items/{productId}", productId)
+                MvcResult result = mockMvc.perform(delete("/cart/items/{productId}", productId)
                         .cookie(cookie))
                         .andExpect(status().isOk())
                         .andReturn();
 
                 verify(cartService).removeItem("id", productId);
-                
+
                 Cookie resCookie = result.getResponse().getCookie("cartId");
                 assertThat(result.getResponse().getHeader("Set-Cookie")).isNotNull();
 
@@ -515,5 +509,4 @@ class CartControllerTest {
             registry.addInterceptor(new CartCookieTouchInterceptor(cookieUtil));
         }
     }
-
 }

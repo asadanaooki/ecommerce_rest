@@ -17,7 +17,9 @@ private String productId;
     
     private String productDescription;
     
-    private Integer price;
+    private Integer priceExcl;
+    
+    private Integer priceIncl;
     
     private Integer stock;
     

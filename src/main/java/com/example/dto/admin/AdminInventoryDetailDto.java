@@ -15,7 +15,7 @@ public class AdminInventoryDetailDto {
     
     private String productName;
     
-    private int price;
+    private int priceExcl;
     
     private Integer stock;
     

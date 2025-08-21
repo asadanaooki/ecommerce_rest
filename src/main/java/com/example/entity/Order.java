@@ -34,7 +34,7 @@ public class Order {
     private int totalQty;
 
     /** 合計金額（税込）（orders.total_price） */
-    private int totalPrice;
+    private int totalPriceIncl;
     
     private ShippingStatus shippingStatus;
     

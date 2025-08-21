@@ -114,5 +114,12 @@
     where cart_id = #{cartId}
       and product_id = #{productId}
   </delete>
+  
+  
+  <!--  バッチ系-->
+  <delete id="deleteExpiredCarts">
+    delete from cart
+    where NOW() > date_add(updated_at, interval (ttl_days + 7) day)
+  </delete>
 
 </mapper>

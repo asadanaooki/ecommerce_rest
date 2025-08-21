@@ -20,7 +20,7 @@ public class ProductUpsertRequest {
     private String productName;
 
     @Positive
-    private Integer price;
+    private Integer priceExcl;
 
     @Size(max = 1000)
     private String productDescription;
@@ -44,7 +44,7 @@ public class ProductUpsertRequest {
         // imageが0バイトがどいういうものか実験する→!image.isEmptyが必要
         // 商品説明が空白の場合弾いたほうが良いかも
         // どのフィールドでエラーはいたらわかるようにしたい
-        return  ( price != null
+        return  ( priceExcl != null
                && productDescription != null
                && image != null);
         
