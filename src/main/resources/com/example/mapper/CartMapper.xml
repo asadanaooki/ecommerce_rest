@@ -22,8 +22,8 @@
   </select>
 
   <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
-    select ci.product_id, p.product_name, ci.qty, p.price_excl as priceEx,
-      ci.unit_price_excl as priceAtCartAdditon
+    select ci.product_id, p.product_name, ci.qty, p.price_excl,
+      ci.unit_price_excl
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}

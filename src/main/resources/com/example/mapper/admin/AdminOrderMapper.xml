@@ -5,7 +5,7 @@
     select 
       order_id,
       lpad(cast(order_number as char), 4, '0') as order_number,
-      total_price_incl AS totalPriceIncl,
+      total_price_incl,
       name,
       shipping_status,
       payment_status,
@@ -64,7 +64,7 @@
     select
       o.order_id,
       lpad(cast(o.order_number as char), 4, '0') as order_number,
-      o.total_price_incl AS totalPriceIncl,
+      o.total_price_incl,
       o.shipping_status,
       o.payment_status,
       o.created_at,
@@ -84,9 +84,9 @@
     select
       product_id,
       product_name,
-      unit_price_incl AS unitPriceIncl,
+      unit_price_incl,
       qty,
-      subtotal_incl AS subtotalIncl
+      subtotal_incl
     from order_item
     where order_id = #{orderId}
     order by product_id

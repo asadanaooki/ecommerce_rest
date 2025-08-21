@@ -13,7 +13,7 @@
   </select>
 
   <select id="searchProducts" resultType="com.example.dto.ProductCardDto">
-    SELECT p.product_id, p.product_name, p.price_incl AS priceIncl,
+    SELECT p.product_id, p.product_name, p.price_incl,
       (p.stock &lt;= 0) AS out_of_stock,
       <choose>
         <!-- ログイン中だけ JOIN があるので f.user_id をそのままブール式で判定 -->
@@ -74,7 +74,7 @@
       p.product_id,
       p.product_name,
       p.product_description,
-      p.price_incl AS priceIncl,
+      p.price_incl,
       (p.stock &lt;= 0) AS out_of_stock,
       coalesce(rs.avg, 0) as rating_avg,
       coalesce(rs.cnt, 0) as review_count,
