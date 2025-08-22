@@ -23,7 +23,8 @@
 
   <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
     select ci.product_id, p.product_name, ci.qty,
-     p.price_excl as unit_price_incl, (ci.qty * ci.unit_price_incl) as subtotal_incl
+     (ci.unit_price_excl * 110 DIV 100) as unit_price_incl, 
+     (ci.qty * (ci.unit_price_excl * 110 DIV 100)) as subtotal_incl
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}
