@@ -33,8 +33,12 @@
     where user_id = #{userId}
   </select>
   
-  <select id="findFavoritesPage" resultType="com.example.entity.Product">
-    select *
+  <select id="findFavoritesPage" resultType="com.example.dto.FavoritePageDto$FavoriteRow">
+    select 
+      p.product_id
+      p.product_name
+      p.price_incl
+      p.status
     from favorite f
     join product p
     on p.product_id = f.product_id

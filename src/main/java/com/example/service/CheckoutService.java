@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.dto.CheckoutConfirmDto;
 import com.example.dto.CheckoutItemDto;
@@ -26,7 +27,6 @@ import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
-import com.example.util.TaxCalculator;
 
 import lombok.AllArgsConstructor;
 
@@ -54,11 +54,8 @@ public class CheckoutService {
 
     private final ProductMapper productMapper;
 
-    private final TaxCalculator calculator;
-
     private final MailGateway mailGateway;
 
-    
     public CheckoutConfirmDto loadCheckout(String userId) {
         String cartId = cartMapper.selectCartByUser(userId).getCartId();
         Cart c = cartMapper.selectCartByPrimaryKey(cartId);
@@ -74,7 +71,7 @@ public class CheckoutService {
         return new CheckoutConfirmDto(na.fullName,
                 user.getPostalCode(),
                 na.fullAddress,
-                CartService.buildCart(items, calculator));
+                new CartDto(items));
         // TODO:
         // 以下、購入不可判定入れるときに必要かも
         //   List<CartItemDto> items = new ArrayList<CartItemDto>();
@@ -127,7 +124,6 @@ public class CheckoutService {
         //        }
         String orderId = c.getCartId();
         List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
-        items.forEach(it -> it.setPriceInc(calculator.calculatePriceIncludingTax(it.getPriceEx())));
 
         // 要確認商品がある場合
         if (hasDiff(items)) {
@@ -141,13 +137,8 @@ public class CheckoutService {
                 na.fullName,
                 user.getPostalCode(),
                 na.fullAddress,
-                items,
-                items.stream()
-                        .mapToInt(CheckoutItemDto::getQty)
-                        .sum(),
-                items.stream()
-                        .mapToInt(CheckoutItemDto::getSubtotal)
-                        .sum());
+                items);
+
         // 注文確定処理
         int orderNumber = finalizeOrder(orderId, user, ck);
 
@@ -168,7 +159,7 @@ public class CheckoutService {
                 it.setReason(CheckoutItemDto.DiffReason.OUT_OF_STOCK);
             } else if (it.getStock() < it.getQty()) {
                 it.setReason(CheckoutItemDto.DiffReason.LOW_STOCK);
-            } else if (it.getPriceEx() != it.getPriceAtCartAddition()) {
+            } else if (it.getCurrentUnitPriceExcl() != it.getUnitPriceExclAtAddToCart()) {
                 it.setReason(CheckoutItemDto.DiffReason.PRICE_CHANGED);
             }
         }
@@ -189,7 +180,7 @@ public class CheckoutService {
                 setPostalCode(user.getPostalCode());
                 setAddress(ck.getFullAddress());
                 setTotalQty(ck.getTotalQty());
-                setTotalPrice(ck.getTotalPrice());
+                setTotalPriceIncl(ck.getTotalPriceIncl());
             }
         };
         checkoutMapper.insertOrderHeader(order);
@@ -202,8 +193,8 @@ public class CheckoutService {
                     oi.setProductId(i.getProductId());
                     oi.setProductName(i.getProductName());
                     oi.setQty(i.getQty());
-                    oi.setPrice(i.getPriceInc());
-                    oi.setSubtotal(i.getSubtotal());
+                    oi.setUnitPriceIncl(i.getUnitPriceIncl());
+                    oi.setSubtotalIncl(i.getSubtotalIncl());
                     return oi;
                 })
                 .collect(Collectors.toList());

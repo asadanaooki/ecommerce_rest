@@ -20,9 +20,9 @@ public class CheckoutItemDto {
     private int qty;
 
     /* ---------- 価格 ---------- */
-    private int unitPriceExcl;
+    private int currentUnitPriceExcl;
 
-    private int unitPriceAtCartAddition;
+    private int unitPriceExclAtAddToCart;
 
     private int unitPriceIncl;
 

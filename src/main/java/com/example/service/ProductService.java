@@ -15,7 +15,6 @@ import com.example.enums.SortType;
 import com.example.mapper.FavoriteMapper;
 import com.example.mapper.ProductMapper;
 import com.example.util.PaginationUtil;
-import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,15 +39,12 @@ public class ProductService {
     @Value("${settings.product.page-nav-radius}")
     private int radius;
 
-    private final TaxCalculator taxCalculator;
 
     public ProductListDto searchProducts(int page, SortType sort, List<String> keywords, String userId) {
         int offset = PaginationUtil.calculateOffset(page, pageSize);
 
         List<ProductCardDto> products = productMapper
                 .searchProducts(new ProductMapper.SearchCondition(userId, keywords, sort, pageSize, offset));
-        // 税込み価格へ変換
-        products.forEach(p -> p.setPrice(taxCalculator.calculatePriceIncludingTax(p.getPrice())));
 
         int totalCount = productMapper.countProducts(keywords);
 
@@ -61,7 +57,6 @@ public class ProductService {
     public ProductDetailDto getProductDetail(String productId, String userId) {
         ProductDetailDto dto = Optional.ofNullable(productMapper.findProductDetail(productId, userId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        dto.setPrice(taxCalculator.calculatePriceIncludingTax(dto.getPrice()));
 
         return dto;
     }

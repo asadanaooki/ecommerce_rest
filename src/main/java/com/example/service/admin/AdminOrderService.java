@@ -130,7 +130,7 @@ public class AdminOrderService {
             if (newQty < old.getQty()) {
                 adminOrderMapper.addStock(productId, old.getQty() - newQty);
                 old.setQty(newQty);
-                old.setSubtotal(old.getPrice() * newQty);
+                old.setSubtotalIncl(old.getUnitPriceIncl() * newQty);
                 adminOrderMapper.updateItemQty(old);
 
             } else if (newQty > old.getQty()) {

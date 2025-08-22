@@ -22,7 +22,6 @@ public class OrderHistoryService {
     　できればカートと同じ順序で出したいが。
     ・注文履歴表示をN回ループで実装してる。パフォーマンス計測。別方法検討
     ・注文履歴で、全件表示、全明細表示にしてるが、今後変えた方が良いかも
-    ・Converter使う方がよいかも
     ・SKU表示を検討
     ・N+１回避のため、JOIN ＋ MyBatis resultMapを検討
     */
@@ -39,7 +38,7 @@ public class OrderHistoryService {
                     .map(it -> new OrderItemDto(
                             it.getProductId(),
                             it.getProductName(),
-                            it.getPrice(),
+                            it.getUnitPriceIncl(),
                             it.getQty()
                             )).toList();
             
@@ -48,7 +47,7 @@ public class OrderHistoryService {
                     setOrderId(o.getOrderId());
                     setOrderNumber(String.format("%04d", o.getOrderNumber()));
                     setOrderedAt(o.getCreatedAt().toLocalDate());
-                    setTotalPrice(o.getTotalPrice());
+                    setTotalPriceIncl(o.getTotalPriceIncl());
                     setName(o.getName());
                     setPostalCode(o.getPostalCode());
                     setAddress(o.getAddress());

@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.dto.FavoritePageDto;
 import com.example.entity.Favorite;
-import com.example.entity.Product;
 
 @Mapper
 public interface FavoriteMapper {
@@ -16,7 +16,7 @@ public interface FavoriteMapper {
     
     int deleteByUserId(String userId);
     
-    List<Product> findFavoritesPage(String userId, int limit, int offset);
+    List<FavoritePageDto.FavoriteRow> findFavoritesPage(String userId, int limit, int offset);
     
     int countFavoritesByUser(String userId);
 }

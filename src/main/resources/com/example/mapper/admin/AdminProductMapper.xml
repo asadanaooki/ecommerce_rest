@@ -41,8 +41,15 @@
     </where>
   </select>
   
-  <select id="searchProducts" resultType="com.example.entity.view.ProductCoreView">
-    select *
+  <select id="searchProducts" resultType="com.example.dto.admin.AdminProductDto">
+    select 
+      p.product_id,
+      p.sku,
+      p.product_name,
+      p.price_excl,
+      p.available,
+      p.status,
+      p.updated_at
     from vw_product_core p
     <where>
       <if test="req.keywords != null and req.keywords.size() &gt; 0">

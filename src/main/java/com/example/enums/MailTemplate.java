@@ -72,7 +72,8 @@ public enum MailTemplate {
                     数量 : %d
                     価格 : ¥%,d
                     小計 : ¥%,d
-                    """.formatted(i.getProductName(), i.getQty(), i.getPriceInc(), i.getSubtotal()))
+                    """.formatted(i.getProductName(), i.getQty(),
+                            i.getUnitPriceIncl(), i.getSubtotalIncl()))
                     .collect(Collectors.joining("\n"));
 
             String body = getBody().formatted(
@@ -81,7 +82,7 @@ public enum MailTemplate {
                     ck.getFullAddress(),
                     String.format("%04d", orderNumber),
                     itemsBlock,
-                    ck.getTotalPrice());
+                    ck.getTotalPriceIncl());
 
             return new EmailMessage(user.getEmail(), getSubject(), body);
 
@@ -207,8 +208,8 @@ public enum MailTemplate {
                             """.formatted(
                             i.getProductName(),
                             i.getQty(),
-                            i.getPrice(),
-                            i.getSubtotal()))
+                            i.getUnitPriceIncl(),
+                            i.getSubtotalIncl()))
                     .collect(Collectors.joining("\n"));
 
             String body = getBody().formatted(
@@ -217,7 +218,7 @@ public enum MailTemplate {
                     na.fullAddress(),
                     String.format("%04d", orderNumber),
                     itemsBlock,
-                    items.stream().mapToInt(OrderItem::getSubtotal).sum());
+                    items.stream().mapToInt(OrderItem::getSubtotalIncl).sum());
 
             return new EmailMessage(u.getEmail(), getSubject(), body);
         }

@@ -18,7 +18,6 @@ import com.example.entity.CartItem;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
-import com.example.util.TaxCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +31,6 @@ public class CartService {
       ・削除のたびにpage=1を取得してる。毎回ジャンプするため同じ位置にした方が良いかも？
       ・販売ステータス定数を共通化したほうが良いかも。
       ・価格計算、重複して書いてるが共通化したほうが良いのか
-      ・buildCartメソッドstaticで定義しているが、ちゃんと共通化したほうがよいかも
        isCartExpiredの戻り値がNULLを考慮するか？
        productIdが不正値の場合を考慮するか？addやupdateなどで
     */
@@ -40,7 +38,6 @@ public class CartService {
 
     private final ProductMapper productMapper;
 
-    private final TaxCalculator calculator;
 
     public Optional<String> findUserCartId(String userId) {
         return Optional.ofNullable(cartMapper.selectCartByUser(userId))
@@ -63,7 +60,7 @@ public class CartService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return buildCart(items, calculator);
+        return new CartDto(items);
     }
 
     // TODO:
@@ -128,17 +125,4 @@ public class CartService {
         cartMapper.deleteCart(guestCartId);
     }
 
-    public static CartDto buildCart(List<CartItemDto> items, TaxCalculator calculator) {
-        int totalQty = 0;
-        int totalPrice = 0;
-        for (CartItemDto it : items) {
-            int priceInc = calculator.calculatePriceIncludingTax(it.getPriceEx());
-            int subtotal = priceInc * it.getQty();
-            it.setPriceInc(priceInc);
-            it.setSubtotal(subtotal);
-            totalQty += it.getQty();
-            totalPrice += subtotal;
-        }
-        return new CartDto(items, totalQty, totalPrice);
-    }
 }

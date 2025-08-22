@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.converter.FavoriteConverter;
 import com.example.dto.FavoritePageDto;
 import com.example.entity.Favorite;
 import com.example.mapper.FavoriteMapper;
@@ -22,7 +21,6 @@ public class FavoriteService {
 
     private final FavoriteMapper favoriteMapper;
     
-    private final FavoriteConverter favoriteConverter;
 
     @Value("${settings.favorite.size}")
     private int pageSize;
@@ -31,8 +29,7 @@ public class FavoriteService {
         int offset = PaginationUtil.calculateOffset(page, pageSize);
         int total = favoriteMapper.countFavoritesByUser(userId);
 
-        List<FavoritePageDto.FavoriteRow> rows = favoriteConverter.toRowList(
-                favoriteMapper.findFavoritesPage(userId, pageSize, offset));
+        List<FavoritePageDto.FavoriteRow> rows = favoriteMapper.findFavoritesPage(userId, pageSize, offset);
         
         return new FavoritePageDto(rows, pageSize, total);
     }

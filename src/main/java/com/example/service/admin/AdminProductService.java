@@ -19,10 +19,10 @@ import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.converter.AdminProductConverter;
 import com.example.dto.admin.AdminProductDetailDto;
 import com.example.dto.admin.AdminProductDto;
 import com.example.dto.admin.AdminProductListDto;
+import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminProductMapper;
@@ -49,8 +49,6 @@ public class AdminProductService {
     
     private final ProductMapper productMapper;
 
-    private final AdminProductConverter adminProductConverter;
-
     @Value("${settings.admin.product.size}")
     private int pageSize;
 
@@ -68,8 +66,7 @@ public class AdminProductService {
         int total = adminProductMapper.countProducts(req);
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
 
-        List<AdminProductDto> items = adminProductConverter.toDtoList(
-                adminProductMapper.searchProducts(req, pageSize, offset));
+        List<AdminProductDto> items = adminProductMapper.searchProducts(req, pageSize, offset);
 
         return new AdminProductListDto(items, total, pageSize);
     }
@@ -79,15 +76,35 @@ public class AdminProductService {
         if (product == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return adminProductConverter.toDetailDto(product);
+        AdminProductDetailDto dto = new AdminProductDetailDto();
+        dto.setProductId(product.getProductId());
+        dto.setSku(product.getSku()); // DTO は String 型なので注意
+        dto.setProductName(product.getProductName());
+        dto.setProductDescription(product.getProductDescription());
+        dto.setPriceExcl(product.getPriceExcl());
+        dto.setAvailable(product.getAvailable());
+        dto.setStatus(product.getStatus());
+        dto.setCreatedAt(product.getCreatedAt());
+        dto.setUpdatedAt(product.getUpdatedAt());
+
+        return dto;
     }
 
     @Transactional
     public void create(ProductUpsertRequest req) {
         IMageData data = preprocessImage(req.getImage());
         String productId = UUID.randomUUID().toString();
-       var entity= adminProductConverter.toEntity(productId, req);
 
+     // Productエンティティに詰め替え
+        Product entity = new Product();
+        entity.setProductId(UUID.randomUUID().toString());
+        entity.setProductName(req.getProductName());
+        entity.setProductDescription(req.getProductDescription());
+        entity.setPriceExcl(req.getPriceExcl());
+        entity.setStock(0);            // 新規作成なので0で初期化
+        entity.setReserved(0);         // 同上
+        entity.setStatus(req.getStatus());
+        
         adminProductMapper.insert(entity);
 
         // TODO:
@@ -100,8 +117,15 @@ public class AdminProductService {
     @Transactional
     public void update(String productId, ProductUpsertRequest req) {
         IMageData data = preprocessImage(req.getImage());
-
-        adminProductMapper.update(adminProductConverter.toEntity(productId, req));
+        
+        Product entity = new Product();
+        entity.setProductId(productId);
+        entity.setProductName(req.getProductName());
+        entity.setProductDescription(req.getProductDescription());
+        entity.setPriceExcl(req.getPriceExcl());
+        entity.setStatus(req.getStatus());
+        
+        adminProductMapper.update(entity);
 
         if (data != null) {
             saveImage(productId, data);

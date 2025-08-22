@@ -3,8 +3,14 @@
 
   <select id="selectCheckoutItems"
     resultType="com.example.dto.CheckoutItemDto">
-    select ci.product_id, p.product_name, ci.qty, p.price_excl,
-      ci.unit_price_excl as unit_price_at_cart_addition, p.stock, p.status
+    select 
+      ci.product_id,
+      p.product_name,
+      ci.qty,
+      p.price_excl       as current_unit_price_excl,
+      ci.unit_price_excl as unit_price_excl_at_add_to_cart,
+      p.stock,
+      p.status
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}
@@ -34,7 +40,7 @@
     ) values 
     <foreach collection="items" item="it" separator=",">
       (#{it.orderId}, #{it.productId}, #{it.productName}, #{it.qty},
-         #{it.unitPriceIncl}, #{it.subtotal})
+         #{it.unitPriceIncl}, #{it.subtotalIncl})
     </foreach>
   </insert>
 
