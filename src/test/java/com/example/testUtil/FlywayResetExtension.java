@@ -18,11 +18,11 @@ public class FlywayResetExtension implements BeforeAllCallback {
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .cleanDisabled(false)
+                .validateOnMigrate(false)
+                .locations("classpath:db/migration_test")
                 .load();
         
         flyway.clean();
         flyway.migrate();
-
     }
-
 }
