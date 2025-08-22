@@ -35,9 +35,9 @@
   
   <select id="findFavoritesPage" resultType="com.example.dto.FavoritePageDto$FavoriteRow">
     select 
-      p.product_id
-      p.product_name
-      p.price_incl
+      p.product_id,
+      p.product_name,
+      p.price_excl,
       p.status
     from favorite f
     join product p

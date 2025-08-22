@@ -7,7 +7,7 @@ public enum InventorySortField {
     UPDATED_AT("updated_at"),
     SKU("sku"),
     NAME("name"),
-    PRICE("price"),
+    PRICE("price_excl"),
     STATUS("stock_status"),
     AVAILABLE("available");
     
