@@ -194,7 +194,7 @@ public class CheckoutService {
                     oi.setProductName(i.getProductName());
                     oi.setQty(i.getQty());
                     oi.setUnitPriceIncl(i.getUnitPriceIncl());
-                    oi.setSubtotalIncl(i.getSubtotalIncl());
+                    oi.setSubtotalIncl(i.getSubtotalIncl() != null ? i.getSubtotalIncl() : 0);
                     return oi;
                 })
                 .collect(Collectors.toList());
