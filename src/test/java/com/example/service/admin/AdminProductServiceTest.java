@@ -78,7 +78,7 @@ class AdminProductServiceTest {
         p2.setUpdatedAt(LocalDateTime.of(2025, 7, 2, 15, 30));
 
         doReturn(2).when(adminProductMapper).countProducts(req);
-        doReturn(List.of(p1, p2)).when(adminProductMapper).searchProducts(req, 10, 0);
+        doReturn(List.of(p1, p2)).when(adminProductMapper).searchProducts(req, 2, 0);
 
         AdminProductListDto res = adminProductService.searchProducts(req);
 
