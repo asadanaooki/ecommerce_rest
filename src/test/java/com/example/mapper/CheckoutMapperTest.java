@@ -61,7 +61,7 @@ class CheckoutMapperTest {
                 setCartId(cartId);
                 setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
                 setQty(1);
-                setPrice(750);
+                setUnitPriceExcl(750);
                 setCreatedAt(time1);
                 setUpdatedAt(time1);
             }
@@ -71,7 +71,7 @@ class CheckoutMapperTest {
                 setCartId(cartId);
                 setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
                 setQty(1);
-                setPrice(3300);
+                setUnitPriceExcl(3300);
                 setCreatedAt(time1);
                 setUpdatedAt(time1);
             }
@@ -81,7 +81,7 @@ class CheckoutMapperTest {
                 setCartId(cartId);
                 setProductId("4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07");
                 setQty(4);
-                setPrice(1800);
+                setUnitPriceExcl(1800);
                 setCreatedAt(time2);
                 setUpdatedAt(time2);
             }
@@ -94,10 +94,10 @@ class CheckoutMapperTest {
                 CheckoutItemDto::getProductId,
                 CheckoutItemDto::getProductName,
                 CheckoutItemDto::getQty,
-                CheckoutItemDto::getPriceEx,
-                CheckoutItemDto::getPriceAtCartAddition,
-                CheckoutItemDto::getPriceInc,
-                CheckoutItemDto::getSubtotal,
+                CheckoutItemDto::getCurrentUnitPriceExcl,
+                CheckoutItemDto::getUnitPriceExclAtAddToCart,
+                CheckoutItemDto::getUnitPriceIncl,
+                CheckoutItemDto::getSubtotalIncl,
                 CheckoutItemDto::getStatus,
                 CheckoutItemDto::getStock,
                 CheckoutItemDto::getReason)
@@ -123,7 +123,7 @@ class CheckoutMapperTest {
         order.setPostalCode("1500041");
         order.setAddress("東京都渋谷区神南1-1-1");
         order.setTotalQty(3);
-        order.setTotalPrice(9600);
+        order.setTotalPriceIncl(9600);
 
         checkoutMapper.insertOrderHeader(order);
 
@@ -137,7 +137,7 @@ class CheckoutMapperTest {
                 Order::getPostalCode,
                 Order::getAddress,
                 Order::getTotalQty,
-                Order::getTotalPrice,
+                Order::getTotalPriceIncl,
                 Order::getShippingStatus,
                 Order::getPaymentStatus)
                 .containsExactly(
@@ -164,7 +164,7 @@ class CheckoutMapperTest {
         order.setPostalCode("1500041");
         order.setAddress("東京都渋谷区神南1-1-1");
         order.setTotalQty(3);
-        order.setTotalPrice(9600);
+        order.setTotalPriceIncl(9600);
         checkoutMapper.insertOrderHeader(order);
 
         // 2) 明細リスト作成
@@ -173,16 +173,16 @@ class CheckoutMapperTest {
         it1.setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
         it1.setProductName("testA");
         it1.setQty(1);
-        it1.setPrice(750);
-        it1.setSubtotal(750);
+        it1.setUnitPriceIncl(750);
+        it1.setSubtotalIncl(750);
 
         OrderItem it2 = new OrderItem();
         it2.setOrderId(orderId);
         it2.setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
         it2.setProductName("testB");
         it2.setQty(2);
-        it2.setPrice(3200);
-        it2.setSubtotal(6400);
+        it2.setUnitPriceIncl(3200);
+        it2.setSubtotalIncl(6400);
 
         List<OrderItem> items = List.of(it1, it2);
 
@@ -196,8 +196,8 @@ class CheckoutMapperTest {
         assertThat(order1.getProductId()).isEqualTo("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
         assertThat(order1.getProductName()).isEqualTo("testA");
         assertThat(order1.getQty()).isEqualTo(1);
-        assertThat(order1.getPrice()).isEqualTo(750);
-        assertThat(order1.getSubtotal()).isEqualTo(750);
+        assertThat(order1.getUnitPriceIncl()).isEqualTo(750);
+        assertThat(order1.getSubtotalIncl()).isEqualTo(750);
         assertThat(order1.getCreatedAt()).isNotNull();
         assertThat(order1.getUpdatedAt()).isNotNull();
 
@@ -214,7 +214,7 @@ class CheckoutMapperTest {
     //        o2.setPostalCode("1600000");
     //        o2.setAddress("東京都新宿区西新宿2-2-2");
     //        o2.setTotalQty(1);
-    //        o2.setTotalPrice(3200);
+    //        o2.setTotalPriceIncl(3200);
     //        checkoutMapper.insertOrderHeader(o2);
     //        
     //        Thread.sleep(2000);           // 1 秒待機（テスト用なので簡易に）
@@ -227,7 +227,7 @@ class CheckoutMapperTest {
     //        o1.setPostalCode("1500041");
     //        o1.setAddress("東京都渋谷区神南1-1-1");
     //        o1.setTotalQty(3);
-    //        o1.setTotalPrice(9600);
+    //        o1.setTotalPriceIncl(9600);
     //        checkoutMapper.insertOrderHeader(o1);
     //        
     //        List<OrderHeaderDto> headers = checkoutMapper.selectHeadersByUser(userId);
@@ -264,7 +264,7 @@ class CheckoutMapperTest {
     //        h1.setPostalCode("1000001");
     //        h1.setAddress("東京都千代田区千代田1-1-1");
     //        h1.setTotalQty(3);
-    //        h1.setTotalPrice(7150);
+    //        h1.setTotalPriceIncl(7150);
     //        checkoutMapper.insertOrderHeader(h1);
     //
     //        OrderItem h1i1 = new OrderItem();
@@ -273,7 +273,7 @@ class CheckoutMapperTest {
     //        h1i1.setProductName("testC");
     //        h1i1.setQty(1);
     //        h1i1.setPrice(750);
-    //        h1i1.setSubtotal(750);
+    //        h1i1.setSubtotalIncl(750);
     //
     //        OrderItem h1i2 = new OrderItem();
     //        h1i2.setOrderId(orderId1);
@@ -281,7 +281,7 @@ class CheckoutMapperTest {
     //        h1i2.setProductName("testD");
     //        h1i2.setQty(2);
     //        h1i2.setPrice(3200);
-    //        h1i2.setSubtotal(6400);
+    //        h1i2.setSubtotalIncl(6400);
     //
     //        checkoutMapper.insertOrderItems(List.of(h1i1, h1i2));
     //
@@ -294,7 +294,7 @@ class CheckoutMapperTest {
     //        h2.setPostalCode("1000002");
     //        h2.setAddress("東京都千代田区丸の内2-2-2");
     //        h2.setTotalQty(1);
-    //        h2.setTotalPrice(1800);
+    //        h2.setTotalPriceIncl(1800);
     //        checkoutMapper.insertOrderHeader(h2);
     //
     //        OrderItem h2i1 = new OrderItem();
@@ -303,7 +303,7 @@ class CheckoutMapperTest {
     //        h2i1.setProductName("testE");
     //        h2i1.setQty(1);
     //        h2i1.setPrice(1800);
-    //        h2i1.setSubtotal(1800);
+    //        h2i1.setSubtotalIncl(1800);
     //
     //        checkoutMapper.insertOrderItems(List.of(h2i1));
     //        List<String> orderIds = List.of(orderId1, orderId2);

@@ -27,7 +27,6 @@ import com.example.entity.Product;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
-import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class CartServiceTest {
@@ -39,7 +38,6 @@ class CartServiceTest {
     ProductMapper productMapper;
 
     @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
 
     @InjectMocks
     CartService cartService;
@@ -57,7 +55,7 @@ class CartServiceTest {
 
             assertThat(dto.getItems()).isEmpty();
             assertThat(dto.getTotalQty()).isZero();
-            assertThat(dto.getTotalPrice()).isZero();
+            assertThat(dto.getTotalPriceIncl()).isZero();
         }
 
         @Test
@@ -75,7 +73,7 @@ class CartServiceTest {
                             setProductId("A-001");
                             setProductName("Item A");
                             setQty(3);
-                            setPriceEx(100); // 税抜 100 円
+                            setUnitPriceIncl(110); // 税込 110 円
                         }
                     },
                     new CartItemDto() {
@@ -83,8 +81,8 @@ class CartServiceTest {
                             setProductId("B-002");
                             setProductName("Item B");
                             setQty(1);
-                            setPriceEx(200); // 税抜 200 円
-                            setSubtotal(220); // 220 * 1
+                            setUnitPriceIncl(220); // 税込 220 円
+                            setSubtotalIncl(220); // 220 * 1
                         }
                     });
             doReturn(items).when(cartMapper).selectCartItems(anyString());
@@ -92,21 +90,21 @@ class CartServiceTest {
             CartDto dto = cartService.showCart(cartId);
 
             assertThat(dto.getTotalQty()).isEqualTo(4);
-            assertThat(dto.getTotalPrice()).isEqualTo(550);
+            assertThat(dto.getTotalPriceIncl()).isEqualTo(550);
 
             assertThat(dto.getItems()).hasSize(2).first()
                     .extracting(
                             CartItemDto::getProductId,
                             CartItemDto::getProductName,
                             CartItemDto::getQty,
-                            CartItemDto::getPriceEx,
-                            CartItemDto::getPriceInc,
-                            CartItemDto::getSubtotal)
+                            CartItemDto::getUnitPriceIncl,
+                            CartItemDto::getUnitPriceIncl,
+                            CartItemDto::getSubtotalIncl)
                     .containsExactly(
                             "A-001",
                             "Item A",
                             3,
-                            100,
+                            110,
                             110,
                             330);
             assertThat(dto.getItems().get(1).getProductId()).isEqualTo("B-002");
@@ -128,7 +126,7 @@ class CartServiceTest {
             req.setQty(2);
 
             p = new Product();
-            p.setPrice(1000);
+            p.setPriceExcl(1000);
             doReturn(p).when(productMapper).selectByPrimaryKey(productId);
         }
 
@@ -148,7 +146,7 @@ class CartServiceTest {
                     CartItem::getCartId,
                     CartItem::getProductId,
                     CartItem::getQty,
-                    CartItem::getPrice)
+                    CartItem::getUnitPriceExcl)
                     .containsExactly(
                             candidate,
                             productId,
@@ -176,7 +174,7 @@ class CartServiceTest {
                         CartItem::getCartId,
                         CartItem::getProductId,
                         CartItem::getQty,
-                        CartItem::getPrice)
+                        CartItem::getUnitPriceExcl)
                         .containsExactly(
                                 newId,
                                 productId,
@@ -196,7 +194,7 @@ class CartServiceTest {
         @BeforeEach
         void setup() {
             p = new Product();
-            p.setPrice(1500);
+            p.setPriceExcl(1500);
             doReturn(p).when(productMapper).selectByPrimaryKey(productId);
         }
 
@@ -213,7 +211,7 @@ class CartServiceTest {
                     CartItem::getCartId,
                     CartItem::getProductId,
                     CartItem::getQty,
-                    CartItem::getPrice)
+                    CartItem::getUnitPriceExcl)
                     .containsExactly(
                             cartId,
                             productId,

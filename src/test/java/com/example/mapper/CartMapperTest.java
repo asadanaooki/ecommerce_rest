@@ -76,7 +76,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId(productId);
                     setQty(req.getQty());
-                    setPrice(300);
+                    setUnitPriceExcl(300);
                 }
             });
 
@@ -84,7 +84,7 @@ class CartMapperTest {
 
             assertThat(row).isOne();
             assertThat(ci.getCartId()).isEqualTo(cartId);
-            assertThat(ci.getPrice()).isEqualTo(300);
+            assertThat(ci.getUnitPriceExcl()).isEqualTo(300);
             assertThat(ci.getQty()).isEqualTo(13);
             assertThat(ci.getCreatedAt()).isNotNull();
             assertThat(ci.getUpdatedAt()).isNotNull();
@@ -103,7 +103,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId(productId);
                     setQty(req.getQty());
-                    setPrice(price);
+                    setUnitPriceExcl(price);
                 }
             });
 
@@ -111,7 +111,7 @@ class CartMapperTest {
 
             assertThat(row).isEqualTo(2);
             assertThat(ci.getCartId()).isEqualTo(cartId);
-            assertThat(ci.getPrice()).isEqualTo(price);
+            assertThat(ci.getUnitPriceExcl()).isEqualTo(price);
             assertThat(ci.getQty()).isEqualTo(expectedQty);
         }
     }
@@ -199,7 +199,7 @@ class CartMapperTest {
                     setCartId(guestCart);
                     setProductId(productId);
                     setQty(5);
-                    setPrice(3000);
+                    setUnitPriceExcl(3000);
                 }
             });
             int rows = cartMapper.mergeCart(guestCart, userCart);
@@ -211,7 +211,7 @@ class CartMapperTest {
                             CartItem::getCartId,
                             CartItem::getProductId,
                             CartItem::getQty,
-                            CartItem::getPrice)
+                            CartItem::getUnitPriceExcl)
                     .containsExactly(
                             userCart,
                             productId,
@@ -232,7 +232,7 @@ class CartMapperTest {
                     setCartId(userCart);
                     setProductId(productId);
                     setQty(existing);
-                    setPrice(4800);
+                    setUnitPriceExcl(4800);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -240,7 +240,7 @@ class CartMapperTest {
                     setCartId(guestCart);
                     setProductId(productId);
                     setQty(add);
-                    setPrice(4800);
+                    setUnitPriceExcl(4800);
                 }
             });
 
@@ -285,7 +285,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
                     setQty(1);
-                    setPrice(750);
+                    setUnitPriceExcl(750);
                     setCreatedAt(time1);
                     setUpdatedAt(time1);
                 }
@@ -295,7 +295,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
                     setQty(1);
-                    setPrice(3300);
+                    setUnitPriceExcl(3300);
                     setCreatedAt(time1);
                     setUpdatedAt(time1);
                 }
@@ -305,7 +305,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId("4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07");
                     setQty(4);
-                    setPrice(1800);
+                    setUnitPriceExcl(1800);
                     setCreatedAt(time2);
                     setUpdatedAt(time2);
                 }
@@ -325,8 +325,8 @@ class CartMapperTest {
                                 .isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
                         assertThat(dto.getProductName()).isEqualTo("Item18");
                         assertThat(dto.getQty()).isEqualTo(1);
-                        assertThat(dto.getPriceEx()).isEqualTo(3200);
-                        assertThat(dto.getPriceInc()).isNull();
+                        assertThat(dto.getUnitPriceIncl()).isEqualTo(3200);
+                        assertThat(dto.getSubtotalIncl()).isNull();
                     });
         }
     }
@@ -364,7 +364,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
                     setQty(1);
-                    setPrice(750);
+                    setUnitPriceExcl(750);
                     setCreatedAt(time);
                     setUpdatedAt(time);
                 }
@@ -391,7 +391,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
                     setQty(1);
-                    setPrice(750);
+                    setUnitPriceExcl(750);
                     setCreatedAt(time);
                     setUpdatedAt(time);
                 }
@@ -421,7 +421,7 @@ class CartMapperTest {
                     setCartId(cartId);
                     setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
                     setQty(1);
-                    setPrice(750);
+                    setUnitPriceExcl(750);
                     setCreatedAt(time);
                     setUpdatedAt(time);
                 }
@@ -455,7 +455,7 @@ class CartMapperTest {
                     setCartId(cartA);
                     setProductId(productId);
                     setQty(1);
-                    setPrice(1000);
+                    setUnitPriceExcl(1000);
                     setCreatedAt(a);
                     setUpdatedAt(a);
                 }
@@ -477,7 +477,7 @@ class CartMapperTest {
                     setCartId(cartB);
                     setProductId(productId);
                     setQty(2);
-                    setPrice(2000);
+                    setUnitPriceExcl(2000);
                     setCreatedAt(b);
                     setUpdatedAt(b);
                 }
@@ -499,7 +499,7 @@ class CartMapperTest {
                     setCartId(cartC);
                     setProductId(productId);
                     setQty(3);
-                    setPrice(3000);
+                    setUnitPriceExcl(3000);
                     setCreatedAt(c);
                     setUpdatedAt(c);
                 }

@@ -86,7 +86,7 @@ class CartControllerTest {
                 CartDto dto = new CartDto() {{
                     setItems(List.of(new CartItemDto()));
                     setTotalQty(2);
-                    setTotalPrice(5000);
+                    setTotalPriceIncl(5000);
                 }};
                 doReturn(dto).when(cartService).showCart(anyString());
 
@@ -146,7 +146,7 @@ class CartControllerTest {
 
                 CartDto dto = new CartDto() {{
                     setTotalQty(2);
-                    setTotalPrice(5000);
+                    setTotalPriceIncl(5000);
                 }};
                 doReturn(dto).when(cartService).showCart(anyString());
 

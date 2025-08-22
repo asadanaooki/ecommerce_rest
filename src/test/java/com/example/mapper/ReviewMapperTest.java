@@ -147,7 +147,7 @@ class ReviewMapperTest {
             order.setPostalCode("1500041");
             order.setAddress("東京都渋谷区神南1-1-1");
             order.setTotalQty(3);
-            order.setTotalPrice(9600);
+            order.setTotalPriceIncl(9600);
             checkoutMapper.insertOrderHeader(order);
 
             // 2) 明細リスト作成
@@ -156,16 +156,16 @@ class ReviewMapperTest {
             it1.setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
             it1.setProductName("testA");
             it1.setQty(1);
-            it1.setPrice(750);
-            it1.setSubtotal(750);
+            it1.setUnitPriceIncl(750);
+            it1.setSubtotalIncl(750);
 
             OrderItem it2 = new OrderItem();
             it2.setOrderId(orderId);
             it2.setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
             it2.setProductName("testB");
             it2.setQty(2);
-            it2.setPrice(3200);
-            it2.setSubtotal(6400);
+            it2.setUnitPriceIncl(3200);
+            it2.setSubtotalIncl(6400);
 
             List<OrderItem> items = List.of(it1, it2);
             

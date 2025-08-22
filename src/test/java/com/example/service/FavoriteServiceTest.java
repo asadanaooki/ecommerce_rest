@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.example.converter.FavoriteConverter;
 import com.example.dto.FavoritePageDto;
 import com.example.entity.Product;
 import com.example.enums.SaleStatus;
@@ -31,8 +30,6 @@ class FavoriteServiceTest {
     @Mock
     FavoriteMapper favoriteMapper;
 
-    @Mock
-    FavoriteConverter favoriteConverter;
 
     @InjectMocks
     FavoriteService favoriteService;
@@ -64,31 +61,30 @@ class FavoriteServiceTest {
             Product p1 = new Product();
             p1.setProductId("P-001");
             p1.setProductName("商品A");
-            p1.setPrice(1000); // 税込 1,100 になる想定
+            p1.setPriceExcl(1000); // 税込 1,100 になる想定
             p1.setStatus(SaleStatus.PUBLISHED);
 
             Product p2 = new Product();
             p2.setProductId("P-002");
             p2.setProductName("商品A");
-            p2.setPrice(1000); // 税込 1,100 になる想定
+            p2.setPriceExcl(1000); // 税込 1,100 になる想定
             p2.setStatus(SaleStatus.PUBLISHED);
 
             FavoritePageDto.FavoriteRow r1 = new FavoritePageDto.FavoriteRow();
             r1.setProductId("P-001");
             r1.setProductName("商品A");
-            r1.setPrice(1100); // 税込 1,100 になる想定
+            r1.setPriceIncl(1100); // 税込 1,100 になる想定
             r1.setStatus(SaleStatus.PUBLISHED);
 
             FavoritePageDto.FavoriteRow r2 = new FavoritePageDto.FavoriteRow();
             r2.setProductId("P-002");
             r2.setProductName("商品A");
-            r2.setPrice(1100); // 税込 1,100 になる想定
+            r2.setPriceIncl(1100); // 税込 1,100 になる想定
             r2.setStatus(SaleStatus.PUBLISHED);
 
             doReturn(3).when(favoriteMapper).countFavoritesByUser(userId);
-            doReturn(List.of(p1, p2)).when(favoriteMapper)
+            doReturn(List.of(r1, r2)).when(favoriteMapper)
                     .findFavoritesPage(anyString(), anyInt(), anyInt());
-            doReturn(List.of(r1,r2)).when(favoriteConverter).toRowList(anyList());
 
             FavoritePageDto dto = favoriteService.getFavoritePage(userId, 1);
 
@@ -96,7 +92,7 @@ class FavoriteServiceTest {
             FavoritePageDto.FavoriteRow row1 = dto.getItems().get(0);
             assertThat(row1.getProductId()).isEqualTo("P-001");
             assertThat(row1.getProductName()).isEqualTo("商品A");
-            assertThat(row1.getPrice()).isEqualTo(1100);
+            assertThat(row1.getPriceIncl()).isEqualTo(1100);
             assertThat(row1.getStatus()).isEqualTo(SaleStatus.PUBLISHED);
 
             assertThat(dto.getItems().get(1).getProductId()).isEqualTo("P-002");

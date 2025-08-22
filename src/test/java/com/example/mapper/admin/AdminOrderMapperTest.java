@@ -202,7 +202,7 @@ class AdminOrderMapperTest {
         assertThat(dto).extracting(
                 AdminOrderDetailDto::getOrderId,
                 AdminOrderDetailDto::getOrderNumber,
-                AdminOrderDetailDto::getTotalPrice,
+                AdminOrderDetailDto::getTotalPriceIncl,
                 AdminOrderDetailDto::getShippingStatus,
                 AdminOrderDetailDto::getPaymentStatus,
                 AdminOrderDetailDto::getCreatedAt,
@@ -245,8 +245,8 @@ class AdminOrderMapperTest {
                 setProductId("97113c2c-719a-490c-9979-144d92905c33");
                 setProductName("test");
                 setQty(2);
-                setPrice(1000);
-                setSubtotal(2000);
+                setUnitPriceIncl(1000);
+                setSubtotalIncl(2000);
             }
         }));
         checkoutMapper.insertOrderItems(List.of(new OrderItem() {
@@ -255,8 +255,8 @@ class AdminOrderMapperTest {
                 setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
                 setProductName("test2");
                 setQty(1);
-                setPrice(1000);
-                setSubtotal(1000);
+                setUnitPriceIncl(1000);
+                setSubtotalIncl(1000);
             }
         }));
 
@@ -265,7 +265,7 @@ class AdminOrderMapperTest {
                 setOrderId(orderId);
                 setProductId("97113c2c-719a-490c-9979-144d92905c33");
                 setQty(1);
-                setSubtotal(1000);
+                setSubtotalIncl(1000);
             }
         });
 
@@ -273,7 +273,7 @@ class AdminOrderMapperTest {
         Order order = checkoutMapper.selectOrderByPrimaryKey(orderId);
         
         assertThat(order.getTotalQty()).isEqualTo(2);
-        assertThat(order.getTotalPrice()).isEqualTo(2000);
+        assertThat(order.getTotalPriceIncl()).isEqualTo(2000);
 
     }
 
@@ -285,7 +285,7 @@ class AdminOrderMapperTest {
         o.setPostalCode("1500041");
         o.setAddress("test");
         o.setTotalQty(3);
-        o.setTotalPrice(3000);
+        o.setTotalPriceIncl(3000);
         o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
         o.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 10, 40, 5));
         customizer.accept(o);

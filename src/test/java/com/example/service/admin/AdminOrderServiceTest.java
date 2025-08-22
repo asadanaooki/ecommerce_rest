@@ -27,7 +27,6 @@ import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
 import com.example.request.admin.OrderEditRequest;
 import com.example.support.MailGateway;
-import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class AdminOrderServiceTest {
@@ -44,8 +43,6 @@ class AdminOrderServiceTest {
     @Mock
     MailGateway gateway;
 
-    @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
 
     @Nested
     class editOrder {
@@ -104,7 +101,7 @@ class AdminOrderServiceTest {
                     OrderItem::getOrderId,
                     OrderItem::getProductId,
                     OrderItem::getQty,
-                    OrderItem::getSubtotal)
+                    OrderItem::getSubtotalIncl)
                     .containsExactlyInAnyOrder(
                             tuple(
                                     orderId,
@@ -161,7 +158,7 @@ class AdminOrderServiceTest {
                     OrderItem::getOrderId,
                     OrderItem::getProductId,
                     OrderItem::getQty,
-                    OrderItem::getSubtotal)
+                    OrderItem::getSubtotalIncl)
                     .containsExactly(
                             orderId,
                             "p3",
@@ -208,8 +205,8 @@ class AdminOrderServiceTest {
             oldItem.setOrderId(orderId);
             oldItem.setProductId("p1");
             oldItem.setQty(5);
-            oldItem.setPrice(1000);
-            oldItem.setSubtotal(5000);
+            oldItem.setUnitPriceIncl(1000);
+            oldItem.setSubtotalIncl(5000);
 
             doReturn(order).when(adminOrderMapper).selectOrderForUpdate(orderId);
             doReturn(List.of(oldItem)).when(adminOrderMapper).selectOrderItemsForUpdate(orderId);
@@ -237,8 +234,8 @@ class AdminOrderServiceTest {
             oi.setProductId(pid);
             oi.setProductName(pid + "_name");
             oi.setQty(qty);
-            oi.setPrice(price);
-            oi.setSubtotal(qty * price);
+            oi.setUnitPriceIncl(price);
+            oi.setSubtotalIncl(qty * price);
             return oi;
         }
     }
