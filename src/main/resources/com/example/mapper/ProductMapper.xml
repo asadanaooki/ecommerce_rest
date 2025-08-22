@@ -26,33 +26,33 @@
          </otherwise>
       </choose>
        AS is_fav
-    FROM vw_product_core p
+    FROM vw_product_core v
     <if test="userId != null">
     LEFT JOIN favorite f
-      ON f.product_id = p.product_id
+      ON f.product_id = v.product_id
       AND f.user_id = #{userId}
     </if>
-    WHERE p.status = '1'
+    WHERE v.status = '1'
     <if test="keywords.size() > 0">
       AND (
       <foreach collection="keywords" item="kw" separator="OR ">
-        p.product_name LIKE CONCAT('%', #{kw}, '%')
+        v.product_name LIKE CONCAT('%', #{kw}, '%')
       </foreach>
       )
     </if>
     ORDER BY
     <choose>
       <when test="sort.name() == 'NEW'">
-        p.created_at DESC 
+        v.created_at DESC 
       </when>
       <when test="sort.name() == 'HIGH'">
-        p.price_incl DESC 
+        v.price_incl DESC 
       </when>
       <when test="sort.name() == 'LOW'">
-        p.price_incl ASC 
+        v.price_incl ASC 
       </when>
     </choose>
-    , p.product_id DESC
+    , v.product_id DESC
     LIMIT #{offset}, #{size}
   </select>
   
@@ -71,11 +71,11 @@
 
   <select id="findProductDetail" resultType="com.example.dto.ProductDetailDto">
     select
-      p.product_id,
-      p.product_name,
-      p.product_description,
-      p.price_incl,
-      (p.stock &lt;= 0) AS out_of_stock,
+      v.product_id,
+      v.product_name,
+      v.product_description,
+      v.price_incl,
+      (v.stock &lt;= 0) AS out_of_stock,
       coalesce(rs.avg, 0) as rating_avg,
       coalesce(rs.cnt, 0) as review_count,
       <choose>
@@ -88,7 +88,7 @@
          </otherwise>
       </choose>
       as is_fav
-    from vw_product_core p
+    from vw_product_core v
     left join (
         select
           r.product_id,
@@ -96,13 +96,13 @@
           count(*) as cnt
         from review r
         group by r.product_id
-    ) rs on rs.product_id = p.product_id
+    ) rs on rs.product_id = v.product_id
       <if test="userId != null">
         left join favorite f
-          on f.product_id = p.product_id
+          on f.product_id = v.product_id
           and f.user_id = #{userId}
       </if>
-    where p.product_id = #{productId}
+    where v.product_id = #{productId}
       and status = '1'
   </select>
   

@@ -3,92 +3,92 @@
 
   <select id="countProducts" resultType="int">
     select count(*)
-    from vw_product_core p
+    from vw_product_core v
     <where>
       <if test="keywords.size() &gt; 0">
         <foreach collection="keywords" item="kw" open="(" separator="OR" close=")">
-          p.sku LIKE CONCAT('%', #{kw}, '%')
-          OR p.product_name LIKE CONCAT('%', #{kw}, '%')
+          v.sku LIKE CONCAT('%', #{kw}, '%')
+          OR v.product_name LIKE CONCAT('%', #{kw}, '%')
         </foreach>
       </if>
       <if test="minPrice != null">
-        AND p.price_excl &gt;= #{minPrice}
+        AND v.price_excl &gt;= #{minPrice}
       </if>
       <if test="maxPrice != null">
-        AND p.price_excl &lt;= #{maxPrice}
+        AND v.price_excl &lt;= #{maxPrice}
       </if>
       <if test="minAvailable != null">
-        AND p.available &gt;= #{minAvailable}
+        AND v.available &gt;= #{minAvailable}
       </if>
       <if test="maxAvailable != null">
-        AND p.available &lt;= #{maxAvailable}
+        AND v.available &lt;= #{maxAvailable}
       </if>
       <if test="createdFrom != null">
-        AND p.created_at &gt;= #{createdFrom} 
+        AND v.created_at &gt;= #{createdFrom} 
       </if>
       <if test="createdTo != null">
-        AND p.created_at &lt;= #{createdTo} 
+        AND v.created_at &lt;= #{createdTo} 
       </if>
       <if test="updatedFrom != null">
-        AND p.updated_at &gt;= #{updatedFrom} 
+        AND v.updated_at &gt;= #{updatedFrom} 
       </if>
       <if test="updatedTo != null">
-        AND p.updated_at &lt;= #{updatedTo} 
+        AND v.updated_at &lt;= #{updatedTo} 
       </if>
       <if test="status != null">
-        AND p.status = #{status}
+        AND v.status = #{status}
       </if>
     </where>
   </select>
   
   <select id="searchProducts" resultType="com.example.dto.admin.AdminProductDto">
     select 
-      p.product_id,
-      p.sku,
-      p.product_name,
-      p.price_excl,
-      p.available,
-      p.status,
-      p.updated_at
-    from vw_product_core p
+      v.product_id,
+      v.sku,
+      v.product_name,
+      v.price_excl,
+      v.available,
+      v.status,
+      v.updated_at
+    from vw_product_core v
     <where>
       <if test="req.keywords != null and req.keywords.size() &gt; 0">
         <foreach collection="req.keywords" item="kw" open="(" separator="OR" close=")">
-          p.sku LIKE CONCAT('%', #{kw}, '%')
-          OR p.product_name LIKE CONCAT('%', #{kw}, '%')
+          v.sku LIKE CONCAT('%', #{kw}, '%')
+          OR v.product_name LIKE CONCAT('%', #{kw}, '%')
         </foreach>
       </if>
       <if test="req.minPrice != null">
-        AND p.price_excl &gt;= #{req.minPrice}
+        AND v.price_excl &gt;= #{req.minPrice}
       </if>
       <if test="req.maxPrice != null">
-        AND p.price_excl &lt;= #{req.maxPrice}
+        AND v.price_excl &lt;= #{req.maxPrice}
       </if>
       <if test="req.minAvailable != null">
-        AND p.available &gt;= #{req.minAvailable}
+        AND v.available &gt;= #{req.minAvailable}
       </if>
       <if test="req.maxAvailable != null">
-        AND p.available &lt;= #{req.maxAvailable}
+        AND v.available &lt;= #{req.maxAvailable}
       </if>
       <if test="req.createdFrom != null">
-        AND p.created_at &gt;= #{req.createdFrom}
+        AND v.created_at &gt;= #{req.createdFrom}
       </if>
       <if test="req.createdTo != null">
-        AND p.created_at &lt;= #{req.createdTo}
+        AND v.created_at &lt;= #{req.createdTo}
       </if>
       <if test="req.updatedFrom != null">
-        AND p.updated_at &gt;= #{req.updatedFrom}
+        AND v.updated_at &gt;= #{req.updatedFrom}
       </if>
       <if test="req.updatedTo != null">
-        AND p.updated_at &lt;= #{req.updatedTo}
+        AND v.updated_at &lt;= #{req.updatedTo}
       </if>
       <if test="req.status != null">
-        AND p.status = #{req.status}
+        AND v.status = #{req.status}
       </if>
     </where>
     order by
       ${req.sortField.field} ${req.sortDirection},
-      p.product_id ASC
+      v.product_id ASC
     limit #{limit}
     offset #{offset}
   </select>
