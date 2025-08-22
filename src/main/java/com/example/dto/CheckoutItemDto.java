@@ -26,7 +26,7 @@ public class CheckoutItemDto {
 
     private int unitPriceIncl;
 
-    private int subtotalIncl;
+    private Integer subtotalIncl;
 
     /* ---------- 販売状況 ---------- */
     @JsonIgnore

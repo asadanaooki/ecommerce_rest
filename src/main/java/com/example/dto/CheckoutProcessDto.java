@@ -34,7 +34,7 @@ public class CheckoutProcessDto {
                 .mapToInt(CheckoutItemDto::getQty)
                 .sum();
         this.totalPriceIncl = this.items.stream()
-                .mapToInt(CheckoutItemDto::getSubtotalIncl)
+                .mapToInt(item -> item.getSubtotalIncl() != null ? item.getSubtotalIncl() : 0)
                 .sum();
     }
 
