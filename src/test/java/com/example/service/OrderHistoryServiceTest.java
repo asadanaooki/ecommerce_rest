@@ -54,7 +54,7 @@ class OrderHistoryServiceTest {
             headerA.setName("山田 太郎");
             headerA.setPostalCode("1500000");
             headerA.setAddress("東京都渋谷区…");
-            headerA.setTotalPrice(1_000);
+            headerA.setTotalPriceIncl(1_000);
             headerA.setCreatedAt(LocalDateTime.of(2025, 6, 29, 10, 0));
 
             Order headerB = new Order();
@@ -64,7 +64,7 @@ class OrderHistoryServiceTest {
             headerB.setName("山田 花子");
             headerB.setPostalCode("1500001");
             headerB.setAddress("東京都新宿区…");
-            headerB.setTotalPrice(5_000);
+            headerB.setTotalPriceIncl(5_000);
             headerB.setCreatedAt(LocalDateTime.of(2025, 4, 28, 11, 0));
 
             doReturn(List.of(headerA, headerB)).when(orderHistoryMapper).selectHeadersByUser(userId);
@@ -75,24 +75,24 @@ class OrderHistoryServiceTest {
             a1.setProductId("p1");
             a1.setProductName("りんご");
             a1.setQty(1);
-            a1.setPrice(1_000);
-            a1.setSubtotal(1_000);
+            a1.setUnitPriceIncl(1_000);
+            a1.setSubtotalIncl(1_000);
 
             OrderItem b1 = new OrderItem();
             b1.setOrderId("order-b");
             b1.setProductId("p2");
             b1.setProductName("みかん");
             b1.setQty(1);
-            b1.setPrice(2_000);
-            b1.setSubtotal(2_000);
+            b1.setUnitPriceIncl(2_000);
+            b1.setSubtotalIncl(2_000);
 
             OrderItem b2 = new OrderItem();
             b2.setOrderId("order-b");
             b2.setProductId("p3");
             b2.setProductName("ぶどう");
             b2.setQty(1);
-            b2.setPrice(3_000);
-            b2.setSubtotal(3_000);
+            b2.setUnitPriceIncl(3_000);
+            b2.setSubtotalIncl(3_000);
 
             doReturn(List.of(a1)).when(orderHistoryMapper).selectOrderItems("order-a");
             doReturn(List.of(b1, b2)).when(orderHistoryMapper).selectOrderItems("order-b");
@@ -103,7 +103,7 @@ class OrderHistoryServiceTest {
                     OrderHistoryDto::getOrderId,
                     OrderHistoryDto::getOrderNumber,
                     OrderHistoryDto::getOrderedAt,
-                    OrderHistoryDto::getTotalPrice,
+                    OrderHistoryDto::getTotalPriceIncl,
                     OrderHistoryDto::getName,
                     OrderHistoryDto::getPostalCode,
                     OrderHistoryDto::getAddress,
@@ -131,7 +131,7 @@ class OrderHistoryServiceTest {
             OrderItemDto o1 = result.get(0).getItems().get(0);
             assertThat(o1.getProductId()).isEqualTo("p1");
             assertThat(o1.getProductName()).isEqualTo("りんご");
-            assertThat(o1.getPrice()).isEqualTo(1000);
+            assertThat(o1.getUnitPriceIncl()).isEqualTo(1000);
             assertThat(o1.getQty()).isEqualTo(1);
         }
     }

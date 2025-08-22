@@ -28,7 +28,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.converter.AdminProductConverter;
 import com.example.dto.admin.AdminProductDto;
 import com.example.dto.admin.AdminProductListDto;
 import com.example.entity.Product;
@@ -45,8 +44,6 @@ class AdminProductServiceTest {
     @InjectMocks
     AdminProductService adminProductService;
 
-    @Mock
-    AdminProductConverter adminProductConverter;
 
     @Mock
     AdminProductMapper adminProductMapper;
@@ -66,7 +63,7 @@ class AdminProductServiceTest {
         p1.setProductId("id-1");
         p1.setSku(1);
         p1.setProductName("Product One");
-        p1.setPrice(110);
+        p1.setPriceExcl(110);
         p1.setAvailable(5);
         p1.setStatus(SaleStatus.UNPUBLISHED);
         p1.setUpdatedAt(LocalDateTime.of(2025, 7, 1, 12, 0));
@@ -75,13 +72,13 @@ class AdminProductServiceTest {
         p2.setProductId("id-2");
         p2.setSku(2);
         p2.setProductName("Product Two");
-        p2.setPrice(220);
+        p2.setPriceExcl(220);
         p2.setAvailable(10);
         p2.setStatus(SaleStatus.PUBLISHED);
         p2.setUpdatedAt(LocalDateTime.of(2025, 7, 2, 15, 30));
 
         doReturn(2).when(adminProductMapper).countProducts(req);
-        doReturn(List.of(p1, p2)).when(adminProductConverter).toDtoList(anyList());
+        doReturn(List.of(p1, p2)).when(adminProductMapper).searchProducts(req, 10, 0);
 
         AdminProductListDto res = adminProductService.searchProducts(req);
 
@@ -93,7 +90,7 @@ class AdminProductServiceTest {
                 AdminProductDto::getProductId,
                 AdminProductDto::getSku,
                 AdminProductDto::getProductName,
-                AdminProductDto::getPrice,
+                AdminProductDto::getPriceExcl,
                 AdminProductDto::getAvailable,
                 AdminProductDto::getStatus,
                 AdminProductDto::getUpdatedAt)
@@ -119,7 +116,7 @@ class AdminProductServiceTest {
             req = new ProductUpsertRequest();
             req.setProductName("test");
             req.setProductDescription("testDesc");
-            req.setPrice(100);
+            req.setPriceExcl(100);
             req.setStatus(SaleStatus.UNPUBLISHED);
 
             BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
@@ -136,7 +133,6 @@ class AdminProductServiceTest {
             req.setImage(null);
             adminProductService.create(req);
 
-            verify(adminProductConverter).toEntity(anyString(), any());
             verify(adminProductMapper).insert(any());
         }
 
@@ -144,7 +140,6 @@ class AdminProductServiceTest {
         void create_withImage_success() throws IOException {
             adminProductService.create(req);
 
-            verify(adminProductConverter).toEntity(anyString(), any());
             verify(adminProductMapper).insert(any());
             assertThat(Files.list(imageDir)).hasSize(1);
         }

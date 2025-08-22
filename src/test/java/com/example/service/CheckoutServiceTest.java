@@ -37,7 +37,6 @@ import com.example.mapper.CheckoutMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
-import com.example.util.TaxCalculator;
 
 @ExtendWith(MockitoExtension.class)
 class CheckoutServiceTest {
@@ -55,7 +54,6 @@ class CheckoutServiceTest {
     CheckoutMapper checkoutMapper;
 
     @Spy
-    TaxCalculator calculator = new TaxCalculator(10);
 
     @InjectMocks
     CheckoutService checkoutService;
@@ -114,8 +112,8 @@ class CheckoutServiceTest {
         //                            setProductId("A-001");
         //                            setProductName("販売停止品");
         //                            setQty(1);
-        //                            setPriceEx(100);
-        //                            setPriceAtCartAddition(100);
+        //                            setCurrentUnitPriceExcl(100);
+        //                            setUnitPriceExclAtAddToCart(100);
         //                        }
         //                    },
         //                    // ② 在庫切れ品
@@ -126,8 +124,8 @@ class CheckoutServiceTest {
         //                            setStatus("1"); // 販売中
         //                            setStock(0); // stock <= 0 → OUT_OF_STOCK
         //                            setQty(2);
-        //                            setPriceEx(200);
-        //                            setPriceAtCartAddition(200);
+        //                            setCurrentUnitPriceExcl(200);
+        //                            setUnitPriceExclAtAddToCart(200);
         //                        }
         //                    });
         //            doReturn(autoDeletionTargets).when(cartMapper).selectCartItems("cartId");
@@ -160,7 +158,7 @@ class CheckoutServiceTest {
                             setProductId("N-005");
                             setProductName("通常品");
                             setQty(2);
-                            setPriceEx(200);
+                            setUnitPriceIncl(220);
                         }
                     },
                     new CartItemDto() {
@@ -168,7 +166,7 @@ class CheckoutServiceTest {
                             setProductId("N-006");
                             setProductName("通常品2");
                             setQty(1);
-                            setPriceEx(100);
+                            setUnitPriceIncl(110);
                         }
                     });
             doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
@@ -184,12 +182,12 @@ class CheckoutServiceTest {
                     CartItemDto::getProductId,
                     CartItemDto::getProductName,
                     CartItemDto::getQty,
-                    CartItemDto::getPriceInc,
-                    CartItemDto::getSubtotal)
+                    CartItemDto::getUnitPriceIncl,
+                    CartItemDto::getSubtotalIncl)
                     .containsExactly(tuple("N-005", "通常品", 2, 220, 440),
                             tuple("N-006", "通常品2", 1, 110, 110));
 
-            assertThat(dto.getCart().getTotalPrice()).isEqualTo(550);
+            assertThat(dto.getCart().getTotalPriceIncl()).isEqualTo(550);
             assertThat(dto.getCart().getTotalQty()).isEqualTo(3);
         }
 
@@ -235,7 +233,7 @@ class CheckoutServiceTest {
         //            assertThat(dto.getItems()).hasSize(3);
         //            assertThat(dto.getRemoved()).hasSize(1);
         //            assertThat(dto.getTotalQty()).isEqualTo(6);
-        //            assertThat(dto.getTotalPrice()).isEqualTo(1001);
+        //            assertThat(dto.getTotalPriceIncl()).isEqualTo(1001);
         //            
         //            assertThat(dto.getItems().get(0).getLowStock()).isTrue();
         //            assertThat(dto.getItems().get(0).getStockJson()).isOne();
@@ -322,8 +320,8 @@ class CheckoutServiceTest {
                             setStatus(SaleStatus.UNPUBLISHED); // DISCONTINUED
                             setStock(10);
                             setQty(1);
-                            setPriceEx(100);
-                            setPriceAtCartAddition(100);
+                            setCurrentUnitPriceExcl(100);
+                            setUnitPriceExclAtAddToCart(100);
                         }
                     },
                     // ② 在庫切れ
@@ -334,8 +332,8 @@ class CheckoutServiceTest {
                             setStatus(SaleStatus.PUBLISHED);
                             setStock(0);
                             setQty(1); // stock <= 0
-                            setPriceEx(200);
-                            setPriceAtCartAddition(200);
+                            setCurrentUnitPriceExcl(200);
+                            setUnitPriceExclAtAddToCart(200);
                         }
                     },
                     // ③ 在庫不足
@@ -346,8 +344,8 @@ class CheckoutServiceTest {
                             setStatus(SaleStatus.PUBLISHED);
                             setStock(1);
                             setQty(3); // stock < qty
-                            setPriceEx(120);
-                            setPriceAtCartAddition(120);
+                            setCurrentUnitPriceExcl(120);
+                            setUnitPriceExclAtAddToCart(120);
                         }
                     },
                     // ④ 価格改定
@@ -358,8 +356,8 @@ class CheckoutServiceTest {
                             setStatus(SaleStatus.PUBLISHED);
                             setStock(5);
                             setQty(1);
-                            setPriceEx(150);
-                            setPriceAtCartAddition(100); // 価格改定
+                            setCurrentUnitPriceExcl(150);
+                            setUnitPriceExclAtAddToCart(100); // 価格改定
                         }
                     });
             doReturn(new Cart() {
@@ -404,8 +402,8 @@ class CheckoutServiceTest {
                             setStatus(SaleStatus.PUBLISHED);
                             setStock(10);
                             setQty(2);
-                            setPriceEx(200);
-                            setPriceAtCartAddition(200);
+                            setCurrentUnitPriceExcl(200);
+                            setUnitPriceExclAtAddToCart(200);
                         }
                     },
                     new CheckoutItemDto() {
@@ -415,8 +413,8 @@ class CheckoutServiceTest {
                             setStatus(SaleStatus.PUBLISHED);
                             setStock(5);
                             setQty(1);
-                            setPriceEx(100);
-                            setPriceAtCartAddition(100);
+                            setCurrentUnitPriceExcl(100);
+                            setUnitPriceExclAtAddToCart(100);
                         }
                     });
             User user = new User() {
@@ -447,7 +445,7 @@ class CheckoutServiceTest {
                     Order::getPostalCode,
                     Order::getAddress,
                     Order::getTotalQty,
-                    Order::getTotalPrice)
+                    Order::getTotalPriceIncl)
                     .containsExactly(
                             cartId,
                             userId,
@@ -466,8 +464,8 @@ class CheckoutServiceTest {
                     OrderItem::getProductId,
                     OrderItem::getProductName,
                     OrderItem::getQty,
-                    OrderItem::getPrice,
-                    OrderItem::getSubtotal)
+                    OrderItem::getUnitPriceIncl,
+                    OrderItem::getSubtotalIncl)
                     .containsExactly(
                             cartId,
                             "N-001",

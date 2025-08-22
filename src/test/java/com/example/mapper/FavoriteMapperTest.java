@@ -13,6 +13,7 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 
+import com.example.dto.FavoritePageDto;
 import com.example.entity.Favorite;
 import com.example.entity.Product;
 import com.example.enums.SaleStatus;
@@ -74,15 +75,15 @@ class FavoriteMapperTest {
 
         @Test
         void findFavoritesPage_firstPage() {
-            List<Product> list = favoriteMapper.findFavoritesPage(userId, PAGE_SIZE,
+            List<FavoritePageDto.FavoriteRow> list = favoriteMapper.findFavoritesPage(userId, PAGE_SIZE,
                     PaginationUtil.calculateOffset(1, PAGE_SIZE));
 
             assertThat(list).hasSize(PAGE_SIZE)
                     .first()
-                    .extracting(Product::getProductId,
-                            Product::getProductName,
-                            Product::getPrice,
-                            Product::getStatus)
+                    .extracting(FavoritePageDto.FavoriteRow::getProductId,
+                            FavoritePageDto.FavoriteRow::getProductName,
+                            FavoritePageDto.FavoriteRow::getPriceIncl,
+                            FavoritePageDto.FavoriteRow::getStatus)
                     .containsExactly("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68",
                             "Item19",
                             750,
@@ -93,17 +94,17 @@ class FavoriteMapperTest {
 
         @Test
         void findFavoritesPage_lastPage() {
-            List<Product> list = favoriteMapper.findFavoritesPage(userId, PAGE_SIZE,
+            List<FavoritePageDto.FavoriteRow> list = favoriteMapper.findFavoritesPage(userId, PAGE_SIZE,
                     PaginationUtil.calculateOffset(3, PAGE_SIZE));
 
             assertThat(list)
-                    .extracting(Product::getProductId)
+                    .extracting(FavoritePageDto.FavoriteRow::getProductId)
                     .containsExactly("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
         }
 
         @Test
         void findFavoritesPage_overPage() {
-            List<Product> list = favoriteMapper.findFavoritesPage(userId, PAGE_SIZE,
+            List<FavoritePageDto.FavoriteRow> list = favoriteMapper.findFavoritesPage(userId, PAGE_SIZE,
                     PaginationUtil.calculateOffset(4, PAGE_SIZE));
             assertThat(list).hasSize(0);
         }

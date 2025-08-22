@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
+import com.example.dto.admin.AdminProductDto;
 import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
 import com.example.enums.ProductSortField;
@@ -90,12 +91,12 @@ class AdminProductMapperTest {
                             1),
                     // minPrice
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPrice(50))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(50))),
                             (Consumer<ProductSearchRequest>) r -> r.setMinPrice(300),
                             1),
                     // maxPrice
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPrice(3000))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(3000))),
                             (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(2000),
                             1),
                     // minStock
@@ -142,12 +143,12 @@ class AdminProductMapperTest {
                     // 境界値
                     // minPrice
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPrice(999))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(999))),
                             (Consumer<ProductSearchRequest>) r -> r.setMinPrice(1000),
                             1),
                     // maxPrice
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPrice(1001))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(1001))),
                             (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(1000),
                             1),
                     // minStock
@@ -248,10 +249,10 @@ class AdminProductMapperTest {
             req.setSortFIeld(ProductSortField.NAME);
             req.setSortDirection(SortDirection.DESC);
 
-            List<ProductCoreView> results = adminProductMapper.searchProducts(req, limit, 0);
+            List<AdminProductDto> results = adminProductMapper.searchProducts(req, limit, 0);
 
             assertThat(results).hasSize(limit)
-                    .extracting(ProductCoreView::getProductName)
+                    .extracting(AdminProductDto::getProductName)
                     .containsExactly("えおい", "BaseItem");
         }
 
@@ -260,13 +261,13 @@ class AdminProductMapperTest {
             factory.createProduct(buildProduct(p -> {
                 p.setProductId("5083a5da-4ab0-4000-a390-68c94fc58052");
                 p.setProductName("test");
-                p.setPrice(200);
+                p.setPriceExcl(200);
                 p.setStatus(SaleStatus.UNPUBLISHED);
             }));
             factory.createProduct(buildProduct(p -> {
                 p.setProductId("c32d16ad-2e69-47bf-bc85-933169754fcd");
                 p.setProductName("test2");
-                p.setPrice(200);
+                p.setPriceExcl(200);
                 p.setStatus(SaleStatus.PUBLISHED);
             }));
 
@@ -274,10 +275,10 @@ class AdminProductMapperTest {
             req.setSortFIeld(ProductSortField.PRICE);
             req.setSortDirection(SortDirection.ASC);
 
-            List<ProductCoreView> results = adminProductMapper.searchProducts(req, limit, 0);
+            List<AdminProductDto> results = adminProductMapper.searchProducts(req, limit, 0);
 
             assertThat(results).hasSize(limit)
-                    .extracting(ProductCoreView::getProductId)
+                    .extracting(AdminProductDto::getProductId)
                     .containsExactly("5083a5da-4ab0-4000-a390-68c94fc58052", "c32d16ad-2e69-47bf-bc85-933169754fcd");
         }
     }
@@ -287,7 +288,7 @@ class AdminProductMapperTest {
         p.setProductId(UUID.randomUUID().toString());
         p.setProductName("BaseItem");
         p.setProductDescription("desc");
-        p.setPrice(1000);
+        p.setPriceExcl(1000);
         p.setStock(100);
         p.setStatus(SaleStatus.PUBLISHED);
         p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));

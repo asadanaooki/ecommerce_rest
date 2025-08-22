@@ -59,7 +59,7 @@ class AdminDashboardMapperTest {
             o1.setPostalCode("1000001");
             o1.setAddress("Tokyo");
             o1.setTotalQty(1);
-            o1.setTotalPrice(1000);
+            o1.setTotalPriceIncl(1000);
             o1.setPaymentStatus(PaymentStatus.PAID);
             o1.setCreatedAt(LocalDateTime.of(2025, 8, 4, 0, 0));
             o1.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 0, 0));
@@ -72,7 +72,7 @@ class AdminDashboardMapperTest {
             o2.setPostalCode("1000001");
             o2.setAddress("Tokyo");
             o2.setTotalQty(1);
-            o2.setTotalPrice(1000);
+            o2.setTotalPriceIncl(1000);
             o2.setPaymentStatus(PaymentStatus.PAID);
             o2.setCreatedAt(LocalDateTime.of(2025, 8, 3, 23, 59, 59));
             o2.setUpdatedAt(LocalDateTime.of(2025, 8, 3, 23, 59, 59));
@@ -85,7 +85,7 @@ class AdminDashboardMapperTest {
             o3.setPostalCode("1000001");
             o3.setAddress("Tokyo");
             o3.setTotalQty(1);
-            o3.setTotalPrice(1000);
+            o3.setTotalPriceIncl(1000);
             o3.setPaymentStatus(PaymentStatus.PAID);
             o3.setCreatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 20));
             o3.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 20));
@@ -98,7 +98,7 @@ class AdminDashboardMapperTest {
             o4.setPostalCode("1000001");
             o4.setAddress("Tokyo");
             o4.setTotalQty(1);
-            o4.setTotalPrice(1000);
+            o4.setTotalPriceIncl(1000);
             o4.setPaymentStatus(PaymentStatus.PAID);
             o4.setCreatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 19));
             o4.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 19));
@@ -111,7 +111,7 @@ class AdminDashboardMapperTest {
             o5.setPostalCode("1000001");
             o5.setAddress("Tokyo");
             o5.setTotalQty(1);
-            o5.setTotalPrice(1000);
+            o5.setTotalPriceIncl(1000);
             o5.setPaymentStatus(PaymentStatus.PAID);
             o5.setCreatedAt(LocalDateTime.of(2025, 8, 4, 12, 0, 0));
             o5.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 12, 0, 0));
@@ -124,7 +124,7 @@ class AdminDashboardMapperTest {
             o6.setPostalCode("1000001");
             o6.setAddress("Tokyo");
             o6.setTotalQty(1);
-            o6.setTotalPrice(1000);
+            o6.setTotalPriceIncl(1000);
             o6.setPaymentStatus(PaymentStatus.PAID);
             o6.setCreatedAt(LocalDateTime.of(2025, 8, 4, 12, 20, 10));
             o6.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 12, 20, 10));
@@ -137,7 +137,7 @@ class AdminDashboardMapperTest {
             o7.setPostalCode("1000001");
             o7.setAddress("Tokyo");
             o7.setTotalQty(1);
-            o7.setTotalPrice(1000);
+            o7.setTotalPriceIncl(1000);
             o7.setPaymentStatus(PaymentStatus.UNPAID);
             o7.setCreatedAt(LocalDateTime.of(2025, 8, 4, 10, 5, 0));
             o7.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 10, 5, 0));
@@ -171,7 +171,7 @@ class AdminDashboardMapperTest {
             o1.setPostalCode("1000001");
             o1.setAddress("Tokyo");
             o1.setTotalQty(1);
-            o1.setTotalPrice(1000);
+            o1.setTotalPriceIncl(1000);
             o1.setPaymentStatus(PaymentStatus.PAID);
             o1.setCreatedAt(createdAt);
             o1.setUpdatedAt(createdAt);
@@ -211,7 +211,7 @@ class AdminDashboardMapperTest {
             o1.setPostalCode("1000001");
             o1.setAddress("Tokyo");
             o1.setTotalQty(1);
-            o1.setTotalPrice(1000);
+            o1.setTotalPriceIncl(1000);
             o1.setPaymentStatus(PaymentStatus.PAID);
             o1.setCreatedAt(LocalDateTime.of(2025, 7, 20, 0, 0));
             o1.setUpdatedAt(LocalDateTime.of(2025, 7, 20, 0, 0));
@@ -224,7 +224,7 @@ class AdminDashboardMapperTest {
             o2.setPostalCode("1000001");
             o2.setAddress("Tokyo");
             o2.setTotalQty(1);
-            o2.setTotalPrice(1000);
+            o2.setTotalPriceIncl(1000);
             o2.setPaymentStatus(PaymentStatus.PAID);
             o2.setCreatedAt(LocalDateTime.of(2025, 7, 19, 23, 59, 59));
             o2.setUpdatedAt(LocalDateTime.of(2025, 7, 19, 23, 59, 59));
@@ -237,7 +237,7 @@ class AdminDashboardMapperTest {
             o3.setPostalCode("1000001");
             o3.setAddress("Tokyo");
             o3.setTotalQty(1);
-            o3.setTotalPrice(1000);
+            o3.setTotalPriceIncl(1000);
             o3.setPaymentStatus(PaymentStatus.PAID);
             o3.setCreatedAt(LocalDateTime.of(2025, 7, 27, 0, 0, 0));
             o3.setUpdatedAt(LocalDateTime.of(2025, 7, 27, 0, 0, 0));
@@ -250,7 +250,7 @@ class AdminDashboardMapperTest {
             o4.setPostalCode("1000001");
             o4.setAddress("Tokyo");
             o4.setTotalQty(1);
-            o4.setTotalPrice(1000);
+            o4.setTotalPriceIncl(1000);
             o4.setPaymentStatus(PaymentStatus.PAID);
             o4.setCreatedAt(LocalDateTime.of(2025, 7, 26, 23, 59, 59));
             o4.setUpdatedAt(LocalDateTime.of(2025, 7, 26, 23, 59, 59));
@@ -263,7 +263,7 @@ class AdminDashboardMapperTest {
             o5.setPostalCode("1000001");
             o5.setAddress("Tokyo");
             o5.setTotalQty(1);
-            o5.setTotalPrice(1000);
+            o5.setTotalPriceIncl(1000);
             o5.setPaymentStatus(PaymentStatus.PAID);
             o5.setCreatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
             o5.setUpdatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
@@ -276,7 +276,7 @@ class AdminDashboardMapperTest {
             o6.setPostalCode("1000001");
             o6.setAddress("Tokyo");
             o6.setTotalQty(1);
-            o6.setTotalPrice(1000);
+            o6.setTotalPriceIncl(1000);
             o6.setPaymentStatus(PaymentStatus.PAID);
             o6.setCreatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
             o6.setUpdatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
@@ -289,7 +289,7 @@ class AdminDashboardMapperTest {
             o7.setPostalCode("1000001");
             o7.setAddress("Tokyo");
             o7.setTotalQty(1);
-            o7.setTotalPrice(1000);
+            o7.setTotalPriceIncl(1000);
             o7.setPaymentStatus(PaymentStatus.UNPAID);
             o7.setCreatedAt(LocalDateTime.of(2025, 7, 24, 10, 59, 59));
             o7.setUpdatedAt(LocalDateTime.of(2025, 7, 24, 10, 59, 59));

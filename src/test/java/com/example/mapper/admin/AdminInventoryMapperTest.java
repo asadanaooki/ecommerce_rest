@@ -50,7 +50,7 @@ class AdminInventoryMapperTest {
         p1.setProductId("p1");
         p1.setProductName("Item1");
         p1.setSku(1);
-        p1.setPrice(1200);
+        p1.setPriceExcl(1200);
         p1.setStock(0);
         p1.setReserved(0);
         p1.setStatus(SaleStatus.PUBLISHED);
@@ -61,7 +61,7 @@ class AdminInventoryMapperTest {
         p2.setProductId("p2");
         p2.setProductName("Item2");
         p2.setSku(2);
-        p2.setPrice(1000);
+        p2.setPriceExcl(1000);
         p2.setStock(10);
         p2.setReserved(1);
         p2.setStatus(SaleStatus.PUBLISHED);
@@ -72,7 +72,7 @@ class AdminInventoryMapperTest {
         p3.setProductId("p3");
         p3.setProductName("Item3");
         p3.setSku(3);
-        p3.setPrice(2000);
+        p3.setPriceExcl(2000);
         p3.setStock(10);
         p3.setReserved(0);
         p3.setStatus(SaleStatus.PUBLISHED);
@@ -83,7 +83,7 @@ class AdminInventoryMapperTest {
         p4.setProductId("p4");
         p4.setProductName("Item4");
         p4.setSku(4);
-        p4.setPrice(1000);
+        p4.setPriceExcl(1000);
         p4.setStock(11);
         p4.setReserved(0);
         p4.setStatus(SaleStatus.PUBLISHED);
@@ -94,7 +94,7 @@ class AdminInventoryMapperTest {
         p5.setProductId("p5");
         p5.setProductName("Item5");
         p5.setSku(5);
-        p5.setPrice(3000);
+        p5.setPriceExcl(3000);
         p5.setStock(15);
         p5.setReserved(0);
         p5.setStatus(SaleStatus.PUBLISHED);

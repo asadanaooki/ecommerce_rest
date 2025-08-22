@@ -72,7 +72,7 @@ public class TestDataFactory {
                         item.getCartId(),
                         item.getProductId(),
                         item.getQty(),
-                        item.getPrice()));
+                        item.getUnitPriceExcl()));
 
         if (item.getCreatedAt() != null) {
             cols.append(", created_at");
@@ -152,7 +152,7 @@ public class TestDataFactory {
         params.add(product.getProductId());
         params.add(product.getProductName());
         params.add(product.getProductDescription());
-        params.add(product.getPrice());
+        params.add(product.getPriceExcl());
         params.add(product.getStock());
         params.add(product.getReserved());
         params.add(product.getStatus().name());
@@ -192,7 +192,7 @@ public class TestDataFactory {
                 order.getPostalCode(),
                 order.getAddress(),
                 order.getTotalQty(),
-                order.getTotalPrice()));
+                order.getTotalPriceIncl()));
 
         if (order.getOrderNumber() > 0) {
             cols.append(", order_number");
