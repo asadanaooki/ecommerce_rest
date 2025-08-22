@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.service.InquiryService;
 import com.example.util.JwtUtil;
+import com.example.util.CookieUtil;
+import com.example.interceptor.CartCookieTouchInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -35,6 +37,12 @@ class InquiryControllerTest {
 
     @MockitoBean
     JwtUtil jwtUtil;
+
+    @MockitoBean
+    CookieUtil cookieUtil;
+
+    @MockitoBean
+    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @Autowired
     ObjectMapper objectMapper;

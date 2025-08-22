@@ -107,8 +107,8 @@ class CheckoutMapperTest {
                         1,
                         3200,
                         3300,
-                        null,
-                        null,
+                        3520,
+                        3520,
                         SaleStatus.PUBLISHED,
                         15,
                         null);

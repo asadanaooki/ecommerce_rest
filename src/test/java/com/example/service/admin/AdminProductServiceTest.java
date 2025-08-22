@@ -56,7 +56,7 @@ class AdminProductServiceTest {
 //        TaxConverter tc = Mappers.getMapper(TaxConverter.class);
 //        ReflectionTestUtils.setField(tc, "taxCalculator", new TaxCalculator(10));
 //        ReflectionTestUtils.setField(adminProductConverter, "taxConverter",tc);
-        ReflectionTestUtils.setField(adminProductService, "pageSize", 2);
+        ReflectionTestUtils.setField(adminProductService, "pageSize", 10);
         ProductSearchRequest req = new ProductSearchRequest();
 
         AdminProductDto p1 = new AdminProductDto();
@@ -83,7 +83,7 @@ class AdminProductServiceTest {
         AdminProductListDto res = adminProductService.searchProducts(req);
 
         assertThat(res.getItems()).hasSize(2);
-        assertThat(res.getSize()).isEqualTo(2);
+        assertThat(res.getPageSize()).isEqualTo(10);
         assertThat(res.getTotal()).isEqualTo(2);
 
         assertThat(res.getItems()).first().extracting(

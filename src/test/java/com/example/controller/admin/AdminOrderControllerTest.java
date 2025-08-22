@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.service.admin.AdminOrderService;
 import com.example.util.JwtUtil;
+import com.example.util.CookieUtil;
+import com.example.interceptor.CartCookieTouchInterceptor;
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AdminOrderController.class)
@@ -36,6 +38,12 @@ class AdminOrderControllerTest {
 
     @MockitoBean
     JwtUtil jwtUtil;
+
+    @MockitoBean
+    CookieUtil cookieUtil;
+
+    @MockitoBean
+    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @ParameterizedTest
     @MethodSource("provideValidArguments")

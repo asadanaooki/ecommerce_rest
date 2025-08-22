@@ -325,8 +325,8 @@ class CartMapperTest {
                                 .isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
                         assertThat(dto.getProductName()).isEqualTo("Item18");
                         assertThat(dto.getQty()).isEqualTo(1);
-                        assertThat(dto.getUnitPriceIncl()).isEqualTo(3200);
-                        assertThat(dto.getSubtotalIncl()).isNull();
+                        assertThat(dto.getUnitPriceIncl()).isEqualTo(3630);  // 3300 * 1.1
+                        assertThat(dto.getSubtotalIncl()).isEqualTo(3630);  // unit_price_incl * qty(1)
                     });
         }
     }

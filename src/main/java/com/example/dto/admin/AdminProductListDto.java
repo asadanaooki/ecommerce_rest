@@ -15,5 +15,5 @@ public class AdminProductListDto {
     
     private int total;
     
-    private int size;
+    private int pageSize;
 }

@@ -44,7 +44,7 @@ import com.example.util.CookieUtil;
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(CartController.class)
-@Import(CookieUtil.class)
+@Import({CookieUtil.class, CartControllerTest.TestConfig.class})
 class CartControllerTest {
 
     @Autowired
@@ -78,7 +78,7 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPrice").value(0));
+                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
             }
 
             @Test
@@ -94,7 +94,7 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items", hasSize(1)))
                         .andExpect(jsonPath("$.totalQty").value(2))
-                        .andExpect(jsonPath("$.totalPrice").value(5000))
+                        .andExpect(jsonPath("$.totalPriceIncl").value(5000))
                         .andReturn();
 
                 assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
@@ -111,7 +111,7 @@ class CartControllerTest {
                                 CartController.EVENT_CART_EXPIRED))
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPrice").value(0));
+                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
             }
         }
 
@@ -137,7 +137,7 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPrice").value(0));
+                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
             }
 
             @Test
@@ -154,7 +154,7 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(2))
-                        .andExpect(jsonPath("$.totalPrice").value(5000));
+                        .andExpect(jsonPath("$.totalPriceIncl").value(5000));
             }
 
             @Test
@@ -169,7 +169,7 @@ class CartControllerTest {
                                 CartController.EVENT_CART_EXPIRED))
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPrice").value(0));
+                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
             }
         }
     }

@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.service.ReviewService;
 import com.example.util.JwtUtil;
+import com.example.util.CookieUtil;
+import com.example.interceptor.CartCookieTouchInterceptor;
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(ReviewController.class)
@@ -31,6 +33,12 @@ class ReviewControllerTest {
 
     @MockitoBean
     JwtUtil jwtUtil;
+
+    @MockitoBean
+    CookieUtil cookieUtil;
+
+    @MockitoBean
+    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @Nested
     class PostReview {

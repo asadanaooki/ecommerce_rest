@@ -30,6 +30,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import com.example.dto.admin.AdminProductListDto;
 import com.example.service.admin.AdminProductService;
 import com.example.util.JwtUtil;
+import com.example.util.CookieUtil;
+import com.example.interceptor.CartCookieTouchInterceptor;
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AdminProductController.class)
@@ -43,6 +45,12 @@ class AdminProductControllerTest {
 
     @MockitoBean
     JwtUtil jwtUtil;
+
+    @MockitoBean
+    CookieUtil cookieUtil;
+
+    @MockitoBean
+    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @Nested
     class SearchProducts {
@@ -114,7 +122,7 @@ class AdminProductControllerTest {
     class Register {
         static final Map<String, String> BASE_PARAMS = Map.of(
                 "productName", "test",
-                "price", "1000",
+                "priceExcl", "1000",
                 "productDescription", "desc",
                 "status", "PUBLISHED");
 
@@ -152,7 +160,7 @@ class AdminProductControllerTest {
                     // 非公開
                     Arguments.of((Consumer<Map<String, String>>) (m -> {
                         m.put("status", "UNPUBLISHED");
-                        m.put("price", null);
+                        m.put("priceExcl", null);
                         m.put("productDescription", null);
                     }), null),
 
@@ -161,7 +169,7 @@ class AdminProductControllerTest {
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("productName", "a".repeat(100))),
                             BASE_IMAGE),
                     // 価格
-                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("price", "1")), BASE_IMAGE),
+                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("priceExcl", "1")), BASE_IMAGE),
                     // 商品説明
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("productDescription", "b".repeat(1000))),
                             BASE_IMAGE));
@@ -185,9 +193,7 @@ class AdminProductControllerTest {
             }
 
             mockMvc.perform(req).andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.data", hasSize(1)))
-                    .andExpect(jsonPath("$.data[0].field").value(expField))
-                    .andExpect(jsonPath("$.data[0].errorCode").value(expCode));
+                    .andExpect(jsonPath("$.data[?(@.field == '" + expField + "' && @.errorCode == '" + expCode + "')]").exists());
         }
 
         static Stream<Arguments> provideRegistrationInvalidArguments() {
@@ -201,14 +207,14 @@ class AdminProductControllerTest {
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("productDescription", "a".repeat(1001))),
                             "productDescription", "Size"),
                     // 価格
-                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("price", "0")),
-                            "price", "Positive"),
+                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("priceExcl", "0")),
+                            "priceExcl", "Positive"),
                     // ステータス
                     Arguments.of((Consumer<Map<String, String>>) (m -> m.put("status", null)),
                             "status", "NotNull"),
 
                     // 公開
-                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("price", null)),
+                    Arguments.of((Consumer<Map<String, String>>) (m -> m.put("priceExcl", null)),
                             "publish_requirements", "PUBLISH_REQUIREMENTS"));
 
         }

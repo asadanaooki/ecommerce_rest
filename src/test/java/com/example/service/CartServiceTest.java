@@ -74,6 +74,7 @@ class CartServiceTest {
                             setProductName("Item A");
                             setQty(3);
                             setUnitPriceIncl(110); // 税込 110 円
+                            setSubtotalIncl(330);
                         }
                     },
                     new CartItemDto() {

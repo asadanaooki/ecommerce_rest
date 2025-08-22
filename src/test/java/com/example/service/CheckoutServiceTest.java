@@ -159,6 +159,7 @@ class CheckoutServiceTest {
                             setProductName("通常品");
                             setQty(2);
                             setUnitPriceIncl(220);
+                            setSubtotalIncl(440);
                         }
                     },
                     new CartItemDto() {
@@ -167,6 +168,7 @@ class CheckoutServiceTest {
                             setProductName("通常品2");
                             setQty(1);
                             setUnitPriceIncl(110);
+                            setSubtotalIncl(110);
                         }
                     });
             doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
@@ -404,6 +406,8 @@ class CheckoutServiceTest {
                             setQty(2);
                             setCurrentUnitPriceExcl(200);
                             setUnitPriceExclAtAddToCart(200);
+                            setUnitPriceIncl(220);
+                            setSubtotalIncl(440);
                         }
                     },
                     new CheckoutItemDto() {
@@ -415,6 +419,8 @@ class CheckoutServiceTest {
                             setQty(1);
                             setCurrentUnitPriceExcl(100);
                             setUnitPriceExclAtAddToCart(100);
+                            setUnitPriceIncl(110);
+                            setSubtotalIncl(110);
                         }
                     });
             User user = new User() {

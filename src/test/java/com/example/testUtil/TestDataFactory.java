@@ -65,7 +65,7 @@ public class TestDataFactory {
 
 
     public void createCartItem(CartItem item) {
-        StringBuilder cols = new StringBuilder("cart_id, product_id, qty, price");
+        StringBuilder cols = new StringBuilder("cart_id, product_id, qty, unit_price_excl");
         StringBuilder marks = new StringBuilder("?, ?, ?, ?");
         List<Object> params = new ArrayList<>(
                 List.of(
@@ -147,7 +147,7 @@ public class TestDataFactory {
         StringBuilder marks = new StringBuilder();
         List<Object> params = new ArrayList<>();
 
-        cols.append("product_id, product_name, product_description, price, stock, reserved, status");
+        cols.append("product_id, product_name, product_description, price_excl, stock, reserved, status");
         marks.append("?, ?, ?, ?, ?, ?, ?");
         params.add(product.getProductId());
         params.add(product.getProductName());
@@ -182,7 +182,7 @@ public class TestDataFactory {
     public void createOrder(Order order) {
         // まず必須のカラムをセット
         StringBuilder cols = new StringBuilder(
-                "order_id, user_id, name, postal_code, address, total_qty, total_price");
+                "order_id, user_id, name, postal_code, address, total_qty, total_price_incl");
         StringBuilder marks = new StringBuilder(
                 "?, ?, ?, ?, ?, ?, ?");
         List<Object> params = new ArrayList<>(List.of(

@@ -33,6 +33,7 @@ import com.example.service.AuthService;
 import com.example.service.CartService;
 import com.example.util.CookieUtil;
 import com.example.util.JwtUtil;
+import com.example.interceptor.CartCookieTouchInterceptor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +59,9 @@ class AuthControllerTest {
 
     @MockitoBean
     JwtUtil jwtUtil;
+
+    @MockitoBean
+    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @Autowired
     CookieUtil cookieUtil;

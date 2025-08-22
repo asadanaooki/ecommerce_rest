@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ProductSortField {
     NAME("product_name"),
-    PRICE("price"),
+    PRICE("price_excl"),
     CREATED_AT("created_at"),
     UPDATED_AT("updated_at"),
     STOCK("stock");

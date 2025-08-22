@@ -2,20 +2,22 @@
 <mapper namespace="com.example.mapper.CheckoutMapper">
 
   <select id="selectCheckoutItems"
-    resultType="com.example.dto.CheckoutItemDto">
-    select 
+        resultType="com.example.dto.CheckoutItemDto">
+    SELECT 
       ci.product_id,
-      p.product_name,
+      v.product_name,
       ci.qty,
-      p.price_excl       as current_unit_price_excl,
-      ci.unit_price_excl as unit_price_excl_at_add_to_cart,
-      p.stock,
-      p.status
-    from cart_item ci
-    join product p on p.product_id = ci.product_id
-    where ci.cart_id = #{cartId}
-    order by ci.created_at desc, ci.product_id desc
-      for update
+      v.price_excl        AS current_unit_price_excl,
+      ci.unit_price_excl  AS unit_price_excl_at_add_to_cart,
+      v.price_incl        AS unit_price_incl,
+      (v.price_incl * ci.qty) AS subtotal_incl,
+      v.stock,
+      v.status
+    FROM cart_item ci
+    JOIN vw_product_core v ON v.product_id = ci.product_id
+    WHERE ci.cart_id = #{cartId}
+    ORDER BY ci.created_at DESC, ci.product_id DESC
+    FOR UPDATE
   </select>
   
     <select id="selectOrderByPrimaryKey" resultType="com.example.entity.Order">

@@ -34,18 +34,19 @@
   </select>
   
   <select id="findFavoritesPage" resultType="com.example.dto.FavoritePageDto$FavoriteRow">
-    select 
-      p.product_id
-      p.product_name
-      p.price_incl
-      p.status
-    from favorite f
-    join product p
-    on p.product_id = f.product_id
-    where f.user_id = #{userId}
+    SELECT 
+      v.product_id,
+      v.product_name,
+      v.price_incl,
+      v.status
+    FROM favorite f
+    JOIN vw_product_core v
+      ON v.product_id = f.product_id
+    WHERE f.user_id = #{userId}
     ORDER BY f.created_at DESC
     LIMIT  #{limit}
-    OFFSET  #{offset}
+    OFFSET #{offset}
   </select>
+
   
 </mapper>
