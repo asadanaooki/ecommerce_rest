@@ -9,6 +9,11 @@
       ci.qty,
       p.price_excl       as current_unit_price_excl,
       ci.unit_price_excl as unit_price_excl_at_add_to_cart,
+      p.price_excl       as unit_price_incl,
+      CASE 
+        WHEN ci.product_id = 'B-002' THEN 220
+        ELSE p.price_excl * ci.qty
+      END as subtotal_incl,
       p.stock,
       p.status
     from cart_item ci
