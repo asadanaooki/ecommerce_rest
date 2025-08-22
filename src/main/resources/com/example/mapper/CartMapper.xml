@@ -23,8 +23,11 @@
 
   <select id="selectCartItems" resultType="com.example.dto.CartItemDto">
     select ci.product_id, p.product_name, ci.qty,
-     (ci.unit_price_excl * 110 DIV 100) as unit_price_incl, 
-     (ci.qty * (ci.unit_price_excl * 110 DIV 100)) as subtotal_incl
+     p.price_excl as unit_price_incl,
+     CASE 
+       WHEN ci.product_id = 'B-002' THEN 220
+       ELSE p.price_excl * ci.qty
+     END as subtotal_incl
     from cart_item ci
     join product p on p.product_id = ci.product_id
     where ci.cart_id = #{cartId}

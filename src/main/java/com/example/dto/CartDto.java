@@ -22,7 +22,7 @@ public class CartDto {
                 .sum();
         
         this.totalPriceIncl = items.stream()
-                .mapToInt(CartItemDto::getSubtotalIncl)
+                .mapToInt(item -> item.getSubtotalIncl() != null ? item.getSubtotalIncl() : 0)
                 .sum();
     }
 }

@@ -15,6 +15,6 @@ public class CartItemDto {
 
     private int unitPriceIncl;
 
-    private int subtotalIncl;
+    private Integer subtotalIncl;
 
 }
