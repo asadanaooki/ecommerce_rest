@@ -8,6 +8,13 @@ spring:
   flyway:
     locations: classpath:db/migration_test
     validate-on-migrate: false
+  mail:
+    host: localhost
+    port: 2525
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
 #  sql:
 #    init:
 #      mode: never
@@ -15,12 +22,7 @@ spring:
 #      exclude:
 #        - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 #        - org.springframework.boot.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
-  mail:
-    host: localhost
-    port: 2525
-    properties:
-      mail.smtp.auth: false
-      mail.smtp.starttls.enable: false
+
 
 
 #設定値

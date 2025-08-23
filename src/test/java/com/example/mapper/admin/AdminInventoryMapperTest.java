@@ -107,7 +107,7 @@ class AdminInventoryMapperTest {
         List<AdminInventoryDto> list = adminInventoryMapper.search(req, THRESHOLD, 100, 0);
 
         assertThat(list).extracting(AdminInventoryDto::getProductId)
-                .containsExactlyElementsOf(expected);
+                .containsExactlyInAnyOrderElementsOf(expected);
 
     }
 

@@ -13,8 +13,8 @@
   </select>
 
   <select id="searchProducts" resultType="com.example.dto.ProductCardDto">
-    SELECT p.product_id, p.product_name, p.price_incl,
-      (p.stock &lt;= 0) AS out_of_stock,
+    SELECT v.product_id, v.product_name, v.price_incl,
+      (v.stock &lt;= 0) AS out_of_stock,
       <choose>
         <!-- ログイン中だけ JOIN があるので f.user_id をそのままブール式で判定 -->
         <when test="userId != null">
@@ -32,7 +32,7 @@
       ON f.product_id = v.product_id
       AND f.user_id = #{userId}
     </if>
-    WHERE v.status = '1'
+    WHERE v.<include refid="common.OnlyPublished"/>
     <if test="keywords.size() > 0">
       AND (
       <foreach collection="keywords" item="kw" separator="OR ">
@@ -59,10 +59,10 @@
   <select id="countProducts" resultType="int">
     SELECT COUNT(*)
     FROM product
-    WHERE status = '1'
+    WHERE <include refid="common.OnlyPublished"/>
     <if test="keywords.size() > 0">
       AND (
-      <foreach collection="keywords" item="kw" separator="OR ">
+      <foreach collection="keywords" item="kw" separator="AND ">
         product_name LIKE CONCAT('%', #{kw}, '%')
       </foreach>
       )
@@ -103,7 +103,7 @@
           and f.user_id = #{userId}
       </if>
     where v.product_id = #{productId}
-      and status = '1'
+      and <include refid="common.OnlyPublished"/>
   </select>
   
   <update id="decreaseStock">
