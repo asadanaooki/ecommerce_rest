@@ -21,14 +21,16 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
+import com.example.enums.MailTemplate.OrderEditCompletedContext;
+import com.example.enums.order.PaymentStatus;
+import com.example.enums.order.ShippingStatus;
 import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
 import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.support.MailGateway;
 import com.example.util.PaginationUtil;
+import com.example.util.UserUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -77,14 +79,6 @@ public class AdminOrderService {
         return dto;
     }
 
-    public void changeShippingStatus(String orderId, ShippingStatus status) {
-        adminOrderMapper.updateShippingStatus(orderId, status);
-    }
-
-    public void changePaymentStatus(String orderId, PaymentStatus status) {
-        adminOrderMapper.updatePaymentStatus(orderId, status);
-    }
-
     @Transactional
     public void editOrder(String orderId, OrderEditRequest req) {
         // 準備
@@ -98,14 +92,23 @@ public class AdminOrderService {
 
         // メール送信
         List<OrderItem> items = adminOrderMapper.selectOrderItemsForUpdate(orderId);
-        User u = userMapper.selectUserByPrimaryKey(o.getUserId());
-        mailGateway.send(MailTemplate.ORDER_EDIT_COMPLETED.build(u, o.getOrderNumber(), items));
+        User user = userMapper.selectUserByPrimaryKey(o.getUserId());
+        
+        mailGateway.send(MailTemplate.ORDER_EDIT_COMPLETED.build(
+                new OrderEditCompletedContext(
+                        user.getEmail(),
+                        UserUtil.buildFullName(user),
+                        UserUtil.buildFullAddress(user),
+                        o.getOrderNumber(),
+                        items,
+                        items.stream().mapToInt(OrderItem::getSubtotalIncl).sum()
+                        )));
     }
 
     private EditContext prepareContext(Order order, OrderEditRequest req) {
 
         if (!(order.getPaymentStatus() == PaymentStatus.UNPAID
-                && order.getShippingStatus() == ShippingStatus.NOT_SHIPPED)) {
+                && order.getShippingStatus() == ShippingStatus.UNSHIPPED)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "STATUS_NOT_EDITABLE");
         }
 

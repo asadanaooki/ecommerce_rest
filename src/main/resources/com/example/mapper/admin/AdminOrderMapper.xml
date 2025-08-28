@@ -5,11 +5,11 @@
     select 
       order_id,
       lpad(cast(order_number as char), 4, '0') as order_number,
-      total_price_incl,
+      created_at,
       name,
-      shipping_status,
-      payment_status,
-      created_at
+      total_price_incl,
+      order_status,
+      payment_status
     from `order`
     <where>
       <if test="req.keyword != null">
@@ -18,8 +18,8 @@
          or order_number like concat('%', #{req.keyword}, '%')
         )
       </if>
-      <if test="req.shippingStatus != null">
-        and shipping_status = #{req.shippingStatus}
+      <if test="req.orderStatus != null">
+        and order_status = #{req.orderStatus}
       </if>
       <if test="req.paymentStatus != null">
         and payment_status = #{req.paymentStatus}
@@ -45,8 +45,8 @@
          or order_number like concat('%', #{keyword}, '%')
         )
       </if>
-      <if test="shippingStatus != null">
-        and shipping_status = #{shippingStatus}
+      <if test="orderStatus != null">
+        and order_status = #{orderStatus}
       </if>
       <if test="paymentStatus != null">
         and payment_status = #{paymentStatus}
@@ -65,6 +65,7 @@
       o.order_id,
       lpad(cast(o.order_number as char), 4, '0') as order_number,
       o.total_price_incl,
+      o.order_status,
       o.shipping_status,
       o.payment_status,
       o.created_at,
@@ -91,18 +92,6 @@
     where order_id = #{orderId}
     order by product_id
   </select>
-  
-  <update id="updateShippingStatus">
-    update `order`
-    set shipping_status = #{status}
-    where order_id = #{orderId}
-  </update>
-  
-    <update id="updatePaymentStatus">
-    update `order`
-    set payment_status = #{status}
-    where order_id = #{orderId}
-  </update>
 
   <select id="selectOrderForUpdate" resultType="com.example.entity.Order">
     select *
@@ -160,7 +149,5 @@
     where order_id = #{orderId}
       and product_id = #{productId}
   </delete>
-  
-  
 
 </mapper>

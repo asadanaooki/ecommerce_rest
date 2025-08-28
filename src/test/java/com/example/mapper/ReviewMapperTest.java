@@ -35,7 +35,7 @@ class ReviewMapperTest {
     ReviewMapper reviewMapper;
     
     @Autowired
-    CheckoutMapper checkoutMapper;
+    OrderMapper orderMapper;
 
     @Autowired
     UserMapper userMapper;
@@ -148,7 +148,7 @@ class ReviewMapperTest {
             order.setAddress("東京都渋谷区神南1-1-1");
             order.setTotalQty(3);
             order.setTotalPriceIncl(9600);
-            checkoutMapper.insertOrderHeader(order);
+            orderMapper.insertOrderHeader(order);
 
             // 2) 明細リスト作成
             OrderItem it1 = new OrderItem();
@@ -169,7 +169,7 @@ class ReviewMapperTest {
 
             List<OrderItem> items = List.of(it1, it2);
             
-            checkoutMapper.insertOrderItems(items);
+            orderMapper.insertOrderItems(items);
             
             factory.createReview(new Review() {
                 {

@@ -25,9 +25,10 @@ import org.springframework.test.context.jdbc.Sql;
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
-import com.example.mapper.CheckoutMapper;
+import com.example.enums.order.OrderStatus;
+import com.example.enums.order.PaymentStatus;
+import com.example.enums.order.ShippingStatus;
+import com.example.mapper.OrderMapper;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
@@ -45,7 +46,7 @@ class AdminOrderMapperTest {
     AdminOrderMapper adminOrderMapper;
 
     @Autowired
-    CheckoutMapper checkoutMapper;
+    OrderMapper orderMapper;
 
     @Autowired
     TestDataFactory factory;
@@ -91,14 +92,14 @@ class AdminOrderMapperTest {
                                 o.setQ("笠谷");
                             },
                             1),
-                    // shippingStatus
+                    // orderStatus
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(buildOrder(o -> {
                                 o.setUserId(userId);
-                                o.setShippingStatus(ShippingStatus.SHIPPED);
+                                o.setOrderStatus(OrderStatus.COMPLETED);
                             })),
                             (Consumer<OrderSearchRequest>) o -> {
-                                o.setShippingStatus(ShippingStatus.SHIPPED);
+                                o.setOrderStatus(OrderStatus.COMPLETED);
                             },
                             1),
                     // paymentStatus
@@ -203,6 +204,7 @@ class AdminOrderMapperTest {
                 AdminOrderDetailDto::getOrderId,
                 AdminOrderDetailDto::getOrderNumber,
                 AdminOrderDetailDto::getTotalPriceIncl,
+                AdminOrderDetailDto::getOrderStatus,
                 AdminOrderDetailDto::getShippingStatus,
                 AdminOrderDetailDto::getPaymentStatus,
                 AdminOrderDetailDto::getCreatedAt,
@@ -219,7 +221,8 @@ class AdminOrderMapperTest {
                         orderId,
                         "0200",
                         3000,
-                        ShippingStatus.NOT_SHIPPED,
+                        OrderStatus.OPEN,
+                        ShippingStatus.UNSHIPPED,
                         PaymentStatus.UNPAID,
                         LocalDateTime.of(2020, 1, 1, 10, 3, 4),
 
@@ -239,7 +242,7 @@ class AdminOrderMapperTest {
         factory.createOrder(buildOrder(o -> {
             o.setOrderId(orderId);
         }));
-        checkoutMapper.insertOrderItems(List.of(new OrderItem() {
+        orderMapper.insertOrderItems(List.of(new OrderItem() {
             {
                 setOrderId(orderId);
                 setProductId("97113c2c-719a-490c-9979-144d92905c33");
@@ -249,7 +252,7 @@ class AdminOrderMapperTest {
                 setSubtotalIncl(2000);
             }
         }));
-        checkoutMapper.insertOrderItems(List.of(new OrderItem() {
+        orderMapper.insertOrderItems(List.of(new OrderItem() {
             {
                 setOrderId(orderId);
                 setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
@@ -270,7 +273,7 @@ class AdminOrderMapperTest {
         });
 
         adminOrderMapper.updateTotals(orderId);
-        Order order = checkoutMapper.selectOrderByPrimaryKey(orderId);
+        Order order = orderMapper.selectOrderByPrimaryKey(orderId);
         
         assertThat(order.getTotalQty()).isEqualTo(2);
         assertThat(order.getTotalPriceIncl()).isEqualTo(2000);

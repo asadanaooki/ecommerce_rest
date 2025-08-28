@@ -10,8 +10,6 @@ import com.example.dto.admin.AdminOrderDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.Product;
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
 import com.example.request.admin.OrderSearchRequest;
 
 @Mapper
@@ -31,10 +29,6 @@ public interface AdminOrderMapper {
     // TODO:
     // 戻り値をEntityにして汎用的にするか検討
     List<AdminOrderDetailItemDto> selectOrderItems(String orderId);
-    
-    int updateShippingStatus(String orderId, ShippingStatus status);
-    
-    int updatePaymentStatus(String orderId, PaymentStatus status);
     
     Order selectOrderForUpdate(String orderId);
     

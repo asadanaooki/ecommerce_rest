@@ -8,6 +8,7 @@ spring:
   flyway:
     locations: classpath:db/migration_test
     validate-on-migrate: false
+    enabled: false
   mail:
     host: localhost
     port: 2525

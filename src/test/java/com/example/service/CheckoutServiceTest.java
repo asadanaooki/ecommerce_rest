@@ -33,7 +33,7 @@ import com.example.enums.MailTemplate;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
-import com.example.mapper.CheckoutMapper;
+import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
@@ -51,7 +51,7 @@ class CheckoutServiceTest {
     ProductMapper productMapper;
 
     @Mock
-    CheckoutMapper checkoutMapper;
+    OrderMapper orderMapper;
 
     @Spy
 
@@ -369,7 +369,7 @@ class CheckoutServiceTest {
                     //    setVersion(2);
                 }
             }).when(cartMapper).selectCartByUser(userId);
-            doReturn(diffItems).when(checkoutMapper).selectCheckoutItems(cartId);
+            doReturn(diffItems).when(orderMapper).selectCheckoutItems(cartId);
 
             assertThatThrownBy(() -> checkoutService.checkout(userId))
                     .isInstanceOf(BusinessException.class)
@@ -436,13 +436,13 @@ class CheckoutServiceTest {
                 }
             };
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
-            doReturn(items).when(checkoutMapper).selectCheckoutItems(cartId);
+            doReturn(items).when(orderMapper).selectCheckoutItems(cartId);
             doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
 
             checkoutService.checkout(userId);
 
             ArgumentCaptor<Order> headerCap = ArgumentCaptor.forClass(Order.class);
-            verify(checkoutMapper).insertOrderHeader(headerCap.capture());
+            verify(orderMapper).insertOrderHeader(headerCap.capture());
             Order header = headerCap.getValue();
             assertThat(header).extracting(
                     Order::getOrderId,
@@ -462,7 +462,7 @@ class CheckoutServiceTest {
                             550);
 
             ArgumentCaptor<List<OrderItem>> itemsCap = ArgumentCaptor.forClass(List.class);
-            verify(checkoutMapper).insertOrderItems(itemsCap.capture());
+            verify(orderMapper).insertOrderItems(itemsCap.capture());
             List<OrderItem> oItems = itemsCap.getValue();
             assertThat(oItems).hasSize(2);
             assertThat(oItems.get(0)).extracting(

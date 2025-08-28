@@ -9,7 +9,8 @@ import com.example.dto.OrderHistoryDto;
 import com.example.dto.OrderItemDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
-import com.example.mapper.OrderHistoryMapper;
+import com.example.mapper.OrderMapper;
+import com.example.util.OrderUtil;
 
 import lombok.AllArgsConstructor;
 
@@ -26,14 +27,14 @@ public class OrderHistoryService {
     ・N+１回避のため、JOIN ＋ MyBatis resultMapを検討
     */
     
-    private final OrderHistoryMapper orderHistoryMapper;
+    private final OrderMapper orderMapper;
     
     public List<OrderHistoryDto> findOrderHistories(String userId){
-        List<Order> headers = orderHistoryMapper.selectHeadersByUser(userId);
+        List<Order> headers = orderMapper.selectOrdersByUserId(userId);
         List<OrderHistoryDto> result = new ArrayList<OrderHistoryDto>();
         
         for (Order o : headers) {
-            List<OrderItem> items =  orderHistoryMapper.selectOrderItems(o.getOrderId());
+            List<OrderItem> items =  orderMapper.selectOrderItems(o.getOrderId());
             List<OrderItemDto> itemDtos = items.stream()
                     .map(it -> new OrderItemDto(
                             it.getProductId(),
@@ -45,13 +46,15 @@ public class OrderHistoryService {
             result.add(new OrderHistoryDto() {
                 {
                     setOrderId(o.getOrderId());
-                    setOrderNumber(String.format("%04d", o.getOrderNumber()));
+                    setOrderNumber(OrderUtil.formatOrderNumber(o.getOrderNumber()));
                     setOrderedAt(o.getCreatedAt().toLocalDate());
-                    setTotalPriceIncl(o.getTotalPriceIncl());
                     setName(o.getName());
                     setPostalCode(o.getPostalCode());
                     setAddress(o.getAddress());
                     setItems(itemDtos);
+                    setTotalPriceIncl(o.getTotalPriceIncl());
+                    setOrderStatus(o.getOrderStatus());
+
                 }
             });
         }

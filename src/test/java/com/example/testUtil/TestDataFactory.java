@@ -200,6 +200,12 @@ public class TestDataFactory {
             params.add(order.getOrderNumber());
         }
 
+        // order_status が設定されていれば追加
+        if (order.getOrderStatus() != null) {
+            cols.append(", order_status");
+            marks.append(", ?");
+            params.add(order.getOrderStatus().name());
+        }
         // shipping_status が設定されていれば追加
         if (order.getShippingStatus() != null) {
             cols.append(", shipping_status");

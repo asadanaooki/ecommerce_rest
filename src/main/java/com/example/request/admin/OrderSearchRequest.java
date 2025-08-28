@@ -8,9 +8,9 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 
 import com.example.enums.OrderSortField;
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
 import com.example.enums.SortDirection;
+import com.example.enums.order.OrderStatus;
+import com.example.enums.order.PaymentStatus;
 
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class OrderSearchRequest {
 
     private String q;
     
-    private ShippingStatus shippingStatus;
+    private OrderStatus orderStatus;
     
     private PaymentStatus paymentStatus;
 

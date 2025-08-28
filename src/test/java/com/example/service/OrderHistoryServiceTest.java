@@ -19,13 +19,13 @@ import com.example.dto.OrderHistoryDto;
 import com.example.dto.OrderItemDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
-import com.example.mapper.OrderHistoryMapper;
+import com.example.mapper.OrderMapper;
 
 @ExtendWith(MockitoExtension.class)
 class OrderHistoryServiceTest {
 
     @Mock
-    OrderHistoryMapper orderHistoryMapper;
+    OrderMapper orderMapper;
 
     @InjectMocks
     OrderHistoryService orderHistoryService;
@@ -36,7 +36,7 @@ class OrderHistoryServiceTest {
 
         @Test
         void findOrderHistories_empty() {
-            doReturn(Collections.EMPTY_LIST).when(orderHistoryMapper).selectHeadersByUser(userId);
+            doReturn(Collections.EMPTY_LIST).when(orderMapper).selectOrdersByUserId(userId);
 
             List<OrderHistoryDto> result = orderHistoryService.findOrderHistories(userId);
 
@@ -67,7 +67,7 @@ class OrderHistoryServiceTest {
             headerB.setTotalPriceIncl(5_000);
             headerB.setCreatedAt(LocalDateTime.of(2025, 4, 28, 11, 0));
 
-            doReturn(List.of(headerA, headerB)).when(orderHistoryMapper).selectHeadersByUser(userId);
+            doReturn(List.of(headerA, headerB)).when(orderMapper).selectOrdersByUserId(userId);
 
             // ── ② 明細（order-a 1件, order-b 2件） ──
             OrderItem a1 = new OrderItem();
@@ -94,8 +94,8 @@ class OrderHistoryServiceTest {
             b2.setUnitPriceIncl(3_000);
             b2.setSubtotalIncl(3_000);
 
-            doReturn(List.of(a1)).when(orderHistoryMapper).selectOrderItems("order-a");
-            doReturn(List.of(b1, b2)).when(orderHistoryMapper).selectOrderItems("order-b");
+            doReturn(List.of(a1)).when(orderMapper).selectOrderItems("order-a");
+            doReturn(List.of(b1, b2)).when(orderMapper).selectOrderItems("order-b");
 
             List<OrderHistoryDto> result = orderHistoryService.findOrderHistories(userId);
 

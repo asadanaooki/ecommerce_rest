@@ -2,8 +2,9 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
+import com.example.enums.order.ShippingStatus;
+import com.example.enums.order.OrderStatus;
+import com.example.enums.order.PaymentStatus;
 
 import lombok.Data;
 
@@ -33,6 +34,8 @@ public class Order {
     private int totalQty;
 
     private int totalPriceIncl;
+    
+    private OrderStatus orderStatus;
     
     private ShippingStatus shippingStatus;
     

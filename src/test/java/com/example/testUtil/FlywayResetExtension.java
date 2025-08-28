@@ -21,7 +21,7 @@ public class FlywayResetExtension implements BeforeAllCallback {
                 .load();
         
         flyway.clean();
-       // flyway.repair();
+        flyway.repair();
         flyway.migrate();
 
     }

@@ -19,7 +19,7 @@ public class EcommerceRestApplication {
       クラウドを見据えて、UTCに統一するか？
       サニタイズ、エスケープ箇所検討
       設定値のDIは@Valueを使うものなのか？
-      Flyway導入検討
+      Dtoの役割でないものもDtoクラスにしてる→Dtoの定義を明確に
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

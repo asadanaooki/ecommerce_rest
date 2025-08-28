@@ -21,8 +21,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
+import com.example.enums.order.PaymentStatus;
+import com.example.enums.order.ShippingStatus;
 import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
 import com.example.request.admin.OrderEditRequest;
@@ -58,7 +58,7 @@ class AdminOrderServiceTest {
                     setOrderNumber(20);
                     setUserId(userId);
                     setPaymentStatus(PaymentStatus.UNPAID);
-                    setShippingStatus(ShippingStatus.NOT_SHIPPED);
+                    setShippingStatus(ShippingStatus.UNSHIPPED);
                 }
             };
             doReturn(o).when(adminOrderMapper).selectOrderForUpdate(orderId);
@@ -127,7 +127,7 @@ class AdminOrderServiceTest {
                     setOrderNumber(20);
                     setUserId(userId);
                     setPaymentStatus(PaymentStatus.UNPAID);
-                    setShippingStatus(ShippingStatus.NOT_SHIPPED);
+                    setShippingStatus(ShippingStatus.UNSHIPPED);
                 }
             };
             doReturn(o).when(adminOrderMapper).selectOrderForUpdate(orderId);
@@ -199,7 +199,7 @@ class AdminOrderServiceTest {
             Order order = new Order();
             order.setOrderId(orderId);
             order.setPaymentStatus(PaymentStatus.UNPAID);
-            order.setShippingStatus(ShippingStatus.NOT_SHIPPED);
+            order.setShippingStatus(ShippingStatus.UNSHIPPED);
 
             OrderItem oldItem = new OrderItem();
             oldItem.setOrderId(orderId);

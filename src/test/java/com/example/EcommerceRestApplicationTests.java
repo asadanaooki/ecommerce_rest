@@ -9,6 +9,9 @@ import com.example.testUtil.FlywayResetExtension;
 @ExtendWith(FlywayResetExtension.class)
 @SpringBootTest
 class EcommerceRestApplicationTests {
+    // TODO:
+    // src/main/resources/db/migration に追加したら、
+    // 　　自動で src/test/resources/db/migration_test にもコピーしたい。
 
 	@Test
 	void contextLoads() {

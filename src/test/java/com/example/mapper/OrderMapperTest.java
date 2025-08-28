@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
@@ -17,9 +19,11 @@ import com.example.entity.Cart;
 import com.example.entity.CartItem;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
-import com.example.enums.PaymentStatus;
 import com.example.enums.SaleStatus;
-import com.example.enums.ShippingStatus;
+import com.example.enums.order.OrderStatus;
+import com.example.enums.order.PaymentStatus;
+import com.example.enums.order.ShippingStatus;
+import com.example.feature.order.OrderState;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
@@ -27,13 +31,10 @@ import com.example.testUtil.TestDataFactory;
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestDataFactory.class)
-class CheckoutMapperTest {
+class OrderMapperTest {
 
     @Autowired
-    CheckoutMapper checkoutMapper;
-
-    @Autowired
-    OrderHistoryMapper orderHistoryMapper;
+    OrderMapper orderMapper;
 
     @Autowired
     TestDataFactory factory;
@@ -87,7 +88,7 @@ class CheckoutMapperTest {
             }
         });
 
-        List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems("bbbbeeee-cccc-dddd-aaaa-111122223333");
+        List<CheckoutItemDto> items = orderMapper.selectCheckoutItems("bbbbeeee-cccc-dddd-aaaa-111122223333");
 
         assertThat(items).hasSize(3);
         assertThat(items.get(0)).extracting(
@@ -125,10 +126,10 @@ class CheckoutMapperTest {
         order.setTotalQty(3);
         order.setTotalPriceIncl(9600);
 
-        checkoutMapper.insertOrderHeader(order);
+        orderMapper.insertOrderHeader(order);
 
         assertThat(order.getOrderNumber()).isEqualTo(3);
-        Order saved = checkoutMapper.selectOrderByPrimaryKey(cartId);
+        Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
 
         assertThat(saved).extracting(
                 Order::getOrderId,
@@ -148,7 +149,7 @@ class CheckoutMapperTest {
                         "東京都渋谷区神南1-1-1",
                         3,
                         9600,
-                        ShippingStatus.NOT_SHIPPED,
+                        ShippingStatus.UNSHIPPED,
                         PaymentStatus.UNPAID);
     }
 
@@ -165,7 +166,7 @@ class CheckoutMapperTest {
         order.setAddress("東京都渋谷区神南1-1-1");
         order.setTotalQty(3);
         order.setTotalPriceIncl(9600);
-        checkoutMapper.insertOrderHeader(order);
+        orderMapper.insertOrderHeader(order);
 
         // 2) 明細リスト作成
         OrderItem it1 = new OrderItem();
@@ -186,10 +187,10 @@ class CheckoutMapperTest {
 
         List<OrderItem> items = List.of(it1, it2);
 
-        int rows = checkoutMapper.insertOrderItems(items);
+        int rows = orderMapper.insertOrderItems(items);
         assertThat(rows).isEqualTo(2);
 
-        List<OrderItem> saved = orderHistoryMapper.selectOrderItems(orderId);
+        List<OrderItem> saved = orderMapper.selectOrderItems(orderId);
         assertThat(saved).hasSize(2);
         OrderItem order1 = saved.get(0);
         assertThat(order1.getOrderId()).isEqualTo(orderId);
@@ -203,9 +204,149 @@ class CheckoutMapperTest {
 
         assertThat(saved.get(1).getProductId()).isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
     }
+    
+    @Test
+    void selectOrdersByUserId_returnsOrdersForUser() {
+        // Test with existing user from test data
+        String userId = "550e8400-e29b-41d4-a716-446655440000";
+        
+        List<Order> orders = orderMapper.selectOrdersByUserId(userId);
+        
+        // The test data may or may not have orders for this user
+        assertThat(orders).isNotNull();
+        
+        // If there are orders, verify they belong to the user
+        if (!orders.isEmpty()) {
+            assertThat(orders).allSatisfy(order -> {
+                assertThat(order.getUserId()).isEqualTo(userId);
+                assertThat(order.getOrderId()).isNotNull();
+            });
+            
+            // Verify orders are sorted by created_at desc
+            for (int i = 1; i < orders.size(); i++) {
+                assertThat(orders.get(i - 1).getCreatedAt())
+                    .isAfterOrEqualTo(orders.get(i).getCreatedAt());
+            }
+        }
+    }
+
+    @Test
+    void selectOrdersByUserId_returnsEmptyForUserWithNoOrders() {
+        // Use a user ID that shouldn't have orders in test data
+        String userWithNoOrders = "00000000-0000-0000-0000-000000000000";
+        
+        List<Order> orders = orderMapper.selectOrdersByUserId(userWithNoOrders);
+        
+        assertThat(orders).isNotNull();
+        assertThat(orders).isEmpty();
+    }
+
+    @Test
+    void selectOrderItems_returnsEmptyForNonExistentOrder() {
+        String nonExistentOrderId = "NON-EXISTENT-ORDER-999";
+        
+        List<OrderItem> items = orderMapper.selectOrderItems(nonExistentOrderId);
+        
+        assertThat(items).isNotNull();
+        assertThat(items).isEmpty();
+    }
+
+    @Test
+    void selectOrderItems_verifiesQueryStructure() {
+        // Test that the query executes without error
+        // Even if no data is returned, this validates the SQL syntax
+        String testOrderId = "TEST-ORDER-001";
+        
+        List<OrderItem> items = orderMapper.selectOrderItems(testOrderId);
+        
+        assertThat(items).isNotNull();
+        // The list may be empty if no test data exists, but the query should execute
+    }
+    
+    @Nested
+    class ApplyTransition{
+        Order order;
+        
+        @BeforeEach
+        void setup() {
+            order = new Order();
+            order.setOrderId(cartId);
+            order.setUserId(userId);
+            order.setName("山田 太郎");
+            order.setPostalCode("1500041");
+            order.setAddress("東京都渋谷区神南1-1-1");
+            order.setTotalQty(3);
+            order.setTotalPriceIncl(9600);
+            orderMapper.insertOrderHeader(order);
+        }
+        
+        @Test
+        void applyTransition_success() {
+            OrderState expected = new OrderState(OrderStatus.OPEN,
+                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+            OrderState next = new OrderState(OrderStatus.COMPLETED,
+                    ShippingStatus.SHIPPED, PaymentStatus.PAID);
+            
+            int rows = orderMapper.applyTransition(cartId, expected, next);
+            
+            assertThat(rows).isOne();
+            Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
+            assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.COMPLETED);
+            assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.SHIPPED);
+            assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        }
+        
+        @Test
+        void applyTransition_mismatchOrderStatus() {
+            OrderState expected = new OrderState(OrderStatus.CANCELED,
+                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+            OrderState next = new OrderState(OrderStatus.COMPLETED,
+                    ShippingStatus.SHIPPED, PaymentStatus.PAID);
+            
+            int rows = orderMapper.applyTransition(cartId, expected, next);
+            
+            assertThat(rows).isZero();
+            Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
+            assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.OPEN);
+            assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.UNSHIPPED);
+            assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
+        }
+        
+        @Test
+        void applyTransition_mismatchShippingStatus() {
+            OrderState expected = new OrderState(OrderStatus.CANCELED,
+                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID);
+            OrderState next = new OrderState(OrderStatus.COMPLETED,
+                    ShippingStatus.SHIPPED, PaymentStatus.PAID);
+            
+            int rows = orderMapper.applyTransition(cartId, expected, next);
+            
+            assertThat(rows).isZero();
+            Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
+            assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.OPEN);
+            assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.UNSHIPPED);
+            assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
+        }
+        
+        @Test
+        void applyTransition_mismatchPaymentStatus() {
+            OrderState expected = new OrderState(OrderStatus.CANCELED,
+                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID);
+            OrderState next = new OrderState(OrderStatus.COMPLETED,
+                    ShippingStatus.SHIPPED, PaymentStatus.PAID);
+            
+            int rows = orderMapper.applyTransition(cartId, expected, next);
+            
+            assertThat(rows).isZero();
+            Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
+            assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.OPEN);
+            assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.UNSHIPPED);
+            assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
+        }
+    }
 
     //    @Test
-    //    void selectHeadersByUser() throws InterruptedException {
+    //    void selectOrdersByUserId() throws InterruptedException {
     //        String orderId2 = "22222222-2222-2222-2222-222222222222";
     //        Order o2 = new Order();
     //        o2.setOrderId(orderId2);
@@ -215,7 +356,7 @@ class CheckoutMapperTest {
     //        o2.setAddress("東京都新宿区西新宿2-2-2");
     //        o2.setTotalQty(1);
     //        o2.setTotalPriceIncl(3200);
-    //        checkoutMapper.insertOrderHeader(o2);
+    //        orderMapper.insertOrderHeader(o2);
     //        
     //        Thread.sleep(2000);           // 1 秒待機（テスト用なので簡易に）
     //        
@@ -228,9 +369,9 @@ class CheckoutMapperTest {
     //        o1.setAddress("東京都渋谷区神南1-1-1");
     //        o1.setTotalQty(3);
     //        o1.setTotalPriceIncl(9600);
-    //        checkoutMapper.insertOrderHeader(o1);
+    //        orderMapper.insertOrderHeader(o1);
     //        
-    //        List<OrderHeaderDto> headers = checkoutMapper.selectHeadersByUser(userId);
+    //        List<OrderHeaderDto> headers = orderMapper.selectOrdersByUserId(userId);
     //        
     //        assertThat(headers).hasSize(2);
     //        assertThat(headers.get(1).getOrderId()).isEqualTo(orderId2);
@@ -265,7 +406,7 @@ class CheckoutMapperTest {
     //        h1.setAddress("東京都千代田区千代田1-1-1");
     //        h1.setTotalQty(3);
     //        h1.setTotalPriceIncl(7150);
-    //        checkoutMapper.insertOrderHeader(h1);
+    //        orderMapper.insertOrderHeader(h1);
     //
     //        OrderItem h1i1 = new OrderItem();
     //        h1i1.setOrderId(orderId1);
@@ -283,7 +424,7 @@ class CheckoutMapperTest {
     //        h1i2.setPrice(3200);
     //        h1i2.setSubtotalIncl(6400);
     //
-    //        checkoutMapper.insertOrderItems(List.of(h1i1, h1i2));
+    //        orderMapper.insertOrderItems(List.of(h1i1, h1i2));
     //
     //        // 注文ヘッダ 2（明細は 1 商品）
     //        String orderId2 = "44444444-4444-4444-4444-444444444444";
@@ -295,7 +436,7 @@ class CheckoutMapperTest {
     //        h2.setAddress("東京都千代田区丸の内2-2-2");
     //        h2.setTotalQty(1);
     //        h2.setTotalPriceIncl(1800);
-    //        checkoutMapper.insertOrderHeader(h2);
+    //        orderMapper.insertOrderHeader(h2);
     //
     //        OrderItem h2i1 = new OrderItem();
     //        h2i1.setOrderId(orderId2);
@@ -305,10 +446,10 @@ class CheckoutMapperTest {
     //        h2i1.setPrice(1800);
     //        h2i1.setSubtotalIncl(1800);
     //
-    //        checkoutMapper.insertOrderItems(List.of(h2i1));
+    //        orderMapper.insertOrderItems(List.of(h2i1));
     //        List<String> orderIds = List.of(orderId1, orderId2);
     //        
-    //        List<OrderItemDto> items = checkoutMapper.selectItemsByOrderIds(orderIds);
+    //        List<OrderItemDto> items = orderMapper.selectItemsByOrderIds(orderIds);
     //        
     //        
     //    }

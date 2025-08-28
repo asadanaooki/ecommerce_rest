@@ -3,8 +3,9 @@ package com.example.dto.admin;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.enums.PaymentStatus;
-import com.example.enums.ShippingStatus;
+import com.example.enums.order.OrderStatus;
+import com.example.enums.order.PaymentStatus;
+import com.example.enums.order.ShippingStatus;
 
 import lombok.Data;
 
@@ -16,6 +17,8 @@ public class AdminOrderDetailDto {
     private String orderNumber;
     
     private int totalPriceIncl;
+    
+    private OrderStatus orderStatus;
     
     private ShippingStatus shippingStatus;
     

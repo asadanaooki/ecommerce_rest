@@ -1,7 +1,6 @@
 package com.example.service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.mail.MessagingException;
@@ -23,10 +22,11 @@ import com.example.enums.MailTemplate;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
-import com.example.mapper.CheckoutMapper;
+import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
+import com.example.util.UserUtil;
 
 import lombok.AllArgsConstructor;
 
@@ -50,7 +50,7 @@ public class CheckoutService {
 
     private final CartMapper cartMapper;
 
-    private final CheckoutMapper checkoutMapper;
+    private final OrderMapper orderMapper;
 
     private final ProductMapper productMapper;
 
@@ -64,13 +64,13 @@ public class CheckoutService {
         }
         // ユーザー情報
         User user = userMapper.selectUserByPrimaryKey(userId);
-        NameAddress na = buildNameAddress(user);
 
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
 
-        return new CheckoutConfirmDto(na.fullName,
+        return new CheckoutConfirmDto(
+                UserUtil.buildFullName(user),
                 user.getPostalCode(),
-                na.fullAddress,
+                UserUtil.buildFullAddress(user),
                 new CartDto(items));
         // TODO:
         // 以下、購入不可判定入れるときに必要かも
@@ -110,7 +110,7 @@ public class CheckoutService {
         //                .collect(Collectors.toList());
         //        // 自動削除
         //        if (removeIds.size() > 0) {
-        //            checkoutMapper.deleteRemovedItems(cartId, removeIds);
+        //            orderMapper.deleteRemovedItems(cartId, removeIds);
         //        }
 
     }
@@ -123,7 +123,7 @@ public class CheckoutService {
         //            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
         //        }
         String orderId = c.getCartId();
-        List<CheckoutItemDto> items = checkoutMapper.selectCheckoutItems(orderId);
+        List<CheckoutItemDto> items = orderMapper.selectCheckoutItems(orderId);
 
         // 要確認商品がある場合
         if (hasDiff(items)) {
@@ -131,12 +131,11 @@ public class CheckoutService {
         }
 
         User user = userMapper.selectUserByPrimaryKey(userId);
-        NameAddress na = buildNameAddress(user);
 
         CheckoutProcessDto ck = new CheckoutProcessDto(
-                na.fullName,
+                UserUtil.buildFullName(user),
                 user.getPostalCode(),
-                na.fullAddress,
+                UserUtil.buildFullAddress(user),
                 items);
 
         // 注文確定処理
@@ -183,7 +182,7 @@ public class CheckoutService {
                 setTotalPriceIncl(ck.getTotalPriceIncl());
             }
         };
-        checkoutMapper.insertOrderHeader(order);
+        orderMapper.insertOrderHeader(order);
 
         /* ---------- 注文明細 ---------- */
         List<OrderItem> orderItems = ck.getItems().stream()
@@ -199,25 +198,12 @@ public class CheckoutService {
                 })
                 .collect(Collectors.toList());
 
-        checkoutMapper.insertOrderItems(orderItems);
+        orderMapper.insertOrderItems(orderItems);
 
         // カート削除
         cartMapper.deleteCart(orderId);
 
         return order.getOrderNumber();
-    }
-
-    public static NameAddress buildNameAddress(User user) {
-        String name = user.getLastName() + " " + user.getFirstName();
-        String address = String.join("",
-                user.getAddressPrefCity(),
-                user.getAddressArea(),
-                user.getAddressBlock(),
-                Objects.toString(user.getAddressBuilding(), ""));
-        return new NameAddress(name, address);
-    }
-
-    public record NameAddress(String fullName, String fullAddress) {
     }
 
 }

@@ -37,7 +37,7 @@ public class InquiryRequest {
     
     @Length(min = 1, max = 4)
     @Pattern(regexp = "^[0-9]+$")
-    private String orderNo;
+    private String orderNumber;
     
     @NotBlank
     @Length(max = 1000)

@@ -3,24 +3,27 @@ package com.example.dto;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.example.enums.order.OrderStatus;
+
 import lombok.Data;
 
 @Data
 public class OrderHistoryDto {
 
+    /* ---------- 識別情報 ---------- */
     private String orderId;
-    
     private String orderNumber;
-
     private LocalDate orderedAt;
 
-    int totalPriceIncl;
-
+    /* ---------- 顧客情報 ---------- */
     private String name;
-
     private String postalCode;
-
     private String address;
 
-    List<OrderItemDto> items;
+    /* ---------- 注文内容 ---------- */
+    private List<OrderItemDto> items;
+
+    /* ---------- 金額・状態 ---------- */
+    private int totalPriceIncl;
+    private OrderStatus orderStatus;
 }

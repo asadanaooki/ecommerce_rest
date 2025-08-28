@@ -83,12 +83,12 @@ class InquiryControllerTest {
                 // phoneNumber
                 // @Length
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "01234567890")),
-                // orderNo
+                // orderNumber
                 // NULL
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", null)),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNumber", null)),
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "1")),
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "1234")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNumber", "1")),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNumber", "1234")),
                 // message
                 // @Length
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("message", "a".repeat(1000))));
@@ -145,12 +145,12 @@ class InquiryControllerTest {
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "012345678901"), "phoneNumber", "Length"),
                 // @Pattern
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("phoneNumber", "0123456７89"), "phoneNumber", "Length"),
-                // orderNo
+                // orderNumber
                 // @Length
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", ""), "orderNo", "Length"),
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "12345"), "orderNo", "Length"),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNumber", ""), "orderNumber", "Length"),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNumber", "12345"), "orderNumber", "Length"),
                 // @Pattern
-                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNo", "123４"), "orderNo", "Pattern"),
+                Arguments.of((Consumer<Map<String, Object>>) m -> m.put("orderNumber", "123４"), "orderNumber", "Pattern"),
                 // message
                 // @NotBlank
                 Arguments.of((Consumer<Map<String, Object>>) m -> m.put("message", ""), "message", "NotBlank"),
@@ -164,7 +164,7 @@ class InquiryControllerTest {
         m.put("firstName", "太郎");
         m.put("email", "user@example.com");
         m.put("phoneNumber", "08012345678");
-        m.put("orderNo", null);
+        m.put("orderNumber", null);
         m.put("message", "お問い合わせです。");
         return m;
     }

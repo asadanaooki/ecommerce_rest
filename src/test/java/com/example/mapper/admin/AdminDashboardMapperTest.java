@@ -24,7 +24,7 @@ import org.springframework.test.context.jdbc.Sql;
 import com.example.dto.admin.AdminDailyAggRow;
 import com.example.dto.admin.AdminHourlyAggRow;
 import com.example.entity.Order;
-import com.example.enums.PaymentStatus;
+import com.example.enums.order.PaymentStatus;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 

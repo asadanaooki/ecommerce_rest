@@ -21,10 +21,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.service.admin.AdminOrderService;
-import com.example.util.JwtUtil;
-import com.example.util.CookieUtil;
 import com.example.interceptor.CartCookieTouchInterceptor;
+import com.example.service.OrderCommandService;
+import com.example.service.admin.AdminOrderService;
+import com.example.util.CookieUtil;
+import com.example.util.JwtUtil;
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AdminOrderController.class)
@@ -35,6 +36,9 @@ class AdminOrderControllerTest {
 
     @MockitoBean
     AdminOrderService adminOrderService;
+    
+    @MockitoBean
+    OrderCommandService orderCommandService;
 
     @MockitoBean
     JwtUtil jwtUtil;

@@ -21,16 +21,13 @@ public class InquiryService {
     private final MailGateway mailGateway;
 
     public void handle(InquiryRequest req) {
-        String orderNo = req.getOrderNo() == null ? ""
-                : String.format("%04d", Integer.parseInt(req.getOrderNo()));
-
         InquiryContext adminCtx = new InquiryContext(
                 "admin@example.com",
                 req.getLastName(),
                 req.getFirstName(),
                 req.getEmail(),
                 req.getPhoneNumber(),
-                orderNo,
+                req.getOrderNumber(),
                 req.getMessage());
         mailGateway.send(MailTemplate.INQUIRY_ADMIN_NOTIFICATION.build(adminCtx));
 
@@ -40,7 +37,7 @@ public class InquiryService {
                 req.getFirstName(),
                 req.getEmail(),
                 req.getPhoneNumber(),
-                orderNo,
+                req.getOrderNumber(),
                 null);
         mailGateway.send(MailTemplate.INQUIRY_AUTO_REPLY.build(userCtx));
     }
