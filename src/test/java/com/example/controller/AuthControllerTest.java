@@ -31,14 +31,12 @@ import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.service.AuthService;
 import com.example.service.CartService;
-import com.example.util.CookieUtil;
-import com.example.util.JwtUtil;
-import com.example.interceptor.CartCookieTouchInterceptor;
+import com.example.testConfig.CommonMockConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Import(CookieUtil.class)
+@Import(CommonMockConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
@@ -56,15 +54,6 @@ class AuthControllerTest {
 
     @MockitoBean
     CartService cartService;
-
-    @MockitoBean
-    JwtUtil jwtUtil;
-
-    @MockitoBean
-    CartCookieTouchInterceptor cartCookieTouchInterceptor;
-
-    @Autowired
-    CookieUtil cookieUtil;
 
     @Autowired
     ObjectMapper objectMapper;
