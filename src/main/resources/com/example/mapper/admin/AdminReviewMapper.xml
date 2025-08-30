@@ -1,0 +1,53 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.admin.AdminReviewMapper">
+
+  <select id="selectReviewSummaries" resultType="com.example.dto.admin.AdminReviewRowDto">
+    select
+      r.rating,
+      r.review_text,
+      r.updated_at,
+      v.product_name,
+      v.sku,
+      u.nickname,
+      r.product_id,
+      r.user_id
+    from review r
+    join vw_product_core v on v.product_id = r.product_id
+    join `user` u on u.user_id = r.user_id
+    <where>
+      <if test="status != null">
+        r.`status` = #{status}
+      </if>
+    </where>
+    order by r.updated_at
+    <choose>
+      <when test="status == @com.example.enums.review.ReviewStatus@PENDING">
+        asc
+      </when>
+      <otherwise>
+        desc
+      </otherwise>
+    </choose> 
+  </select>
+  
+  <select id="selectReviewDetail" resultType="com.example.dto.admin.AdminReviewDetailDto">
+    SELECT
+      r.product_id,
+      r.user_id,
+      r.rating,
+      r.title,
+      r.review_text,
+      r.created_at,
+      v.product_name,
+      v.sku,
+      u.nickname,
+      r.`status`
+    FROM review r
+    JOIN vw_product_core v ON v.product_id = r.product_id
+    JOIN `user`    u ON u.user_id = r.user_id
+    WHERE r.product_id = #{productId}
+      AND r.user_id    = #{userId}
+  </select>
+
+
+</mapper>

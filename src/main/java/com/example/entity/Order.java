@@ -2,9 +2,9 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 
-import com.example.enums.order.ShippingStatus;
 import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
+import com.example.enums.order.ShippingStatus;
 
 import lombok.Data;
 
@@ -13,6 +13,8 @@ import lombok.Data;
  */
 @Data
 public class Order {
+    // TODO:
+    // 税額、税抜き合計保留→会計処理や売上分析などで必要になったら検討
 
     /** orders.order_id */
     private String orderId;

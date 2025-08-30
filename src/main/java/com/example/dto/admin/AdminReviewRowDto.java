@@ -2,6 +2,8 @@ package com.example.dto.admin;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,7 +13,10 @@ public class AdminReviewRowDto {
 
     // --- レビュー内容 ---
     private int rating;
+    
+    @JsonIgnore
     private String reviewText;
+    
     private LocalDateTime updatedAt;
 
     // --- 商品情報 ---
@@ -24,4 +29,18 @@ public class AdminReviewRowDto {
     // --- 識別子（管理用） ---
     private String productId;
     private String userId;
+    
+    
+    public String getExcerpt() {
+        if (reviewText == null) {
+            return null;
+        }
+        String normalized = reviewText.replaceAll("\\s+　", " ");
+        
+        int max = 100;
+        if (normalized.length() <= max) {
+            return normalized;
+        }
+        return normalized.substring(0, max) + "…";
+    }
 }

@@ -24,7 +24,6 @@ public class AdminReviewDetailDto {
     // --- 商品情報 ---
     private String productName;
     private String sku;
-    private String productThumbUrl;
 
     // --- 投稿者情報 ---
     private String nickname;

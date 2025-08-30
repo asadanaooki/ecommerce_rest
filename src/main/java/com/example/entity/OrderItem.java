@@ -9,6 +9,8 @@ import lombok.Data;
  */
 @Data
 public class OrderItem {
+    // TODO:
+    // 複数税率→軽減税率など 運用面や会計連携などで必要な時に税抜き価格や税額カラム追加を検討
 
     /** order_item.order_id */
     private String orderId;
