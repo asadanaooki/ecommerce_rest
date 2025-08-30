@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,10 +30,9 @@ import org.springframework.util.LinkedMultiValueMap;
 
 import com.example.dto.admin.AdminProductListDto;
 import com.example.service.admin.AdminProductService;
-import com.example.util.JwtUtil;
-import com.example.util.CookieUtil;
-import com.example.interceptor.CartCookieTouchInterceptor;
+import com.example.testConfig.CommonMockConfig;
 
+@Import(CommonMockConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AdminProductController.class)
 class AdminProductControllerTest {
@@ -42,15 +42,6 @@ class AdminProductControllerTest {
 
     @MockitoBean
     AdminProductService adminProductService;
-
-    @MockitoBean
-    JwtUtil jwtUtil;
-
-    @MockitoBean
-    CookieUtil cookieUtil;
-
-    @MockitoBean
-    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @Nested
     class SearchProducts {

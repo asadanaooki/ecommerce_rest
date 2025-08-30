@@ -17,16 +17,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.interceptor.CartCookieTouchInterceptor;
 import com.example.service.OrderCommandService;
 import com.example.service.admin.AdminOrderService;
-import com.example.util.CookieUtil;
-import com.example.util.JwtUtil;
+import com.example.testConfig.CommonMockConfig;
 
+@Import(CommonMockConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(AdminOrderController.class)
 class AdminOrderControllerTest {
@@ -39,15 +39,6 @@ class AdminOrderControllerTest {
     
     @MockitoBean
     OrderCommandService orderCommandService;
-
-    @MockitoBean
-    JwtUtil jwtUtil;
-
-    @MockitoBean
-    CookieUtil cookieUtil;
-
-    @MockitoBean
-    CartCookieTouchInterceptor cartCookieTouchInterceptor;
 
     @ParameterizedTest
     @MethodSource("provideValidArguments")
