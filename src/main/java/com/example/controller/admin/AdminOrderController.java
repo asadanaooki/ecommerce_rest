@@ -59,17 +59,17 @@ public class AdminOrderController {
     }
     
     @PostMapping("/{orderId}/approve-cancel")
-    public void approveCancel(@PathVariable @HexUuid String orderId) {
+    public void approveCancel(@PathVariable @HexUuid @NotBlank String orderId) {
         orderCommandService.approveCancel(orderId);
     }
     
     @PostMapping("/{orderId}/ship")
-    public void ship(@PathVariable @HexUuid String orderId) {
+    public void ship(@PathVariable @HexUuid @NotBlank String orderId) {
         orderCommandService.ship(orderId);
     }
     
     @PostMapping("/{orderId}/delivered")
-    public void markAsDelivered(@PathVariable @HexUuid String orderId) {
+    public void markAsDelivered(@PathVariable @HexUuid @NotBlank String orderId) {
         orderCommandService.markAsDelivered(orderId);
     }
 

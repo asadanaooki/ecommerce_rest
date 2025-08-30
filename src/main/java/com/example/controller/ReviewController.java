@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dto.ReviewPageDto;
-import com.example.request.ReviewPostRequest;
+import com.example.request.review.SubmitReviewRequest;
+import com.example.service.ReviewCommandService;
 import com.example.service.ReviewService;
 import com.example.validation.constraint.HexUuid;
 
@@ -24,10 +25,12 @@ import lombok.AllArgsConstructor;
 @Validated
 @RestController
 @AllArgsConstructor
-@RequestMapping("/review")
+@RequestMapping("/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
+
+    private final ReviewCommandService reviewCommandService;
 
     @GetMapping("/{productId}")
     public ReviewPageDto showReviews(@PathVariable @HexUuid @NotBlank String productId,
@@ -38,7 +41,7 @@ public class ReviewController {
     @PostMapping("/{productId}")
     public void postReview(@PathVariable @HexUuid @NotBlank String productId,
             @AuthenticationPrincipal String userId,
-            @RequestBody @Valid ReviewPostRequest req) {
-        reviewService.postReview(productId, userId, req);
+            @RequestBody @Valid SubmitReviewRequest req) {
+        reviewCommandService.submit(productId, userId, req);
     }
 }

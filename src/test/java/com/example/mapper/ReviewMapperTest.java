@@ -11,6 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -21,6 +24,10 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.Review;
 import com.example.entity.User;
+import com.example.enums.order.RejectReason;
+import com.example.enums.review.ReviewEvent;
+import com.example.enums.review.ReviewStatus;
+import com.example.mapper.param.ReviewUpdateParam;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 import com.example.util.PaginationUtil;
@@ -33,7 +40,7 @@ class ReviewMapperTest {
 
     @Autowired
     ReviewMapper reviewMapper;
-    
+
     @Autowired
     OrderMapper orderMapper;
 
@@ -50,6 +57,10 @@ class ReviewMapperTest {
 
     @BeforeEach
     void setup() {
+        if (this.getClass().equals(UpdateByEvent.class)) {
+            return;
+        }
+
         factory.deleteReviewsByProductId(productId);
 
         User user = new User();
@@ -79,6 +90,7 @@ class ReviewMapperTest {
                 setProductId(productId);
                 setRating(5);
                 setReviewText("とても良い商品です！");
+                setStatus(ReviewStatus.APPROVED);
                 setCreatedAt(now);
                 setUpdatedAt(now);
             }
@@ -89,6 +101,7 @@ class ReviewMapperTest {
                 setProductId(productId);
                 setRating(4);
                 setReviewText("コスパが高いと思います。");
+                setStatus(ReviewStatus.APPROVED);
                 setCreatedAt(now);
                 setUpdatedAt(now);
             }
@@ -98,6 +111,7 @@ class ReviewMapperTest {
                 setUserId("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
                 setProductId(productId);
                 setRating(3);
+                setStatus(ReviewStatus.APPROVED);
                 setCreatedAt(past);
                 setUpdatedAt(past);
             }
@@ -124,17 +138,17 @@ class ReviewMapperTest {
                         4,
                         "コスパが高いと思います。");
     }
-    
+
     @Test
     void countReviews() {
-       int count = reviewMapper.countReviews(productId);
-       assertThat(count).isEqualTo(3);
+        int count = reviewMapper.countReviews(productId);
+        assertThat(count).isEqualTo(3);
     }
-    
+
     @Nested
-    class HasPurchased{
+    class HasPurchased {
         String userId = "550e8400-e29b-41d4-a716-446655440000";
-        
+
         @BeforeEach
         void setup() {
             // ---------- arrange ----------
@@ -168,32 +182,169 @@ class ReviewMapperTest {
             it2.setSubtotalIncl(6400);
 
             List<OrderItem> items = List.of(it1, it2);
-            
+
             orderMapper.insertOrderItems(items);
-            
-            factory.createReview(new Review() {
-                {
-                    setUserId(userId);
-                    setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
-                    setRating(5);
-                    setReviewText("とても良い商品です！");
-                }
-            });
+
         }
-        
+
         @Test
-        void hasPurchased_true() {
+        void hasPurchased_yes() {
             assertThat(reviewMapper.hasPurchased(userId, "1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68"))
-            .isTrue();
+                    .isTrue();
         }
-        
+
         @Test
-        void hasPurchased_false() {
+        void hasPurchased_no() {
             assertThat(reviewMapper.hasPurchased(userId, "4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07"))
-            .isFalse();
+                    .isFalse();
         }
     }
-    
 
+    @Nested
+    class UpdateByEvent {
+        Review review;
+        String userId = "550e8400-e29b-41d4-a716-446655440000";
+
+        @BeforeEach
+        void setup() {
+            factory.deleteReviewsByProductId(productId);
+
+            review = new Review() {
+                {
+                    setUserId(userId);
+                    setProductId(productId);
+                    setRating(5);
+                    setTitle("old-title");
+                    setReviewText("old-body");
+                    setStatus(ReviewStatus.PENDING);
+                }
+            };
+        }
+
+        @Test
+        void updateByEvent_resubmit() {
+            review.setStatus(ReviewStatus.REJECTED);
+            review.setRejectReason(RejectReason.OTHER);
+            review.setRejectNote("bad");
+            factory.createReview(review);
+
+            ReviewUpdateParam p = ReviewUpdateParam.builder()
+                    .productId(productId)
+                    .userId(userId)
+                    .event(ReviewEvent.SUBMIT)
+                    .fromStatus(ReviewStatus.REJECTED)
+                    .toStatus(ReviewStatus.PENDING)
+                    .rating(3)
+                    .title("new-title")
+                    .body("new-body")
+                    .build();
+
+
+            int rows = reviewMapper.updateByEvent(p);
+            assertThat(rows).isOne();
+
+            Review result = factory.findReview(productId, userId);
+            assertThat(result).satisfies(r -> {
+                assertThat(r.getProductId()).isEqualTo(productId);
+                assertThat(r.getUserId()).isEqualTo(userId);
+                assertThat(r.getRating()).isEqualTo(3);
+                assertThat(r.getTitle()).isEqualTo("new-title");
+                assertThat(r.getReviewText()).isEqualTo("new-body");
+                assertThat(r.getStatus()).isEqualTo(ReviewStatus.PENDING);
+                assertThat(r.getRejectReason()).isNull();
+                assertThat(r.getRejectNote()).isNull();
+                assertThat(r.getCreatedAt()).isNotNull();
+                assertThat(r.getUpdatedAt()).isNotNull();
+            });
+
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = { "note" })
+        void updateByEvent_reject(String note) {
+            factory.createReview(review);
+
+            ReviewUpdateParam p = ReviewUpdateParam.builder()
+                    .productId(productId)
+                    .userId(userId)
+                    .event(ReviewEvent.REJECT)
+                    .fromStatus(ReviewStatus.PENDING)
+                    .toStatus(ReviewStatus.REJECTED)
+                    .rejectReason(RejectReason.INAPPROPRIATE)
+                    .rejectNote(note)
+                    .build();
+
+
+            int rows = reviewMapper.updateByEvent(p);
+            assertThat(rows).isOne();
+
+            Review result = factory.findReview(productId, userId);
+            assertThat(result).satisfies(r -> {
+                assertThat(r.getProductId()).isEqualTo(productId);
+                assertThat(r.getUserId()).isEqualTo(userId);
+                assertThat(r.getRating()).isEqualTo(5);
+                assertThat(r.getTitle()).isEqualTo("old-title");
+                assertThat(r.getReviewText()).isEqualTo("old-body");
+                assertThat(r.getStatus()).isEqualTo(ReviewStatus.REJECTED);
+                assertThat(r.getRejectReason()).isEqualTo(RejectReason.INAPPROPRIATE);
+                assertThat(r.getRejectNote()).isEqualTo(note);
+                assertThat(r.getCreatedAt()).isNotNull();
+                assertThat(r.getUpdatedAt()).isNotNull();
+            });
+
+        }
+
+        @Test
+        void updateByEvent_approve() {
+            factory.createReview(review);
+
+            ReviewUpdateParam p = ReviewUpdateParam.builder()
+                    .productId(productId)
+                    .userId(userId)
+                    .event(ReviewEvent.APPROVE)
+                    .fromStatus(ReviewStatus.PENDING)
+                    .toStatus(ReviewStatus.APPROVED)
+                    .build();
+
+
+            int rows = reviewMapper.updateByEvent(p);
+            assertThat(rows).isOne();
+
+            Review result = factory.findReview(productId, userId);
+            assertThat(result).satisfies(r -> {
+                assertThat(r.getProductId()).isEqualTo(productId);
+                assertThat(r.getUserId()).isEqualTo(userId);
+                assertThat(r.getRating()).isEqualTo(5);
+                assertThat(r.getTitle()).isEqualTo("old-title");
+                assertThat(r.getReviewText()).isEqualTo("old-body");
+                assertThat(r.getStatus()).isEqualTo(ReviewStatus.APPROVED);
+                assertThat(r.getRejectReason()).isNull();
+                assertThat(r.getRejectNote()).isNull();
+                assertThat(r.getCreatedAt()).isNotNull();
+                assertThat(r.getUpdatedAt()).isNotNull();
+            });
+
+        }
+
+        @Test
+        void updateByEvent_mismatch() {
+            factory.createReview(review);
+
+            ReviewUpdateParam p = ReviewUpdateParam.builder()
+                    .productId(productId)
+                    .userId(userId)
+                    .event(ReviewEvent.SUBMIT)
+                    .fromStatus(ReviewStatus.REJECTED)
+                    .toStatus(ReviewStatus.PENDING)
+                    .rating(3)
+                    .title("new-title")
+                    .body("new-body")
+                    .build();
+
+            int rows = reviewMapper.updateByEvent(p);
+            assertThat(rows).isZero();
+        }
+    }
 
 }

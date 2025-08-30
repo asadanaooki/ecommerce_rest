@@ -2,6 +2,8 @@ package com.example.controller;
 
 import java.util.List;
 
+import jakarta.validation.constraints.NotBlank;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +25,7 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/order-history")
 public class OrderHistoryController {
     // TODO:
-    // コントローラの分割検討
+    // requestCancelの定義場所検討
 
     private final OrderHistoryService orderHistoryService;
 
@@ -35,7 +37,7 @@ public class OrderHistoryController {
     }
 
     @PostMapping("/{orderId}/cancel-request")
-    public void requestCancel(@PathVariable @HexUuid String orderId) {
+    public void requestCancel(@PathVariable @HexUuid @NotBlank String orderId) {
         orderCommandService.requestCancel(orderId);
     }
 

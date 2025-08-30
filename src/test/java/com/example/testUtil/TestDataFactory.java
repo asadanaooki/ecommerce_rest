@@ -15,6 +15,8 @@ import com.example.entity.CartItem;
 import com.example.entity.Order;
 import com.example.entity.Product;
 import com.example.entity.Review;
+import com.example.enums.order.RejectReason;
+import com.example.enums.review.ReviewStatus;
 
 @Component
 public class TestDataFactory {
@@ -62,7 +64,6 @@ public class TestDataFactory {
         String sql = String.format("insert into cart (%s) values (%s)", cols, marks);
         jdbcTemplate.update(sql, params.toArray());
     }
-
 
     public void createCartItem(CartItem item) {
         StringBuilder cols = new StringBuilder("cart_id, product_id, qty, unit_price_excl");
@@ -118,28 +119,93 @@ public class TestDataFactory {
         return jdbcTemplate.update(sql, productId);
     }
 
-    public void createReview(Review r) {
+    /** 指定 productId & userId のレビューを1件取得 */
+    public Review findReview(String productId, String userId) {
+        String sql = "SELECT * FROM review WHERE product_id = ? AND user_id = ?";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            Review r = new Review();
+            r.setProductId(rs.getString("product_id"));
+            r.setUserId(rs.getString("user_id"));
+            r.setRating((Integer) rs.getObject("rating"));
+            r.setTitle(rs.getString("title"));
+            r.setReviewText(rs.getString("review_text"));
+            // Enum系は name() 保存前提
+            String status = rs.getString("status");
+            if (status != null)
+                r.setStatus(Enum.valueOf(ReviewStatus.class, status));
+            String rejectReason = rs.getString("reject_reason");
+            if (rejectReason != null)
+                r.setRejectReason(Enum.valueOf(RejectReason.class, rejectReason));
+            r.setRejectNote(rs.getString("reject_note"));
+            Timestamp cAt = rs.getTimestamp("created_at");
+            if (cAt != null)
+                r.setCreatedAt(cAt.toLocalDateTime());
+            Timestamp uAt = rs.getTimestamp("updated_at");
+            if (uAt != null)
+                r.setUpdatedAt(uAt.toLocalDateTime());
+            return r;
+        }, productId, userId);
+    }
+
+    public int createReview(Review r) {
         StringBuilder cols = new StringBuilder("product_id, user_id, rating");
         StringBuilder marks = new StringBuilder("?, ?, ?");
-        List<Object> params = new ArrayList<Object>(List.of(r.getProductId(), r.getUserId(), r.getRating()));
+        List<Object> params = new ArrayList<>(List.of(
+                r.getProductId(),
+                r.getUserId(),
+                r.getRating()));
 
+        // title
+        if (r.getTitle() != null) {
+            cols.append(", title");
+            marks.append(", ?");
+            params.add(r.getTitle());
+        }
+
+        // review_text
         if (r.getReviewText() != null) {
             cols.append(", review_text");
             marks.append(", ?");
             params.add(r.getReviewText());
         }
+
+        // status (Enum → DB定義に応じて name() / ordinal())
+        if (r.getStatus() != null) {
+            cols.append(", status");
+            marks.append(", ?");
+            params.add(r.getStatus().name());
+        }
+
+        // reject_reason (Enum)
+        if (r.getRejectReason() != null) {
+            cols.append(", reject_reason");
+            marks.append(", ?");
+            params.add(r.getRejectReason().name());
+        }
+
+        // reject_note
+        if (r.getRejectNote() != null) {
+            cols.append(", reject_note");
+            marks.append(", ?");
+            params.add(r.getRejectNote());
+        }
+
+        // created_at
         if (r.getCreatedAt() != null) {
             cols.append(", created_at");
             marks.append(", ?");
             params.add(Timestamp.valueOf(r.getCreatedAt()));
         }
+
+        // updated_at
         if (r.getUpdatedAt() != null) {
             cols.append(", updated_at");
             marks.append(", ?");
             params.add(Timestamp.valueOf(r.getUpdatedAt()));
         }
+
         String sql = String.format("INSERT INTO review (%s) VALUES (%s)", cols, marks);
-        jdbcTemplate.update(sql, params.toArray());
+        return jdbcTemplate.update(sql, params.toArray());
     }
 
     public void createProduct(Product product) {

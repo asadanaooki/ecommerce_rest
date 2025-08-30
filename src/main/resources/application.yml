@@ -1,10 +1,13 @@
 spring:
   application:
     name: ecommerce
+  jackson:
+    deserialization:
+      accept-float-as-int: false
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # ← 追加
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # ← 追加
   mapper-locations:
   - classpath*:com/example/mapper/common.xml
   - classpath*:com/example/mapper/*Mapper.xml

@@ -11,6 +11,8 @@ import com.example.enums.order.ShippingStatus;
 public class OrderTransitionGuard {
     // TODO:
     // 単調増加のテスト検討
+    // 冪等性考慮→現状、エラー
+    // 許可ホワイトリスト＋全列挙ループのデータ駆動テスト検討
 
     public OrderState next(OrderState cur, OrderEvent ev) {
         if (cur.getOrder() == OrderStatus.CANCELED
@@ -43,7 +45,7 @@ public class OrderTransitionGuard {
                     || cur.getOrder() == OrderStatus.CANCEL_REQUESTED)
                     && cur.getShipping() == ShippingStatus.UNSHIPPED
                     && cur.getPayment() == PaymentStatus.UNPAID) {
-             // 出荷時点で CANCEL_REQUESTED は自動解消して OPEN に統一している想定
+                // 出荷時点で CANCEL_REQUESTED は自動解消して OPEN に統一している想定
                 yield new OrderState(OrderStatus.OPEN,
                         ShippingStatus.SHIPPED, cur.getPayment());
             }
@@ -53,7 +55,7 @@ public class OrderTransitionGuard {
             if (cur.getOrder() == OrderStatus.OPEN
                     && cur.getShipping() == ShippingStatus.SHIPPED
                     && cur.getPayment() == PaymentStatus.UNPAID) {
-                
+
                 yield new OrderState(OrderStatus.COMPLETED,
                         ShippingStatus.DELIVERED, PaymentStatus.PAID);
             }

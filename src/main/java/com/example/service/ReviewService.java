@@ -4,16 +4,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.dto.ReviewDto;
 import com.example.dto.ReviewPageDto;
-import com.example.entity.Review;
-import com.example.error.BusinessException;
 import com.example.mapper.ReviewMapper;
 import com.example.mapper.UserMapper;
-import com.example.request.ReviewPostRequest;
 import com.example.util.PaginationUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +27,7 @@ public class ReviewService {
     ・現状レビュー即反映だが、反映するかの判断どうするか
     ・ユーザー自身のレビュー編集・削除をどうするか
     ・レビュー内容のサニタイズはフロントに任せる前提？
+    ・レビュー一覧画面のフィルター、ソート
     */
 
     @Value("${settings.review.size}")
@@ -47,24 +44,6 @@ public class ReviewService {
                 .selectReviews(productId, pageSize, PaginationUtil.calculateOffset(page, pageSize));
 
         return new ReviewPageDto(avg, total, pageSize, reviews);
-    }
-
-    public void postReview(String productId, String userId, ReviewPostRequest req) {
-        if (userMapper.selectUserByPrimaryKey(userId).getNickname() == null) {
-            throw new BusinessException(HttpStatus.UNPROCESSABLE_ENTITY);
-        }
-        if (!reviewMapper.hasPurchased(userId, productId)) {
-            throw new BusinessException(HttpStatus.FORBIDDEN);
-        }
-
-        Review r = new Review();
-        r.setProductId(productId);
-        r.setUserId(userId);
-        r.setRating(req.getRating());
-        r.setTitle(req.getTitle());
-        r.setReviewText(req.getReviewText());
-
-        reviewMapper.insertReview(r);
     }
 
 }

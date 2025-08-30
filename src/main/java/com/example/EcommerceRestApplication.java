@@ -20,6 +20,8 @@ public class EcommerceRestApplication {
       サニタイズ、エスケープ箇所検討
       設定値のDIは@Valueを使うものなのか？
       Dtoの役割でないものもDtoクラスにしてる→Dtoの定義を明確に
+      任意項目の入力欄は受け取る際、トリミング入れる→Review関連には入れてる
+      DuplicateKeyは409に変換すべきなのか？実装コストと頻度のトレードオフ
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

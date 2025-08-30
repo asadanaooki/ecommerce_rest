@@ -1,13 +1,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.ReviewMapper">
   
+  <select id="selectByPrimaryKey" resultType="com.example.entity.Review">
+    select *
+    from review
+    where product_id = #{productId}
+      and user_id = #{userId}
+  </select>
+  
   <select id="selectReviews" resultType="com.example.dto.ReviewDto">
     select 
-      u.nickname, date(r.created_at) as createdDate, r.rating, r.title, r.review_text
+      u.nickname,
+      date(r.created_at) as createdDate,
+      r.rating,
+      r.title,
+      r.review_text
     from review r
     join `user` u on u.user_id = r.user_id
-    where r.product_id = #{productId}
-    order by r.created_at desc, r.user_id asc
+    <where>
+      and r.product_id = #{productId}
+      and r.`status` = 'APPROVED'
+    </where>
+    order by 
+      r.created_at desc,
+      r.user_id asc
     limit #{limit}
     offset #{offset}
   </select>
@@ -15,13 +31,19 @@
   <select id="countReviews" resultType="int">
     select count(*)
     from review
-    where product_id = #{productId}
+    <where>
+      and product_id = #{productId}
+      and `status` = 'APPROVED'
+    </where>
   </select>
   
   <select id="selectAvg" resultType="java.math.BigDecimal">
     select coalesce(round(avg(rating), 1), 0)
     from review
-    where product_id = #{productId}
+    <where>
+      and product_id = #{productId}
+      and `status` = 'APPROVED'
+    </where>
   </select>
   
   <select id="hasPurchased" resultType="boolean">
@@ -40,5 +62,37 @@
     values
       (#{userId}, #{productId}, #{rating}, #{title}, #{reviewText})
   </insert>
+  
+  <update id="updateByEvent">
+    update review
+    <set>
+      `status` = #{toStatus},
+      
+      <choose>
+        <when  test="event.name().equals('SUBMIT')">
+          rating = #{rating},
+          title = #{title},
+          review_text = #{body},
+          reject_reason = NULL,
+          reject_note   = NULL,
+        </when>
+        
+        <when test="event.name().equals('REJECT')">
+          reject_reason = #{rejectReason},
+          <if test="rejectNote != null">
+            reject_note = #{rejectNote},
+          </if>
+        </when>
+        <otherwise>
+        </otherwise>
+      </choose>
+    </set>
+    
+    <where>
+      and product_id = #{productId}
+      and user_id = #{userId}
+      and `status` = #{fromStatus}
+    </where>
+  </update>
 
 </mapper>

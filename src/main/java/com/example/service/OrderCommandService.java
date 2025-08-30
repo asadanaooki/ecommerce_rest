@@ -32,11 +32,12 @@ public class OrderCommandService {
     // 在庫戻しの二重処理を防ぐための楽観ロック未実装
     // キャンセル理由、時刻など持つべきか検討
     // 配達や決済ステータスは外部APIで取得？
-    // 回線不安定で「もう一度送信」したときに、2回目がエラー（409）で返ると「失敗した？」 にどう対応するか？
-    //    →他にも重要な箇所は冪等性を入れる
+    // 冪等性対策
+    //    →回線不安定で「もう一度送信」したときに、2回目がエラー（409）で返ると「失敗した？」 にどう対応するか？
     // キャンセル拒否機能追加検討
     // 現状orderIdは妥当なモノである前提でNPE対策してない
     // ユーザーのEmail取得する際、毎回汎用クエリで取得してる。Orderと同時に取得するカスタムクエリ作るべきか？
+    // NPE対策
     
 
     // private final String ADMIN_EMAIL = "admin@example.com";
@@ -123,7 +124,7 @@ public class OrderCommandService {
               next = guard.next(cur, ev);
             } catch (IllegalStateException e) {
               // ガード違反 → 409 + reason を返す
-              throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+              throw new ResponseStatusException(HttpStatus.CONFLICT, "ORDER_STATE_INVALID");
             }
 
             int updated = orderMapper.applyTransition(orderId, cur, next);

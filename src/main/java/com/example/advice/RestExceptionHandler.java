@@ -56,7 +56,9 @@ public class RestExceptionHandler {
             Map.entry("UPDATED_RANGE_VALID", "updated_range"),
             Map.entry("ITEMS_AND_DELETED_DISJOINT", "deleted_items"),
             Map.entry("PUBLISH_REQUIREMENTS", "publish_requirements"),
-            Map.entry("PASSWORDS_MATCH", "confirmPassword"));
+            Map.entry("PASSWORDS_MATCH", "confirmPassword"),
+            Map.entry("REJECT_NOTE_REQUIRED_WHEN_OTHER", "note")
+            );
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse> handleBusinessException(BusinessException e) {

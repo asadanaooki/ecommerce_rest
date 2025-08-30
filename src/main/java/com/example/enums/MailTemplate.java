@@ -11,6 +11,7 @@ import com.example.dto.CheckoutItemDto;
 import com.example.dto.CheckoutProcessDto;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
+import com.example.enums.order.RejectReason;
 import com.example.util.OrderUtil;
 
 import lombok.Getter;
@@ -389,6 +390,39 @@ public enum MailTemplate {
             );
             return new EmailMessage(ctx.to(), getSubject(), body);
         }
+    },
+    
+    REVIEW_REJECTED(
+            "レビュー掲載見送りのお知らせ",
+            """
+                    %s 様
+
+                    ご投稿いただいたレビューは以下の理由により掲載できませんでした。
+
+                    【否認理由】
+                    %s
+
+                    %s
+
+                    再投稿される場合は、内容を修正のうえ送信してください。
+                    """) {
+        @Override
+        public EmailMessage build(Object... args) {
+            ReviewRejectedContext ctx = (ReviewRejectedContext) args[0];
+            String noteBlock = ctx.note() == null ? ""
+                    : """
+                        【備考】
+                        %s
+                        
+                      """.formatted(ctx.note());
+
+            String body = getBody().formatted(
+                    ctx.fullName(),
+                    ctx.reason().getMessage(),
+                    noteBlock
+            );
+            return new EmailMessage(ctx.to(), getSubject(), body);
+        }
     };
 
     private final String subject;
@@ -519,6 +553,16 @@ public enum MailTemplate {
             );
         }
     }
+    
+    public record ReviewRejectedContext(
+            String to,
+            String fullName,
+            RejectReason reason,
+            String note
+            ) {
+    }
+    
+    
 
     private static <T> String createItemsBlock(
             List<T> items,
