@@ -122,7 +122,7 @@ class CheckoutServiceTest {
         //                            setProductId("B-002");
         //                            setProductName("在庫切れ品");
         //                            setStatus("1"); // 販売中
-        //                            setStock(0); // stock <= 0 → OUT_OF_STOCK
+        //                            setAvailable(0); // stock <= 0 → OUT_OF_STOCK
         //                            setQty(2);
         //                            setCurrentUnitPriceExcl(200);
         //                            setUnitPriceExclAtAddToCart(200);
@@ -200,28 +200,28 @@ class CheckoutServiceTest {
         //                    new CartItemDto() {{
         //                        setProductId("D-001"); setProductName("販売停止品");
         //                        setStatus("0");            // STATUS_DISCONTINUED
-        //                        setStock(10); setQty(1);
+        //                        setAvailable(10); setQty(1);
         //                        setPriceEx(100); setPriceAtCartAddition(100);
         //                    }},
         //                    // ③ 在庫不足
         //                    new CartItemDto() {{
         //                        setProductId("L-003"); setProductName("在庫不足品");
         //                        setStatus("1");
-        //                        setStock(1);  setQty(3);   // stock < qty
+        //                        setAvailable(1);  setQty(3);   // stock < qty
         //                        setPriceEx(120); setPriceAtCartAddition(120);
         //                    }},
         //                    // ④ 価格改定
         //                    new CartItemDto() {{
         //                        setProductId("P-004"); setProductName("価格改定品");
         //                        setStatus("1");
-        //                        setStock(5);  setQty(1);
+        //                        setAvailable(5);  setQty(1);
         //                        setPriceEx(150); setPriceAtCartAddition(100); // 価格改定
         //                    }},
         //                    // ⑤ 正常品
         //                    new CartItemDto() {{
         //                        setProductId("N-005"); setProductName("通常品");
         //                        setStatus("1");
-        //                        setStock(20); setQty(2);
+        //                        setAvailable(20); setQty(2);
         //                        setPriceEx(200); setPriceAtCartAddition(200);
         //                    }}
         //                );
@@ -272,7 +272,7 @@ class CheckoutServiceTest {
         //            List<CartItemDto> valid = List.of(
         //                    new CartItemDto() {{
         //                        setProductId("N-010"); setProductName("通常品");
-        //                        setStatus("1"); setStock(10); setQty(1);
+        //                        setStatus("1"); setAvailable(10); setQty(1);
         //                        setPriceEx(100); setPriceAtCartAddition(100);
         //                    }}
         //                );
@@ -320,7 +320,7 @@ class CheckoutServiceTest {
                             setProductId("D-001");
                             setProductName("販売停止品");
                             setStatus(SaleStatus.UNPUBLISHED); // DISCONTINUED
-                            setStock(10);
+                            setAvailable(10);
                             setQty(1);
                             setCurrentUnitPriceExcl(100);
                             setUnitPriceExclAtAddToCart(100);
@@ -332,7 +332,7 @@ class CheckoutServiceTest {
                             setProductId("O-002");
                             setProductName("在庫切れ品");
                             setStatus(SaleStatus.PUBLISHED);
-                            setStock(0);
+                            setAvailable(0);
                             setQty(1); // stock <= 0
                             setCurrentUnitPriceExcl(200);
                             setUnitPriceExclAtAddToCart(200);
@@ -344,7 +344,7 @@ class CheckoutServiceTest {
                             setProductId("L-003");
                             setProductName("在庫不足品");
                             setStatus(SaleStatus.PUBLISHED);
-                            setStock(1);
+                            setAvailable(1);
                             setQty(3); // stock < qty
                             setCurrentUnitPriceExcl(120);
                             setUnitPriceExclAtAddToCart(120);
@@ -356,7 +356,7 @@ class CheckoutServiceTest {
                             setProductId("P-004");
                             setProductName("価格改定品");
                             setStatus(SaleStatus.PUBLISHED);
-                            setStock(5);
+                            setAvailable(5);
                             setQty(1);
                             setCurrentUnitPriceExcl(150);
                             setUnitPriceExclAtAddToCart(100); // 価格改定
@@ -402,7 +402,7 @@ class CheckoutServiceTest {
                             setProductId("N-001");
                             setProductName("通常品1");
                             setStatus(SaleStatus.PUBLISHED);
-                            setStock(10);
+                            setAvailable(10);
                             setQty(2);
                             setCurrentUnitPriceExcl(200);
                             setUnitPriceExclAtAddToCart(200);
@@ -415,7 +415,7 @@ class CheckoutServiceTest {
                             setProductId("N-002");
                             setProductName("通常品2");
                             setStatus(SaleStatus.PUBLISHED);
-                            setStock(5);
+                            setAvailable(5);
                             setQty(1);
                             setCurrentUnitPriceExcl(100);
                             setUnitPriceExclAtAddToCart(100);
@@ -480,7 +480,7 @@ class CheckoutServiceTest {
                             220,
                             440);
 
-            verify(productMapper, times(2)).decreaseStock(anyString(), anyInt());
+            verify(productMapper, times(2)).decreaseStock(anyString(), anyInt(),isNull());
             verify(cartMapper).deleteCart(cartId);
             verify(gateway).send(argThat(msg -> msg.subject().equals(MailTemplate.ORDER_CONFIRMATION.getSubject())));
 

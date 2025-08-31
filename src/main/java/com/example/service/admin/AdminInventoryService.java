@@ -11,8 +11,9 @@ import com.example.dto.admin.AdminInventoryDetailDto;
 import com.example.dto.admin.AdminInventoryDto;
 import com.example.dto.admin.AdminInventoryListDto;
 import com.example.enums.StockStatus;
+import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminInventoryMapper;
-import com.example.request.admin.InventoryAdjustRequest;
+import com.example.request.admin.InventoryMovementRequest;
 import com.example.request.admin.InventorySearchRequest;
 import com.example.util.PaginationUtil;
 
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminInventoryService {
     // TODO:
-    // applyStockStatusはユーザー向けの商品画面でも使うかも。共通化検討
+    // resolveStockStatusはユーザー向けの商品画面でも使うかも。共通化検討
     // 発注画面
     //    第1段階（最小）：表示 ➜ ロック ➜ 手動調整
     //    第2段階：フィルタ／並び替え／検索
@@ -31,6 +32,8 @@ public class AdminInventoryService {
     // 在庫手動調整で、同時編集や在庫変動があった場合の整合性どうするか。例：バージョンカラムなど
 
     private final AdminInventoryMapper adminInventoryMapper;
+    
+    private final ProductMapper productMapper;
 
     @Value("${settings.admin.inventory.size}")
     private int pageSize;
@@ -60,12 +63,19 @@ public class AdminInventoryService {
         return dto;
     }
     
-    public void adjust(String productId, InventoryAdjustRequest req) {
-       int rows = adminInventoryMapper.updateInventory(productId, req);
+    public void receiveStock(String productId, InventoryMovementRequest req) {
+       int rows = productMapper.increaseStock(productId, req);
        if (rows == 0) {
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+           throw new ResponseStatusException(HttpStatus.CONFLICT);
        }
     }
+    
+    public void issueStock(String productId, InventoryMovementRequest req) {
+        int rows = productMapper.decreaseStock(productId, req.getQty(), req.getVersion());
+        if (rows == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+     }
 
     private StockStatus resolveStockStatus(int available) {
         // 防御的に<=0としている

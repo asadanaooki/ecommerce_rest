@@ -171,7 +171,7 @@ class OrderCommandServiceTest {
                     .satisfies(ex -> {
                         ResponseStatusException e = (ResponseStatusException) ex;
                         assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-                        assertThat(e.getReason()).isEqualTo("error");
+                        assertThat(e.getReason()).isEqualTo("ORDER_STATE_INVALID");
                     });
         }
 

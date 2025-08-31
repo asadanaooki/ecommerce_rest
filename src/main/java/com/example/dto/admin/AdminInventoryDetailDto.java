@@ -27,4 +27,6 @@ public class AdminInventoryDetailDto {
     
     private LocalDateTime updatedAt;
     
+    private int version;
+    
 }

@@ -94,5 +94,11 @@
       and `status` = #{fromStatus}
     </where>
   </update>
+  
+  <delete id="deleteRejected">
+    delete from review
+    where `status` = 'REJECTED'
+      and updated_at &lt; date_sub(now(), interval 12 month)
+  </delete>
 
 </mapper>

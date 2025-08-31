@@ -106,10 +106,21 @@
       and <include refid="common.OnlyPublished"/>
   </select>
   
+  <update id="increaseStock">
+    update product
+      set stock = stock + #{req.qty}
+    where product_id = #{productId}
+      and version = #{req.version}
+  </update>
+  
   <update id="decreaseStock">
     update product
       set stock = stock - #{qty}
     where product_id = #{productId}
+      and (stock - #{qty}) &gt;= coalesce(reserved, 0)
+      <if test="version != null">
+        and version = #{version}
+      </if>
   </update>
   
 </mapper>

@@ -100,7 +100,7 @@ class OrderMapperTest {
                 CheckoutItemDto::getUnitPriceIncl,
                 CheckoutItemDto::getSubtotalIncl,
                 CheckoutItemDto::getStatus,
-                CheckoutItemDto::getStock,
+                CheckoutItemDto::getAvailable,
                 CheckoutItemDto::getReason)
                 .containsExactly(
                         "f9c9cfb2-0893-4f1c-b508-f9e909ba5274",
@@ -111,7 +111,7 @@ class OrderMapperTest {
                         3520,
                         3520,
                         SaleStatus.PUBLISHED,
-                        15,
+                        10,
                         null);
     }
 

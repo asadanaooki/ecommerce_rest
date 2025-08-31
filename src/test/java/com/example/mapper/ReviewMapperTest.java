@@ -55,149 +55,150 @@ class ReviewMapperTest {
     LocalDateTime now;
     LocalDateTime past;
 
-    @BeforeEach
-    void setup() {
-        if (this.getClass().equals(UpdateByEvent.class)) {
-            return;
-        }
-
-        factory.deleteReviewsByProductId(productId);
-
-        User user = new User();
-        user.setUserId("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"); // 36文字 UUID
-        user.setEmail("alice@example.com");
-        user.setPasswordHash("$2a$10$dummyHashForTests.............."); // テスト用
-        user.setLastName("テスト");
-        user.setFirstName("太郎");
-        user.setLastNameKana("テスト");
-        user.setFirstNameKana("タロウ");
-        user.setPostalCode("1000001");
-        user.setAddressPrefCity("東京都千代田区");
-        user.setAddressArea("千代田");
-        user.setAddressBlock("1-1-1");
-        user.setPhoneNumber("0312345678");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        user.setGender("M");
-        user.setNickname("ali");
-        userMapper.insertUser(user);
-
-        now = LocalDateTime.of(2025, 6, 29, 0, 0);
-        past = LocalDateTime.of(2025, 6, 10, 0, 0);
-
-        factory.createReview(new Review() {
-            {
-                setUserId("550e8400-e29b-41d4-a716-446655440000");
-                setProductId(productId);
-                setRating(5);
-                setReviewText("とても良い商品です！");
-                setStatus(ReviewStatus.APPROVED);
-                setCreatedAt(now);
-                setUpdatedAt(now);
-            }
-        });
-        factory.createReview(new Review() {
-            {
-                setUserId("111e8400-e29b-41d4-a716-446655440111");
-                setProductId(productId);
-                setRating(4);
-                setReviewText("コスパが高いと思います。");
-                setStatus(ReviewStatus.APPROVED);
-                setCreatedAt(now);
-                setUpdatedAt(now);
-            }
-        });
-        factory.createReview(new Review() {
-            {
-                setUserId("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
-                setProductId(productId);
-                setRating(3);
-                setStatus(ReviewStatus.APPROVED);
-                setCreatedAt(past);
-                setUpdatedAt(past);
-            }
-        });
-    }
-
-    @Test
-    void selectReviews() {
-        List<ReviewDto> reviews = reviewMapper
-                .selectReviews(productId, 10, PaginationUtil.calculateOffset(1, 10));
-
-        assertThat(reviews).hasSize(3)
-                .extracting(ReviewDto::getNickname)
-                .containsExactly("sato", "yamarou", "ali");
-
-        assertThat(reviews.get(0))
-                .extracting(ReviewDto::getNickname,
-                        r -> r.getCreatedDate(),
-                        ReviewDto::getRating,
-                        ReviewDto::getReviewText)
-                .containsExactly(
-                        "sato",
-                        LocalDate.of(2025, 6, 29),
-                        4,
-                        "コスパが高いと思います。");
-    }
-
-    @Test
-    void countReviews() {
-        int count = reviewMapper.countReviews(productId);
-        assertThat(count).isEqualTo(3);
-    }
-
     @Nested
-    class HasPurchased {
-        String userId = "550e8400-e29b-41d4-a716-446655440000";
-
+    class Query {
         @BeforeEach
         void setup() {
-            // ---------- arrange ----------
-            // 1) 注文ヘッダを先に作成
-            String orderId = UUID.randomUUID().toString();
-            Order order = new Order();
-            order.setOrderId(orderId);
-            order.setUserId(userId);
-            order.setName("山田 太郎");
-            order.setPostalCode("1500041");
-            order.setAddress("東京都渋谷区神南1-1-1");
-            order.setTotalQty(3);
-            order.setTotalPriceIncl(9600);
-            orderMapper.insertOrderHeader(order);
 
-            // 2) 明細リスト作成
-            OrderItem it1 = new OrderItem();
-            it1.setOrderId(orderId);
-            it1.setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
-            it1.setProductName("testA");
-            it1.setQty(1);
-            it1.setUnitPriceIncl(750);
-            it1.setSubtotalIncl(750);
+            factory.deleteReviewsByProductId(productId);
 
-            OrderItem it2 = new OrderItem();
-            it2.setOrderId(orderId);
-            it2.setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
-            it2.setProductName("testB");
-            it2.setQty(2);
-            it2.setUnitPriceIncl(3200);
-            it2.setSubtotalIncl(6400);
+            User user = new User();
+            user.setUserId("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"); // 36文字 UUID
+            user.setEmail("alice@example.com");
+            user.setPasswordHash("$2a$10$dummyHashForTests.............."); // テスト用
+            user.setLastName("テスト");
+            user.setFirstName("太郎");
+            user.setLastNameKana("テスト");
+            user.setFirstNameKana("タロウ");
+            user.setPostalCode("1000001");
+            user.setAddressPrefCity("東京都千代田区");
+            user.setAddressArea("千代田");
+            user.setAddressBlock("1-1-1");
+            user.setPhoneNumber("0312345678");
+            user.setBirthday(LocalDate.of(1990, 1, 1));
+            user.setGender("M");
+            user.setNickname("ali");
+            userMapper.insertUser(user);
 
-            List<OrderItem> items = List.of(it1, it2);
+            now = LocalDateTime.of(2025, 6, 29, 0, 0);
+            past = LocalDateTime.of(2025, 6, 10, 0, 0);
 
-            orderMapper.insertOrderItems(items);
-
+            factory.createReview(new Review() {
+                {
+                    setUserId("550e8400-e29b-41d4-a716-446655440000");
+                    setProductId(productId);
+                    setRating(5);
+                    setReviewText("とても良い商品です！");
+                    setStatus(ReviewStatus.APPROVED);
+                    setCreatedAt(now);
+                    setUpdatedAt(now);
+                }
+            });
+            factory.createReview(new Review() {
+                {
+                    setUserId("111e8400-e29b-41d4-a716-446655440111");
+                    setProductId(productId);
+                    setRating(4);
+                    setReviewText("コスパが高いと思います。");
+                    setStatus(ReviewStatus.APPROVED);
+                    setCreatedAt(now);
+                    setUpdatedAt(now);
+                }
+            });
+            factory.createReview(new Review() {
+                {
+                    setUserId("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+                    setProductId(productId);
+                    setRating(3);
+                    setStatus(ReviewStatus.APPROVED);
+                    setCreatedAt(past);
+                    setUpdatedAt(past);
+                }
+            });
         }
 
         @Test
-        void hasPurchased_yes() {
-            assertThat(reviewMapper.hasPurchased(userId, "1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68"))
-                    .isTrue();
+        void selectReviews() {
+            List<ReviewDto> reviews = reviewMapper
+                    .selectReviews(productId, 10, PaginationUtil.calculateOffset(1, 10));
+
+            assertThat(reviews).hasSize(3)
+                    .extracting(ReviewDto::getNickname)
+                    .containsExactly("sato", "yamarou", "ali");
+
+            assertThat(reviews.get(0))
+                    .extracting(ReviewDto::getNickname,
+                            r -> r.getCreatedDate(),
+                            ReviewDto::getRating,
+                            ReviewDto::getReviewText)
+                    .containsExactly(
+                            "sato",
+                            LocalDate.of(2025, 6, 29),
+                            4,
+                            "コスパが高いと思います。");
         }
 
         @Test
-        void hasPurchased_no() {
-            assertThat(reviewMapper.hasPurchased(userId, "4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07"))
-                    .isFalse();
+        void countReviews() {
+            int count = reviewMapper.countReviews(productId);
+            assertThat(count).isEqualTo(3);
         }
+
+        @Nested
+        class HasPurchased {
+            String userId = "550e8400-e29b-41d4-a716-446655440000";
+
+            @BeforeEach
+            void setup() {
+                // ---------- arrange ----------
+                // 1) 注文ヘッダを先に作成
+                String orderId = UUID.randomUUID().toString();
+                Order order = new Order();
+                order.setOrderId(orderId);
+                order.setUserId(userId);
+                order.setName("山田 太郎");
+                order.setPostalCode("1500041");
+                order.setAddress("東京都渋谷区神南1-1-1");
+                order.setTotalQty(3);
+                order.setTotalPriceIncl(9600);
+                orderMapper.insertOrderHeader(order);
+
+                // 2) 明細リスト作成
+                OrderItem it1 = new OrderItem();
+                it1.setOrderId(orderId);
+                it1.setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
+                it1.setProductName("testA");
+                it1.setQty(1);
+                it1.setUnitPriceIncl(750);
+                it1.setSubtotalIncl(750);
+
+                OrderItem it2 = new OrderItem();
+                it2.setOrderId(orderId);
+                it2.setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
+                it2.setProductName("testB");
+                it2.setQty(2);
+                it2.setUnitPriceIncl(3200);
+                it2.setSubtotalIncl(6400);
+
+                List<OrderItem> items = List.of(it1, it2);
+
+                orderMapper.insertOrderItems(items);
+
+            }
+
+            @Test
+            void hasPurchased_yes() {
+                assertThat(reviewMapper.hasPurchased(userId, "1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68"))
+                        .isTrue();
+            }
+
+            @Test
+            void hasPurchased_no() {
+                assertThat(reviewMapper.hasPurchased(userId, "4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07"))
+                        .isFalse();
+            }
+        }
+
     }
 
     @Nested
@@ -239,7 +240,6 @@ class ReviewMapperTest {
                     .body("new-body")
                     .build();
 
-
             int rows = reviewMapper.updateByEvent(p);
             assertThat(rows).isOne();
 
@@ -275,7 +275,6 @@ class ReviewMapperTest {
                     .rejectNote(note)
                     .build();
 
-
             int rows = reviewMapper.updateByEvent(p);
             assertThat(rows).isOne();
 
@@ -306,7 +305,6 @@ class ReviewMapperTest {
                     .fromStatus(ReviewStatus.PENDING)
                     .toStatus(ReviewStatus.APPROVED)
                     .build();
-
 
             int rows = reviewMapper.updateByEvent(p);
             assertThat(rows).isOne();
@@ -345,6 +343,63 @@ class ReviewMapperTest {
             int rows = reviewMapper.updateByEvent(p);
             assertThat(rows).isZero();
         }
+    }
+
+    @Test
+    void deleteRejected() {
+        factory.deleteReviewsByProductId(productId);
+        factory.deleteReviewsByProductId("97113c2c-719a-490c-9979-144d92905c33");
+        
+        // うるう年ではない日時
+        LocalDateTime fixed = LocalDateTime.of(2025, 6, 15, 12, 10, 8);
+        factory.freezeNow(fixed);
+        
+        Review r1 = new Review();
+        r1.setProductId(productId);
+        r1.setUserId("550e8400-e29b-41d4-a716-446655440000");
+        r1.setRating(5);
+        r1.setTitle("r1");
+        r1.setReviewText("r1-body");
+        r1.setStatus(ReviewStatus.APPROVED);
+        r1.setCreatedAt(fixed.minusDays(21));
+        r1.setUpdatedAt(fixed.minusDays(21));
+        factory.createReview(r1);
+        
+        Review r2 = new Review();
+        r2.setProductId(productId);
+        r2.setUserId("111e8400-e29b-41d4-a716-446655440111");
+        r2.setRating(5);
+        r2.setTitle("r2");
+        r2.setReviewText("r2-body");
+        r2.setStatus(ReviewStatus.REJECTED);
+        r2.setCreatedAt(fixed.minusMonths(12));
+        r2.setUpdatedAt(fixed.minusMonths(12));
+        factory.createReview(r2);
+        
+        Review r3 = new Review();
+        r3.setProductId("97113c2c-719a-490c-9979-144d92905c33");
+        r3.setUserId("111e8400-e29b-41d4-a716-446655440111");
+        r3.setRating(5);
+        r3.setTitle("r3");
+        r3.setReviewText("r3-body");
+        r3.setStatus(ReviewStatus.REJECTED);
+        r3.setCreatedAt(fixed.minusMonths(12).minusSeconds(1));
+        r3.setUpdatedAt(fixed.minusMonths(12).minusSeconds(1));
+        factory.createReview(r3);
+        
+        int rows = reviewMapper.deleteRejected();
+        assertThat(rows).isOne();
+        
+        Review ra1 = reviewMapper.selectByPrimaryKey(productId, "550e8400-e29b-41d4-a716-446655440000");
+        Review ra2 = reviewMapper.selectByPrimaryKey(productId, "111e8400-e29b-41d4-a716-446655440111");
+        Review ra3 = reviewMapper.selectByPrimaryKey("97113c2c-719a-490c-9979-144d92905c33",
+                "111e8400-e29b-41d4-a716-446655440111");
+        
+        assertThat(ra1).isNotNull();
+        assertThat(ra2).isNotNull();
+        assertThat(ra3).isNull();
+        
+        factory.unfreezeNow();
     }
 
 }

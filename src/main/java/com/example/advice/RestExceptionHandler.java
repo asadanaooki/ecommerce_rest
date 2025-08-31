@@ -3,6 +3,7 @@ package com.example.advice;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import jakarta.validation.ConstraintViolationException;
 
@@ -11,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.example.error.BusinessException;
 import com.example.error.FieldErrorInfo;
@@ -46,7 +48,6 @@ public class RestExceptionHandler {
             Map.entry("AssertTrue", 50));
 
     private static final Map<String, String> RULE_KEY_TO_FIELD = Map.ofEntries(
-            Map.entry("STOCK_GE_RESERVED", "stock_reserved_relation"),
             Map.entry("ACCEPT_TOS_REQUIRED", "acceptTos"),
             Map.entry("SHIPPING_REQUIRED_WHEN_GIFT", "shipping_group"),
             Map.entry("AVAILABLE_RANGE_VALID", "available_range"),
@@ -57,8 +58,7 @@ public class RestExceptionHandler {
             Map.entry("ITEMS_AND_DELETED_DISJOINT", "deleted_items"),
             Map.entry("PUBLISH_REQUIREMENTS", "publish_requirements"),
             Map.entry("PASSWORDS_MATCH", "confirmPassword"),
-            Map.entry("REJECT_NOTE_REQUIRED_WHEN_OTHER", "note")
-            );
+            Map.entry("REJECT_NOTE_REQUIRED_WHEN_OTHER", "note"));
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse> handleBusinessException(BusinessException e) {
@@ -68,9 +68,8 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse> handleConstraintViolationException(ConstraintViolationException e) {
-        Map<String, Slot> best = new LinkedHashMap<>();
 
-        e.getConstraintViolations().forEach(v -> {
+        Stream<ValidationErrorRaw> stream = e.getConstraintViolations().stream().map(v -> {
             String propPath = v.getPropertyPath().toString();
             String rawField = propPath.contains(".")
                     ? propPath.substring(propPath.lastIndexOf('.') + 1)
@@ -78,42 +77,33 @@ public class RestExceptionHandler {
 
             String ann = v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
             String code = "AssertTrue".equals(ann) ? v.getMessageTemplate() : ann;
-
-            String field = resolveField(rawField, ann, code);
-            int pr = PRIORITY.get(ann);
-
-            best.merge(field, new Slot(code, pr),
-                    (oldS, newS) -> newS.priority < oldS.priority ? newS : oldS);
+            return new ValidationErrorRaw(rawField, ann, code);
         });
-
-        List<FieldErrorInfo> errors = best.entrySet().stream()
-                .map(b -> new FieldErrorInfo(b.getKey(), b.getValue().code))
-                .toList();
-
-        return ResponseEntity.badRequest().body(new ApiResponse("VALIDATION_ERROR", errors));
+        return ResponseEntity.badRequest().body(new ApiResponse("VALIDATION_ERROR", fold(stream)));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        Map<String, Slot> best = new LinkedHashMap<>();
-
-        for (FieldError fe : e.getBindingResult().getFieldErrors()) {
-            String rawField = fe.getField();
+        Stream<ValidationErrorRaw> stream = e.getBindingResult().getFieldErrors().stream().map(fe -> {
             String ann = fe.getCode();
             String code = "AssertTrue".equals(ann) ? fe.getDefaultMessage() : ann;
+            return new ValidationErrorRaw(fe.getField(), ann, code);
+        });
+        return ResponseEntity.badRequest().body(new ApiResponse("VALIDATION_ERROR", fold(stream)));
+    }
 
-            String field = resolveField(rawField, ann, code);
-            int pr = PRIORITY.get(ann);
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ApiResponse> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
+        // TODO:
+        // errは現状FieldError型の前提
+        Stream<ValidationErrorRaw> stream = e.getAllErrors().stream().map(err -> {
+            FieldError fe = (FieldError) err;
+            String ann = fe.getCode();
+            String code = "AssertTrue".equals(ann) ? err.getDefaultMessage() : ann;
 
-            best.merge(field, new Slot(code, pr),
-                    (oldS, newS) -> newS.priority < oldS.priority ? newS : oldS);
-        }
-
-        List<FieldErrorInfo> errors = best.entrySet().stream()
-                .map(b -> new FieldErrorInfo(b.getKey(), b.getValue().code))
-                .toList();
-
-        return ResponseEntity.badRequest().body(new ApiResponse("VALIDATION_ERROR", errors));
+            return new ValidationErrorRaw(fe.getField(), ann, code);
+        });
+        return ResponseEntity.badRequest().body(new ApiResponse("VALIDATION_ERROR", fold(stream)));
     }
 
     private static String resolveField(String rawField, String ann, String code) {
@@ -121,6 +111,26 @@ public class RestExceptionHandler {
             return RULE_KEY_TO_FIELD.get(code);
         }
         return rawField;
+    }
+
+    private static List<FieldErrorInfo> fold(Stream<ValidationErrorRaw> raws) {
+        Map<String, Slot> best = new LinkedHashMap<>();
+        raws.forEach(r -> {
+            String field = resolveField(r.field, r.ann, r.code);
+            int pr = PRIORITY.get(r.ann);
+            best.merge(field, new Slot(r.code, pr),
+                    (oldS, newS) -> newS.priority < oldS.priority ? newS : oldS);
+        });
+        return best.entrySet().stream()
+                .map(b -> new FieldErrorInfo(b.getKey(), b.getValue().code))
+                .toList();
+    }
+
+    @AllArgsConstructor
+    private static final class ValidationErrorRaw {
+        private final String field;
+        private final String ann;
+        private final String code;
     }
 
     @AllArgsConstructor

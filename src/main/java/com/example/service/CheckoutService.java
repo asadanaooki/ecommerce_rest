@@ -35,7 +35,6 @@ import lombok.AllArgsConstructor;
 public class CheckoutService {
     /* TODO:
     ・販売ステータス定数を共通化したほうが良いかも。
-    ・価格計算、重複して書いてるが共通化したほうが良いのか？
     ・将来的に手動削除も検討。
     ・メールを Tx 内で送る長時間ロック。メールの誤送信など、購入とメール送信の整合性とるには？
     ・メールに商品画像ものせる。
@@ -154,9 +153,9 @@ public class CheckoutService {
         for (CheckoutItemDto it : items) {
             if (it.getStatus() == SaleStatus.UNPUBLISHED) {
                 it.setReason(CheckoutItemDto.DiffReason.DISCONTINUED);
-            } else if (it.getStock() == null || it.getStock() <= 0) {
+            } else if (it.getAvailable() <= 0) {
                 it.setReason(CheckoutItemDto.DiffReason.OUT_OF_STOCK);
-            } else if (it.getStock() < it.getQty()) {
+            } else if (it.getAvailable() < it.getQty()) {
                 it.setReason(CheckoutItemDto.DiffReason.LOW_STOCK);
             } else if (it.getCurrentUnitPriceExcl() != it.getUnitPriceExclAtAddToCart()) {
                 it.setReason(CheckoutItemDto.DiffReason.PRICE_CHANGED);
@@ -168,7 +167,7 @@ public class CheckoutService {
     private int finalizeOrder(String orderId, User user, CheckoutProcessDto ck) {
 
         /* ---------- 在庫減算 ---------- */
-        ck.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty()));
+        ck.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty(), null));
 
         /* ---------- 注文ヘッダ ---------- */
         Order order = new Order() {

@@ -213,8 +213,9 @@ public class TestDataFactory {
         StringBuilder marks = new StringBuilder();
         List<Object> params = new ArrayList<>();
 
-        cols.append("product_id, product_name, product_description, price_excl, stock, reserved, status");
-        marks.append("?, ?, ?, ?, ?, ?, ?");
+        // version を必須で追加
+        cols.append("product_id, product_name, product_description, price_excl, stock, reserved, status, version");
+        marks.append("?, ?, ?, ?, ?, ?, ?, ?");
         params.add(product.getProductId());
         params.add(product.getProductName());
         params.add(product.getProductDescription());
@@ -222,6 +223,7 @@ public class TestDataFactory {
         params.add(product.getStock());
         params.add(product.getReserved());
         params.add(product.getStatus().name());
+        params.add(product.getVersion()); // ← 新規追加
 
         if (product.getSku() > 0) {
             cols.append(", sku");

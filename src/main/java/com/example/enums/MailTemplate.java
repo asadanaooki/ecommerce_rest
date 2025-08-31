@@ -404,7 +404,7 @@ public enum MailTemplate {
 
                     %s
 
-                    再投稿される場合は、内容を修正のうえ送信してください。
+                    再投稿される場合は、お手数ですが内容を修正のうえ送信してください。
                     """) {
         @Override
         public EmailMessage build(Object... args) {

@@ -25,4 +25,7 @@ public interface ReviewMapper {
     int updateByEvent(ReviewUpdateParam p);
     
     Review selectByPrimaryKey(String productId, String userId);
+    
+    
+    int deleteRejected();
 }

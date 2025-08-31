@@ -25,6 +25,6 @@ public class RejectReviewRequest {
         if (reason != RejectReason.OTHER) {
             return true;
         }
-        return note != null && !note.isBlank();
+        return note != null && !note.isEmpty();
     }
 }

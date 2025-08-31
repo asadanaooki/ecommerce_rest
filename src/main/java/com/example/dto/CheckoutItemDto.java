@@ -2,7 +2,6 @@ package com.example.dto;
 
 import com.example.enums.SaleStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Data;
 
@@ -33,11 +32,9 @@ public class CheckoutItemDto {
     private SaleStatus status;
     //    
     /* ---------- 在庫系 ---------- */
-    @JsonIgnore
-    private Integer stock;
+    private int available;
     
     /* ---------- 確認理由 ---------- */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private DiffReason reason;
     
     

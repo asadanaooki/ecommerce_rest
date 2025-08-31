@@ -14,7 +14,7 @@
       ci.unit_price_excl  AS unit_price_excl_at_add_to_cart,
       v.price_incl        AS unit_price_incl,
       (v.price_incl * ci.qty) AS subtotal_incl,
-      v.stock,
+      v.available,
       v.status
     FROM cart_item ci
     JOIN vw_product_core v ON v.product_id = ci.product_id

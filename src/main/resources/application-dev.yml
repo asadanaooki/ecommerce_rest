@@ -53,7 +53,10 @@ settings:
     inventory:
       size: 2
       low-stock-threshold: 10
-      
+
+  # バッチ系
   batch:
     cart:
+      cron: "0 0 3 * * *"
+    review:
       cron: "0 0 3 * * *"

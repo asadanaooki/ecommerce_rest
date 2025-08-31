@@ -88,16 +88,10 @@
            stock,
            reserved,
            available,
-           updated_at
+           updated_at,
+           version
     FROM vw_product_core
     WHERE product_id = #{productId}
   </select>
-  
-  <update id="updateInventory">
-    update product
-    set stock = #{req.stock},
-        reserved = #{req.reserved}
-    where product_id = #{productId}
-  </update>
 
 </mapper>
