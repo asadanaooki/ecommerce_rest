@@ -19,6 +19,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.MailTemplate.OrderConfirmationContext;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
@@ -142,7 +143,13 @@ public class CheckoutService {
 
         // TODO:メール送信 仮実装
         // 管理者にも通知する
-        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, ck, orderNumber));
+        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(
+                new OrderConfirmationContext(
+                        user.getEmail(),
+                        UserUtil.buildFullName(user),
+                        UserUtil.buildFullAddress(user),
+                        orderNumber,
+                        ck.getItems())));
     }
 
     /**

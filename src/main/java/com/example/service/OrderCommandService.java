@@ -73,9 +73,8 @@ public class OrderCommandService {
                 .build(new MailTemplate.CancelApprovedContext(
                         u.getEmail(),
                         o.getName(),
-                        OrderUtil.formatOrderNumber(o.getOrderNumber()),
-                        items,
-                        o.getGrandTotalIncl())));
+                        o.getOrderNumber(),
+                        items)));
     }
     
     @Transactional
@@ -92,17 +91,15 @@ public class OrderCommandService {
                             u.getEmail(),
                             o.getName(),
                             o.getAddress(),
-                            OrderUtil.formatOrderNumber(o.getOrderNumber()),
-                            items,
-                            o.getGrandTotalIncl())));
+                            o.getOrderNumber(),
+                            items)));
         } else if (cur.getOrder() == OrderStatus.CANCEL_REQUESTED) {
             gateway.send(MailTemplate.SHIPPED_AND_CANCEL_REJECTED.build(
                     new MailTemplate.CancelRejectedContext(
                             u.getEmail(),
                            o.getName(),
-                            OrderUtil.formatOrderNumber(o.getOrderNumber()),
-                            items,
-                            o.getGrandTotalIncl())));
+                            o.getOrderNumber(),
+                            items)));
         }
     }
     
