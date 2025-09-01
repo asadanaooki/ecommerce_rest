@@ -4,9 +4,10 @@ import java.time.LocalDateTime;
 
 import com.example.enums.StockStatus;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
 public class AdminInventoryDetailDto {
 
     private String productId;
@@ -23,6 +24,7 @@ public class AdminInventoryDetailDto {
     
     private int available;
     
+    @Setter
     private StockStatus stockStatus;
     
     private LocalDateTime updatedAt;

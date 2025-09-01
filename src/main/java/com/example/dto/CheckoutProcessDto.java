@@ -2,9 +2,11 @@ package com.example.dto;
 
 import java.util.List;
 
-import lombok.Data;
+import com.example.util.OrderUtil;
 
-@Data
+import lombok.Getter;
+
+@Getter
 public class CheckoutProcessDto {
 
     private String fullName;
@@ -17,8 +19,12 @@ public class CheckoutProcessDto {
 
     private int totalQty;
 
-    private int totalPriceIncl;
-    
+    private int itemsSubtotalIncl;
+
+    private int shippingFeeIncl;
+
+    private int grandTotalIncl;
+
     
     public CheckoutProcessDto(
             String fullName,
@@ -28,14 +34,13 @@ public class CheckoutProcessDto {
         this.fullName = fullName;
         this.postalCode = postalCode;
         this.fullAddress = fullAddress;
-        
+
         this.items = items;
-        this.totalQty = this.items.stream()
-                .mapToInt(CheckoutItemDto::getQty)
-                .sum();
-        this.totalPriceIncl = this.items.stream()
-                .mapToInt(CheckoutItemDto::getSubtotalIncl)
-                .sum();
+        this.totalQty = OrderUtil.sumBy(items, CheckoutItemDto::getQty);
+        this.itemsSubtotalIncl = OrderUtil.sumBy(items, CheckoutItemDto::getSubtotalIncl);
+        this.shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(itemsSubtotalIncl);
+        this.grandTotalIncl = OrderUtil
+                .calculateGrandTotalIncl(itemsSubtotalIncl, shippingFeeIncl);
     }
 
 }

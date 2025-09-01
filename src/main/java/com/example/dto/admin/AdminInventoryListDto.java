@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class AdminInventoryListDto {
 
-    private List<AdminInventoryDto> content;
+    private List<AdminInventoryRowDto> content;
     
     private int  total;
     

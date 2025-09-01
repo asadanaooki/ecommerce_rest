@@ -5,10 +5,10 @@ import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
 @AllArgsConstructor
-@Data
+@Getter
 public class OrderState {
 
     private final OrderStatus order;

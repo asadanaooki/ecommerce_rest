@@ -24,6 +24,8 @@ public class OrderHistoryDto {
     private List<OrderItemDto> items;
 
     /* ---------- 金額・状態 ---------- */
-    private int totalPriceIncl;
+    private int itemsSubtotalIncl;
+    private int shippingFeeIncl;
+    private int grandTotalIncl;
     private OrderStatus orderStatus;
 }

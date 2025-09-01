@@ -5,11 +5,11 @@ import java.util.List;
 import com.example.enums.SaleStatus;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-@Data
+@Getter
 public class FavoritePageDto {
 
     private final List<FavoriteRow> items;
@@ -20,7 +20,7 @@ public class FavoritePageDto {
 
     @AllArgsConstructor
     @NoArgsConstructor
-    @Data
+    @Getter
     public static class FavoriteRow {
         private String productId;
 

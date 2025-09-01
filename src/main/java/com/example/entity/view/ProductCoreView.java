@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 
 import com.example.enums.SaleStatus;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class ProductCoreView {
 
 private String productId;

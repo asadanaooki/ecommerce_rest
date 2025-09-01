@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,9 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.dto.admin.AdminOrderDetailDto;
-import com.example.dto.admin.AdminOrderDetailItemDto;
-import com.example.dto.admin.AdminOrderDto;
 import com.example.dto.admin.AdminOrderListDto;
+import com.example.dto.admin.AdminOrderRowDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
@@ -24,11 +22,14 @@ import com.example.enums.MailTemplate;
 import com.example.enums.MailTemplate.OrderEditCompletedContext;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
+import com.example.mapper.OrderMapper;
+import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
 import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.support.MailGateway;
+import com.example.util.OrderUtil;
 import com.example.util.PaginationUtil;
 import com.example.util.UserUtil;
 
@@ -50,7 +51,11 @@ public class AdminOrderService {
 
     private final AdminOrderMapper adminOrderMapper;
 
+    private final OrderMapper orderMapper;
+
     private final UserMapper userMapper;
+
+    private final ProductMapper productMapper;
 
     @Value("${settings.admin.order.size}")
     private int pageSize;
@@ -60,7 +65,7 @@ public class AdminOrderService {
     public AdminOrderListDto search(OrderSearchRequest req) {
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
 
-        List<AdminOrderDto> content = adminOrderMapper.selectPage(req, pageSize, offset);
+        List<AdminOrderRowDto> content = adminOrderMapper.selectPage(req, pageSize, offset);
         int total = adminOrderMapper.count(req);
 
         return new AdminOrderListDto(content, total, pageSize);
@@ -69,40 +74,37 @@ public class AdminOrderService {
     public AdminOrderDetailDto findDetail(String orderId) {
         // 既にDBには税込み価格が入ってるため、変換不要
         // checkout時、税込みで保存してるため
-        AdminOrderDetailDto dto = adminOrderMapper.selectOrderHeader(orderId);
-        if (dto == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        List<AdminOrderDetailItemDto> items = adminOrderMapper.selectOrderItems(orderId);
-        dto.setItems(items);
-
-        return dto;
+        return adminOrderMapper.selectOrderDetail(orderId);
     }
 
     @Transactional
     public void editOrder(String orderId, OrderEditRequest req) {
         // 準備
-        Order o = adminOrderMapper.selectOrderForUpdate(orderId);
+        Order o = orderMapper.selectOrderByPrimaryKey(orderId);
         EditContext ctx = prepareContext(o, req);
 
         // 処理
         processQtyReduction(ctx);
         processDeletion(ctx);
-        adminOrderMapper.updateTotals(orderId);
+        
+        List<OrderItem> items = orderMapper.selectOrderItems(orderId);
+        int itemsSubtotalIncl = OrderUtil.sumBy(items, OrderItem::getSubtotalIncl);
+        orderMapper.updateTotals(
+                orderId,
+                itemsSubtotalIncl,
+                        OrderUtil.calculateShippingFeeIncl(itemsSubtotalIncl));
 
         // メール送信
-        List<OrderItem> items = adminOrderMapper.selectOrderItemsForUpdate(orderId);
+        List<OrderItem> updatedItems = orderMapper.selectOrderItems(orderId);
         User user = userMapper.selectUserByPrimaryKey(o.getUserId());
-        
+
         mailGateway.send(MailTemplate.ORDER_EDIT_COMPLETED.build(
                 new OrderEditCompletedContext(
                         user.getEmail(),
                         UserUtil.buildFullName(user),
                         UserUtil.buildFullAddress(user),
                         o.getOrderNumber(),
-                        items,
-                        items.stream().mapToInt(OrderItem::getSubtotalIncl).sum()
-                        )));
+                        updatedItems)));
     }
 
     private EditContext prepareContext(Order order, OrderEditRequest req) {
@@ -112,33 +114,33 @@ public class AdminOrderService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "STATUS_NOT_EDITABLE");
         }
 
-        Map<String, OrderItem> oldm = adminOrderMapper.selectOrderItemsForUpdate(order.getOrderId()).stream()
+        Map<String, OrderItem> oldm = orderMapper.selectOrderItems(order.getOrderId()).stream()
                 .collect(Collectors.toMap(OrderItem::getProductId, Function.identity()));
 
         Map<String, Integer> newm = req.getItems();
         List<String> deleteIds = req.getDeleted();
 
-        adminOrderMapper.selectProductsForUpdate(
-                Stream.concat(newm.keySet().stream(), deleteIds.stream()).toList());
-
         return new EditContext(order.getOrderId(), oldm, newm, deleteIds);
     }
 
     private void processQtyReduction(EditContext ctx) {
+        // TODO:
+        // newQty = old.getQtyのときも例外出す
+
         for (Entry<String, Integer> e : ctx.newm().entrySet()) {
             String productId = e.getKey();
             int newQty = e.getValue();
             OrderItem old = ctx.oldm.get(productId);
 
-            if (newQty < old.getQty()) {
-                adminOrderMapper.addStock(productId, old.getQty() - newQty);
-                old.setQty(newQty);
-                old.setSubtotalIncl(old.getUnitPriceIncl() * newQty);
-                adminOrderMapper.updateItemQty(old);
-
-            } else if (newQty > old.getQty()) {
+            if (newQty > old.getQty()) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "QUANTITY_INCREASE_NOT_ALLOWED");
             }
+            if (newQty == old.getQty()) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            productMapper.increaseStock(productId, old.getQty() - newQty, null);
+            old.setQty(newQty);
+            orderMapper.updateItemQty(old);
         }
     }
 
@@ -146,8 +148,8 @@ public class AdminOrderService {
         for (String pid : ctx.deleteIds()) {
             OrderItem old = ctx.oldm().get(pid);
 
-            adminOrderMapper.addStock(pid, old.getQty());
-            adminOrderMapper.deleteOrderItem(ctx.orderId(), pid);
+            productMapper.increaseStock(pid, old.getQty(), null);
+            orderMapper.deleteOrderItem(ctx.orderId(), pid);
         }
     }
 

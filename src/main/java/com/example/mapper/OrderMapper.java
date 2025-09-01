@@ -19,24 +19,29 @@ public interface OrderMapper {
 
     // SELECT
     List<CheckoutItemDto> selectCheckoutItems(String cartId);
-    
+
     Order selectOrderByPrimaryKey(String orderId);
-    
+
     List<Order> selectOrdersByUserId(String userId);
-    
+
     List<OrderItem> selectOrderItems(String orderId);
 
     // INSERT
     int insertOrderHeader(Order header);
-    
+
     int insertOrderItems(List<OrderItem> items);
 
     // UPDATE
     int applyTransition(String orderId, OrderState expected, OrderState next);
-    
+
     int restoreInventory(String orderId);
 
-    // DELETE（コメントアウト）
+    int updateItemQty(OrderItem item);
+
+    int updateTotals(String orderId, int itemsSubtotalIncl, int shippingFeeIncl);
+
+    // DELETE
+    int deleteOrderItem(String orderId, String productId);
     // int deleteRemovedItems(String cartId, List<String> productIds);
 
     // コメントアウト中の追加セレクト

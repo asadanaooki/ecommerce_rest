@@ -16,7 +16,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
-import com.example.dto.admin.AdminInventoryDto;
+import com.example.dto.admin.AdminInventoryRowDto;
 import com.example.entity.Product;
 import com.example.enums.InventorySortField;
 import com.example.enums.SaleStatus;
@@ -104,9 +104,9 @@ class AdminInventoryMapperTest {
     @ParameterizedTest
     @MethodSource("provideArguments")
     void search(InventorySearchRequest req, List<String> expected) {
-        List<AdminInventoryDto> list = adminInventoryMapper.search(req, THRESHOLD, 100, 0);
+        List<AdminInventoryRowDto> list = adminInventoryMapper.search(req, THRESHOLD, 100, 0);
 
-        assertThat(list).extracting(AdminInventoryDto::getProductId)
+        assertThat(list).extracting(AdminInventoryRowDto::getProductId)
                 .containsExactlyInAnyOrderElementsOf(expected);
 
     }

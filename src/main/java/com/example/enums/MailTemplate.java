@@ -8,12 +8,13 @@ import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 import com.example.dto.CheckoutItemDto;
-import com.example.dto.CheckoutProcessDto;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.order.RejectReason;
 import com.example.util.OrderUtil;
+import com.example.util.UserUtil;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
@@ -30,16 +31,13 @@ public enum MailTemplate {
                     無効となった際は再度会員登録のページよりお進みください
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            String to    = (String) args[0];
-            String link  = (String) args[1];
-            Long ttlMin  = (Long)   args[2];
-
+        public EmailMessage build(MailContext ctx) {
+            RegistrationContext c = (RegistrationContext) ctx; // 対応 Context にキャスト
             String body = getBody().formatted(
-                    link,
-                    ttlMin
+                    c.getLink(),
+                    c.getTtlMinutes()
             );
-            return new EmailMessage(to, getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -59,31 +57,32 @@ public enum MailTemplate {
                     %s
 
                     --- 合計欄 ---
-                    合計金額 : ¥%,d
+                    商品小計 : ¥%,d
+                    送料     : ¥%,d
+                    お支払合計 : ¥%,d
 
                     ※本メールは自動送信です。ご不明点がございましたらお問い合わせフォームよりご連絡ください。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            User user               = (User) args[0];
-            CheckoutProcessDto ck   = (CheckoutProcessDto) args[1];
-            int orderNumber         = (int) args[2];
-
+        public EmailMessage build(MailContext ctx) {
+            OrderConfirmationContext c = (OrderConfirmationContext) ctx;
             String body = getBody().formatted(
-                    ck.getFullName(),
-                    ck.getFullName(),
-                    ck.getFullAddress(),
-                    OrderUtil.formatOrderNumber(orderNumber),
+                    c.getFullName(),
+                    c.getFullName(),
+                    c.getFullAddress(),
+                    c.getOrderNumber(),
                     createItemsBlock(
-                            ck.getItems(),
+                            c.getItems(),
                             CheckoutItemDto::getProductName,
                             CheckoutItemDto::getQty,
                             CheckoutItemDto::getUnitPriceIncl,
                             CheckoutItemDto::getSubtotalIncl
                     ),
-                    ck.getTotalPriceIncl()
+                    c.getItemsSubtotalIncl(),
+                    c.getShippingFeeIncl(),
+                    c.getGrandTotalIncl()
             );
-            return new EmailMessage(user.getEmail(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -98,16 +97,13 @@ public enum MailTemplate {
                     無効となった際は再度パスワード再設定のページよりお進みください
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            String to    = (String) args[0];
-            String link  = (String) args[1];
-            long ttlMin  = (Long)   args[2];
-
+        public EmailMessage build(MailContext ctx) {
+            PasswordResetContext c = (PasswordResetContext) ctx;
             String body = getBody().formatted(
-                    link,
-                    ttlMin
+                    c.getLink(),
+                    c.getTtlMinutes()
             );
-            return new EmailMessage(to, getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -121,16 +117,13 @@ public enum MailTemplate {
                      %d 分で無効になります。心当たりがない場合はこのメールを破棄してください。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            String to   = (String) args[0];
-            String link = (String) args[1];
-            long ttl    = (Long)   args[2];
-
+        public EmailMessage build(MailContext ctx) {
+            EmailChangeCompleteNewContext c = (EmailChangeCompleteNewContext) ctx;
             String body = getBody().formatted(
-                    link,
-                    ttl
+                    c.getLink(),
+                    c.getTtlMinutes()
             );
-            return new EmailMessage(to, getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -144,14 +137,12 @@ public enum MailTemplate {
                      心当たりがない場合は至急サポートまでご連絡ください。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            String to           = (String) args[0];
-            LocalDateTime when  = (LocalDateTime) args[1];
-
+        public EmailMessage build(MailContext ctx) {
+            EmailChangeAlertOldContext c = (EmailChangeAlertOldContext) ctx;
             String body = getBody().formatted(
-                    when.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH時mm分"))
+                    c.getWhen().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH時mm分"))
             );
-            return new EmailMessage(to, getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -165,14 +156,12 @@ public enum MailTemplate {
                      心当たりがない場合は至急サポートまでご連絡ください。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            String to           = (String) args[0];
-            LocalDateTime when  = (LocalDateTime) args[1];
-
+        public EmailMessage build(MailContext ctx) {
+            ProfileChangedContext c = (ProfileChangedContext) ctx;
             String body = getBody().formatted(
-                    when.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH時mm分"))
+                    c.getWhen().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH時mm分"))
             );
-            return new EmailMessage(to, getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -192,27 +181,30 @@ public enum MailTemplate {
                      %s
 
                     --- 合計欄 ---
-                    変更後合計金額 : ¥%,d
+                    商品小計 : ¥%,d
+                    送料     : ¥%,d
+                    お支払合計 : ¥%,d
                         """) {
         @Override
-        public EmailMessage build(Object... args) {
-            OrderEditCompletedContext ctx = (OrderEditCompletedContext) args[0];
-
+        public EmailMessage build(MailContext ctx) {
+            OrderEditCompletedContext c = (OrderEditCompletedContext) ctx;
             String body = getBody().formatted(
-                    ctx.fullName(),
-                    ctx.fullName(),
-                    ctx.fullAddress(),
-                    ctx.orderNumber(),
+                    c.getFullName(),
+                    c.getFullName(),
+                    c.getFullAddress(),
+                    c.getOrderNumber(),
                     createItemsBlock(
-                            ctx.items(),
+                            c.getItems(),
                             OrderItem::getProductName,
                             OrderItem::getQty,
                             OrderItem::getUnitPriceIncl,
                             OrderItem::getSubtotalIncl
                     ),
-                    ctx.totalIncl()
+                    c.getItemsSubtotalIncl(),
+                    c.getShippingFeeIncl(),
+                    c.getGrandTotalIncl()
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -229,18 +221,17 @@ public enum MailTemplate {
                           %s
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            InquiryContext ctx = (InquiryContext) args[0];
-
+        public EmailMessage build(MailContext ctx) {
+            InquiryContext c = (InquiryContext) ctx;
             String body = getBody().formatted(
-                    ctx.lastName(),
-                    ctx.firstName(),
-                    ctx.email(),
-                    ctx.phoneNumber(),
-                    ctx.orderNumber(),
-                    ctx.message()
+                    c.getLastName(),
+                    c.getFirstName(),
+                    c.getEmail(),
+                    c.getPhoneNumber(),
+                    c.getOrderNumber(),
+                    c.getMessage()
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -260,17 +251,16 @@ public enum MailTemplate {
                         ※本メールは自動送信です。心当たりがない場合は破棄してください。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            InquiryContext ctx = (InquiryContext) args[0];
-
+        public EmailMessage build(MailContext ctx) {
+            InquiryContext c = (InquiryContext) ctx;
             String body = getBody().formatted(
-                    ctx.lastName(),
-                    ctx.firstName(),
-                    ctx.email(),
-                    ctx.phoneNumber(),
-                    ctx.orderNumber()
+                    c.getLastName(),
+                    c.getFirstName(),
+                    c.getEmail(),
+                    c.getPhoneNumber(),
+                    c.getOrderNumber()
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -292,26 +282,29 @@ public enum MailTemplate {
                     %s
 
                     --- 合計欄 ---
-                    合計金額 : ¥%,d
+                    商品小計 : ¥%,d
+                    送料     : ¥%,d
+                    お支払合計 : ¥%,d
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            ShipmentContext ctx = (ShipmentContext) args[0];
-
+        public EmailMessage build(MailContext ctx) {
+            ShipmentContext c = (ShipmentContext) ctx;
             String body = getBody().formatted(
-                    ctx.fullName(),
-                    ctx.orderNumber(),
-                    ctx.fullAddress(),
+                    c.getFullName(),
+                    c.getOrderNumber(),
+                    c.getFullAddress(),
                     createItemsBlock(
-                            ctx.items(),
+                            c.getItems(),
                             OrderItem::getProductName,
                             OrderItem::getQty,
                             OrderItem::getUnitPriceIncl,
                             OrderItem::getSubtotalIncl
                     ),
-                    ctx.totalIncl()
+                    c.getItemsSubtotalIncl(),
+                    c.getShippingFeeIncl(),
+                    c.getGrandTotalIncl()
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -329,27 +322,30 @@ public enum MailTemplate {
                     %s
 
                     --- 合計欄 ---
-                    合計金額 : ¥%,d
+                    商品小計 : ¥%,d
+                    送料     : ¥%,d
+                    お支払合計 : ¥%,d
 
                     またのご利用をお待ちしております。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            CancelApprovedContext ctx = (CancelApprovedContext) args[0];
-
+        public EmailMessage build(MailContext ctx) {
+            CancelApprovedContext c = (CancelApprovedContext) ctx;
             String body = getBody().formatted(
-                    ctx.fullName(),
-                    ctx.orderNumber(),
+                    c.getFullName(),
+                    c.getOrderNumber(),
                     createItemsBlock(
-                            ctx.items(),
+                            c.getItems(),
                             OrderItem::getProductName,
                             OrderItem::getQty,
                             OrderItem::getUnitPriceIncl,
                             OrderItem::getSubtotalIncl
                     ),
-                    ctx.totalIncl()
+                    c.getItemsSubtotalIncl(),
+                    c.getShippingFeeIncl(),
+                    c.getGrandTotalIncl()
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
 
@@ -368,27 +364,30 @@ public enum MailTemplate {
                     %s
 
                     --- 合計欄 ---
-                    合計金額 : ¥%,d
+                    商品小計 : ¥%,d
+                    送料     : ¥%,d
+                    お支払合計 : ¥%,d
 
                     商品到着後の返品手続きについては別途ご案内いたします。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            CancelRejectedContext ctx = (CancelRejectedContext) args[0];
-
+        public EmailMessage build(MailContext ctx) {
+            CancelRejectedContext c = (CancelRejectedContext) ctx;
             String body = getBody().formatted(
-                    ctx.fullName(),
-                    ctx.orderNumber(),
+                    c.getFullName(),
+                    c.getOrderNumber(),
                     createItemsBlock(
-                            ctx.items(),
+                            c.getItems(),
                             OrderItem::getProductName,
                             OrderItem::getQty,
                             OrderItem::getUnitPriceIncl,
                             OrderItem::getSubtotalIncl
                     ),
-                    ctx.totalIncl()
+                    c.getItemsSubtotalIncl(),
+                    c.getShippingFeeIncl(),
+                    c.getGrandTotalIncl()
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
     
@@ -407,162 +406,258 @@ public enum MailTemplate {
                     再投稿される場合は、お手数ですが内容を修正のうえ送信してください。
                     """) {
         @Override
-        public EmailMessage build(Object... args) {
-            ReviewRejectedContext ctx = (ReviewRejectedContext) args[0];
-            String noteBlock = ctx.note() == null ? ""
+        public EmailMessage build(MailContext ctx) {
+            ReviewRejectedContext c = (ReviewRejectedContext) ctx;
+            String noteBlock = (c.getNote() == null || c.getNote().isBlank()) ? ""
                     : """
                         【備考】
                         %s
                         
-                      """.formatted(ctx.note());
+                      """.formatted(c.getNote());
 
             String body = getBody().formatted(
-                    ctx.fullName(),
-                    ctx.reason().getMessage(),
+                    c.getFullName(),
+                    c.getReason().getMessage(),
                     noteBlock
             );
-            return new EmailMessage(ctx.to(), getSubject(), body);
+            return new EmailMessage(c.getTo(), getSubject(), body);
         }
     };
 
     private final String subject;
     private final String body;
 
-    private MailTemplate(String subject, String body) {
+    MailTemplate(String subject, String body) {
         this.subject = subject;
         this.body = body;
     }
 
-    public abstract EmailMessage build(Object... args);
+    public abstract EmailMessage build(MailContext ctx);
 
-    public record EmailMessage(String to, String subject, String body) {}
+    // ===================== 共通 DTO =====================
+    @Getter
+    @AllArgsConstructor
+    public static class EmailMessage {
+        private final String to;
+        private final String subject;
+        private final String body;
+    }
 
-    public record OrderEditCompletedContext(
-            String to,
-            String fullName,
-            String fullAddress,
-            String orderNumber,
-            List<OrderItem> items,
-            int totalIncl
-    ) {
-        public OrderEditCompletedContext(
-                String to,
-                String fullName,
-                String fullAddress,
-                int orderNumber,
-                List<OrderItem> items,
-                int totalIncl
-        ) {
-            this(
-                    to,
-                    fullName,
-                    fullAddress,
-                    OrderUtil.formatOrderNumber(orderNumber),
-                    items,
-                    totalIncl
-            );
+    // ===================== Context 型 =====================
+
+    /** マーカー */
+    public interface MailContext {}
+
+    // --- 1) 合計計算なし（@AllArgsConstructor） ---
+
+    @Getter @AllArgsConstructor
+    public static class RegistrationContext implements MailContext {
+        private final String to;
+        private final String link;
+        private final long ttlMinutes;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class PasswordResetContext implements MailContext {
+        private final String to;
+        private final String link;
+        private final long ttlMinutes;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class EmailChangeCompleteNewContext implements MailContext {
+        private final String to;
+        private final String link;
+        private final long ttlMinutes;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class EmailChangeAlertOldContext implements MailContext {
+        private final String to;
+        private final LocalDateTime when;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class ProfileChangedContext implements MailContext {
+        private final String to;
+        private final LocalDateTime when;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class InquiryContext implements MailContext {
+        private final String to;
+        private final String lastName;
+        private final String firstName;
+        private final String email;
+        private final String phoneNumber;
+        private final String orderNumber; // 文字列（フォーマット済みを想定）
+        private final String message;
+
+        /** 便宜：数値注文番号を渡された時のフォーマット付きコンストラクタ */
+        public InquiryContext(String to, String lastName, String firstName, String email,
+                              String phoneNumber, Integer orderNumber, String message) {
+            this(to, lastName, firstName, email, phoneNumber,
+                    orderNumber == null ? "" : OrderUtil.formatOrderNumber(orderNumber), message);
         }
     }
 
-    public record InquiryContext(
-            String to,
-            String lastName,
-            String firstName,
-            String email,
-            String phoneNumber,
-            String orderNumber,
-            String message
-    ) {
-        public InquiryContext {
-            orderNumber = orderNumber == null ? ""
-                    : OrderUtil.formatOrderNumber(Integer.parseInt(orderNumber));
+    @Getter @AllArgsConstructor
+    public static class ReviewRejectedContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final RejectReason reason;
+        private final String note;
+    }
+
+    // --- 2) 合計計算あり（items から合計を内製） ---
+
+    @Getter
+    public static class OrderConfirmationContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final String fullAddress;
+        private final String orderNumber; // フォーマット済
+        private final List<CheckoutItemDto> items;
+
+        private final int itemsSubtotalIncl;
+        private final int shippingFeeIncl;
+        private final int grandTotalIncl;
+
+        public OrderConfirmationContext(User user, int orderNumber,
+                List<CheckoutItemDto> items) {
+            this.to = user.getEmail();
+            this.fullName = UserUtil.buildFullName(user);
+            this.fullAddress = UserUtil.buildFullAddress(user);
+            this.orderNumber = OrderUtil.formatOrderNumber(orderNumber);
+            this.items = items;
+
+            int subtotalIncl = OrderUtil.sumBy(items, CheckoutItemDto::getSubtotalIncl);
+            int shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(subtotalIncl);
+            int grandTotalIncl = OrderUtil.calculateGrandTotalIncl(subtotalIncl, shippingFeeIncl);
+
+            this.itemsSubtotalIncl = subtotalIncl;
+            this.shippingFeeIncl = shippingFeeIncl;
+            this.grandTotalIncl = grandTotalIncl;
         }
     }
 
-    public record ShipmentContext(
-            String to,
-            String fullName,
-            String fullAddress,
-            String orderNumber,
-            List<OrderItem> items,
-            int totalIncl
-    ) {
-        public ShipmentContext(
-                String to,
-                String fullName,
-                String fullAddress,
-                int orderNumber,
-                List<OrderItem> items,
-                int totalIncl
-        ) {
-            this(
-                    to,
-                    fullName,
-                    fullAddress,
-                    OrderUtil.formatOrderNumber(orderNumber),
-                    items,
-                    totalIncl
-            );
+    @Getter
+    public static class OrderEditCompletedContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final String fullAddress;
+        private final String orderNumber; // フォーマット済
+        private final List<OrderItem> items;
+
+        private final int itemsSubtotalIncl;
+        private final int shippingFeeIncl;
+        private final int grandTotalIncl;
+
+        public OrderEditCompletedContext(String to, String fullName, String fullAddress,
+                                         int orderNumber, List<OrderItem> items) {
+            this.to = to;
+            this.fullName = fullName;
+            this.fullAddress = fullAddress;
+            this.orderNumber = OrderUtil.formatOrderNumber(orderNumber);
+            this.items = items;
+
+            int subtotalIncl = OrderUtil.sumBy(items, OrderItem::getSubtotalIncl);
+            int shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(subtotalIncl);
+            int grandTotalIncl = OrderUtil.calculateGrandTotalIncl(subtotalIncl, shippingFeeIncl);
+
+            this.itemsSubtotalIncl = subtotalIncl;
+            this.shippingFeeIncl = shippingFeeIncl;
+            this.grandTotalIncl = grandTotalIncl;
         }
     }
 
-    public record CancelApprovedContext(
-            String to,
-            String fullName,
-            String orderNumber,
-            List<OrderItem> items,
-            int totalIncl
-    ) {
-        public CancelApprovedContext(
-                String to,
-                String fullName,
-                int orderNumber,
-                List<OrderItem> items,
-                int totalIncl
-        ) {
-            this(
-                    to,
-                    fullName,
-                    OrderUtil.formatOrderNumber(orderNumber),
-                    items,
-                    totalIncl
-            );
+    @Getter
+    public static class ShipmentContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final String fullAddress;
+        private final String orderNumber; // フォーマット済
+        private final List<OrderItem> items;
+
+        private final int itemsSubtotalIncl;
+        private final int shippingFeeIncl;
+        private final int grandTotalIncl;
+
+        public ShipmentContext(String to, String fullName, String fullAddress,
+                               int orderNumber, List<OrderItem> items) {
+            this.to = to;
+            this.fullName = fullName;
+            this.fullAddress = fullAddress;
+            this.orderNumber = OrderUtil.formatOrderNumber(orderNumber);
+            this.items = items;
+
+            int subtotalIncl = OrderUtil.sumBy(items, OrderItem::getSubtotalIncl);
+            int shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(subtotalIncl);
+            int grandTotalIncl = OrderUtil.calculateGrandTotalIncl(subtotalIncl, shippingFeeIncl);
+
+            this.itemsSubtotalIncl = subtotalIncl;
+            this.shippingFeeIncl = shippingFeeIncl;
+            this.grandTotalIncl = grandTotalIncl;
         }
     }
 
-    public record CancelRejectedContext(
-            String to,
-            String fullName,
-            String orderNumber,
-            List<OrderItem> items,
-            int totalIncl
-    ) {
-        public CancelRejectedContext(
-                String to,
-                String fullName,
-                int orderNumber,
-                List<OrderItem> items,
-                int totalIncl
-        ) {
-            this(
-                    to,
-                    fullName,
-                    OrderUtil.formatOrderNumber(orderNumber),
-                    items,
-                    totalIncl
-            );
+    @Getter
+    public static class CancelApprovedContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final String orderNumber; // フォーマット済
+        private final List<OrderItem> items;
+
+        private final int itemsSubtotalIncl;
+        private final int shippingFeeIncl;
+        private final int grandTotalIncl;
+
+        public CancelApprovedContext(String to, String fullName,
+                                     int orderNumber, List<OrderItem> items) {
+            this.to = to;
+            this.fullName = fullName;
+            this.orderNumber = OrderUtil.formatOrderNumber(orderNumber);
+            this.items = items;
+
+            int subtotalIncl = OrderUtil.sumBy(items, OrderItem::getSubtotalIncl);
+            int shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(subtotalIncl);
+            int grandTotalIncl = OrderUtil.calculateGrandTotalIncl(subtotalIncl, shippingFeeIncl);
+
+            this.itemsSubtotalIncl = subtotalIncl;
+            this.shippingFeeIncl = shippingFeeIncl;
+            this.grandTotalIncl = grandTotalIncl;
         }
     }
-    
-    public record ReviewRejectedContext(
-            String to,
-            String fullName,
-            RejectReason reason,
-            String note
-            ) {
+
+    @Getter
+    public static class CancelRejectedContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final String orderNumber; // フォーマット済
+        private final List<OrderItem> items;
+
+        private final int itemsSubtotalIncl;
+        private final int shippingFeeIncl;
+        private final int grandTotalIncl;
+
+        public CancelRejectedContext(String to, String fullName,
+                                     int orderNumber, List<OrderItem> items) {
+            this.to = to;
+            this.fullName = fullName;
+            this.orderNumber = OrderUtil.formatOrderNumber(orderNumber);
+            this.items = items;
+
+            int subtotalIncl = OrderUtil.sumBy(items, OrderItem::getSubtotalIncl);
+            int shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(subtotalIncl);
+            int grandTotalIncl = OrderUtil.calculateGrandTotalIncl(subtotalIncl, shippingFeeIncl);
+
+            this.itemsSubtotalIncl = subtotalIncl;
+            this.shippingFeeIncl = shippingFeeIncl;
+            this.grandTotalIncl = grandTotalIncl;
+        }
     }
-    
-    
+
+    // ===================== 共通ヘルパ =====================
 
     private static <T> String createItemsBlock(
             List<T> items,

@@ -22,6 +22,7 @@ public class EcommerceRestApplication {
       Dtoの役割でないものもDtoクラスにしてる→Dtoの定義を明確に
       任意項目の入力欄は受け取る際、トリミング入れる→Review関連には入れてる
       DuplicateKeyは409に変換すべきなのか？実装コストと頻度のトレードオフ
+      MybatisでDtoへのマップはSetterがない場合、リフレクションだがどれくらいパフォーマンス悪くなるか
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

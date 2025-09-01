@@ -6,7 +6,9 @@ import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 /**
  * 注文ヘッダ（order テーブル）
@@ -18,7 +20,7 @@ public class Order {
 
     /** orders.order_id */
     private String orderId;
-    
+
     private int orderNumber;
 
     /** orders.user_id */
@@ -35,14 +37,22 @@ public class Order {
 
     private int totalQty;
 
-    private int totalPriceIncl;
-    
+    /** 商品小計（税込）: orders.items_subtotal_incl */
+    private int itemsSubtotalIncl;
+
+    /** 発送送料（税込）: orders.shipping_fee_incl */
+    private int shippingFeeIncl;
+
+    /** 総額（税込）: orders.grand_total_incl (GENERATED ALWAYS STORED) */
+    @Setter(AccessLevel.NONE)
+    private int grandTotalIncl;
+
     private OrderStatus orderStatus;
-    
+
     private ShippingStatus shippingStatus;
-    
+
     private PaymentStatus paymentStatus;
-    
+
     /** 作成日時（orders.created_at） */
     private LocalDateTime createdAt;
 

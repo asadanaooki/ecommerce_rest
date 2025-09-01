@@ -1,11 +1,11 @@
 package com.example.dto;
 
 import com.example.enums.SaleStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
 public class CheckoutItemDto {
     // TODO:
     // SKU表示するほうがよい？
@@ -28,13 +28,13 @@ public class CheckoutItemDto {
     private int subtotalIncl;
 
     /* ---------- 販売状況 ---------- */
-    @JsonIgnore
     private SaleStatus status;
     //    
     /* ---------- 在庫系 ---------- */
     private int available;
     
     /* ---------- 確認理由 ---------- */
+    @Setter
     private DiffReason reason;
     
     

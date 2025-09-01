@@ -1,8 +1,8 @@
 package com.example.dto;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class ProductCardDto {
     private String productId;
     

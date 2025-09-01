@@ -19,6 +19,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.MailTemplate.OrderConfirmationContext;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
@@ -142,7 +143,8 @@ public class CheckoutService {
 
         // TODO:メール送信 仮実装
         // 管理者にも通知する
-        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(user, ck, orderNumber));
+        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(
+                new OrderConfirmationContext(user, orderNumber, ck.getItems())));
     }
 
     /**
@@ -167,7 +169,8 @@ public class CheckoutService {
     private int finalizeOrder(String orderId, User user, CheckoutProcessDto ck) {
 
         /* ---------- 在庫減算 ---------- */
-        ck.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty(), null));
+        ck.getItems().forEach(i -> productMapper
+                .decreaseStock(i.getProductId(), i.getQty(), null));
 
         /* ---------- 注文ヘッダ ---------- */
         Order order = new Order() {
@@ -178,7 +181,8 @@ public class CheckoutService {
                 setPostalCode(user.getPostalCode());
                 setAddress(ck.getFullAddress());
                 setTotalQty(ck.getTotalQty());
-                setTotalPriceIncl(ck.getTotalPriceIncl());
+                setItemsSubtotalIncl(ck.getItemsSubtotalIncl());
+                setShippingFeeIncl(ck.getShippingFeeIncl());
             }
         };
         orderMapper.insertOrderHeader(order);
@@ -192,7 +196,6 @@ public class CheckoutService {
                     oi.setProductName(i.getProductName());
                     oi.setQty(i.getQty());
                     oi.setUnitPriceIncl(i.getUnitPriceIncl());
-                    oi.setSubtotalIncl(i.getSubtotalIncl());
                     return oi;
                 })
                 .collect(Collectors.toList());

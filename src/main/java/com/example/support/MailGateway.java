@@ -28,9 +28,9 @@ public class MailGateway {
         MimeMessageHelper h = new MimeMessageHelper(mime, "UTF-8");
 
         try {
-            h.setTo(msg.to());
-            h.setSubject(msg.subject());
-            h.setText(msg.body());
+            h.setTo(msg.getTo());
+            h.setSubject(msg.getSubject());
+            h.setText(msg.getBody());
             sender.send(mime);
         } catch (MessagingException e) {
             throw new MailPreparationException(e);
