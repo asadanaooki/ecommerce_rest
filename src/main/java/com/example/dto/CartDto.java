@@ -3,6 +3,8 @@ package com.example.dto;
 import java.util.Collections;
 import java.util.List;
 
+import com.example.util.OrderUtil;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,14 +17,13 @@ public class CartDto {
     
     private int totalPriceIncl;
     
+    private int shippingFeeIncl;
+    
+    
     public CartDto(List<CartItemDto> items) {
         this.items = items;
-        this.totalQty = items.stream()
-                .mapToInt(CartItemDto::getQty)
-                .sum();
-        
-        this.totalPriceIncl = items.stream()
-                .mapToInt(CartItemDto::getSubtotalIncl)
-                .sum();
+        this.totalQty = OrderUtil.calculateTotalQty(items, CartItemDto::getQty);
+        this.totalPriceIncl = OrderUtil.calculateTotalPriceIncl(items, CartItemDto::getSubtotalIncl);
+        this.shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(totalPriceIncl);
     }
 }
