@@ -21,6 +21,11 @@ import com.example.entity.PasswordResetToken;
 import com.example.entity.PreRegistration;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.MailTemplate.RegistrationContext;
+import com.example.enums.MailTemplate.PasswordResetContext;
+import com.example.enums.MailTemplate.EmailChangeCompleteNewContext;
+import com.example.enums.MailTemplate.EmailChangeAlertOldContext;
+import com.example.enums.MailTemplate.ProfileChangedContext;
 import com.example.error.BusinessException;
 import com.example.mapper.UserMapper;
 import com.example.request.EmailChangeRequest;
@@ -103,7 +108,7 @@ public class AuthService {
         userMapper.insertPreRegistration(pr);
 
         String link = "http://localhost:8080/register/verify?token=" + token;
-        mailGateway.send(MailTemplate.REGISTRATION.build(email, link, ttlMinutes));
+        mailGateway.send(MailTemplate.REGISTRATION.build(new RegistrationContext(email, link, ttlMinutes)));
     }
 
     public PreRegistration verify(String token) {
@@ -153,7 +158,7 @@ public class AuthService {
         });
 
         String link = "http://localhost:8080/password-reset/form?token=" + rawToken;
-        mailGateway.send(MailTemplate.PASSWORD_RESET.build(req.getEmail(), link, expireMin));
+        mailGateway.send(MailTemplate.PASSWORD_RESET.build(new PasswordResetContext(req.getEmail(), link, expireMin)));
     }
 
     @Transactional
@@ -187,9 +192,9 @@ public class AuthService {
 
         String link = "http://localhost:8080/profile/email-change/complete?token=" + token;
         mailGateway.send(
-                MailTemplate.EMAIL_CHANGE_COMPLETE_NEW.build(req.getNewEmail(), link, emailExpireMin));
+                MailTemplate.EMAIL_CHANGE_COMPLETE_NEW.build(new EmailChangeCompleteNewContext(req.getNewEmail(), link, emailExpireMin)));
         mailGateway.send(
-                MailTemplate.EMAIL_CHANGE_ALERT_OLD.build(u.getEmail(), LocalDateTime.now()));
+                MailTemplate.EMAIL_CHANGE_ALERT_OLD.build(new EmailChangeAlertOldContext(u.getEmail(), LocalDateTime.now())));
     }
 
     public void completeEmailChange(String token) {
@@ -207,13 +212,13 @@ public class AuthService {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "INVALID_CURRENT_PASSWORD");
         }
         userMapper.updatePasswordByPrimaryKey(userId, encoder.encode(req.getNewPassword()));
-        mailGateway.send(MailTemplate.PROFILE_CHANGED.build(user.getEmail(), LocalDateTime.now()));
+        mailGateway.send(MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
     }
 
     public void updateProfile(String userId, ProfileUpdateRequest req) {
         User user = userMapper.selectUserByPrimaryKey(userId);
         userMapper.updateProfile(userId, req);
-        mailGateway.send(MailTemplate.PROFILE_CHANGED.build(user.getEmail(), LocalDateTime.now()));
+        mailGateway.send(MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
     }
 
     private User toUserEntity(RegisterUserRequest r, String userId) {

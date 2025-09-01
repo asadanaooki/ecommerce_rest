@@ -104,7 +104,7 @@ public class AdminOrderService {
                         OrderUtil.calculateShippingFeeIncl(itemsSubtotalIncl));
 
         // メール送信
-        List<OrderItem> items = orderMapper.selectOrderItems(orderId);
+        List<OrderItem> updatedItems = orderMapper.selectOrderItems(orderId);
         User user = userMapper.selectUserByPrimaryKey(o.getUserId());
 
         mailGateway.send(MailTemplate.ORDER_EDIT_COMPLETED.build(
@@ -113,9 +113,7 @@ public class AdminOrderService {
                         UserUtil.buildFullName(user),
                         UserUtil.buildFullAddress(user),
                         o.getOrderNumber(),
-                        items,
-                        OrderUtil.calculateGrandTotalIncl(items, null)
-                        items.stream().mapToInt(OrderItem::getSubtotalIncl).sum())));
+                        updatedItems)));
     }
 
     private EditContext prepareContext(Order order, OrderEditRequest req) {
