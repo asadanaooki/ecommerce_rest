@@ -7,39 +7,44 @@ import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
 public class AdminOrderDetailDto {
 
     private String orderId;
-    
+
     private String orderNumber;
-    
-    private int totalPriceIncl;
-    
+
+    private int itemsSubtotalIncl;
+
+    private int shippingFeeIncl;
+
+    private int grandTotalIncl;
+
     private OrderStatus orderStatus;
-    
+
     private ShippingStatus shippingStatus;
-    
+
     private PaymentStatus paymentStatus;
-    
+
     private LocalDateTime createdAt;
-    
+
+    @Setter
     private List<AdminOrderDetailItemDto> items;
-    
-    
+
     // 購入者情報
     private String name;
-    
+
     private String nameKana;
-    
+
     private String email;
-    
+
     private String postalCode;
-    
+
     private String address;
-    
+
     private String phoneNumber;
-    
+
 }

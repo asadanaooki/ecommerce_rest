@@ -2,7 +2,9 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 /**
  * 注文明細（order_item テーブル）
@@ -25,6 +27,7 @@ public class OrderItem {
 
     private int unitPriceIncl;
 
+    @Setter(AccessLevel.NONE)
     private int subtotalIncl;
 
     /** 作成日時（order_item.created_at） */

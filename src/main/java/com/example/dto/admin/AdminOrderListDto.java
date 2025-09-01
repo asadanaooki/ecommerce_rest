@@ -3,13 +3,13 @@ package com.example.dto.admin;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class AdminOrderListDto {
 
-    private List<AdminOrderDto> content;
+    private List<AdminOrderRowDto> content;
     
     private int  total;
     

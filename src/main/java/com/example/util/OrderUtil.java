@@ -12,19 +12,15 @@ public class OrderUtil {
         return String.format("%04d", orderNumber);
     }
     
-    public static <T> int calculateTotalQty(List<T> items, ToIntFunction<T> qtyMapper) {
-        return sumBy(items, qtyMapper);
+    public static int calculateShippingFeeIncl(int itemsSubtotalIncl) {
+        return (itemsSubtotalIncl >= 3000) ? 0 : 500;
     }
     
-    public static <T> int calculateTotalPriceIncl(List<T> items, ToIntFunction<T> subtotalMapper) {
-        return sumBy(items, subtotalMapper);
+    public static int calculateGrandTotalIncl(int itemsSubtotalIncl, int shippingFeeIncl) {
+        return itemsSubtotalIncl + shippingFeeIncl;
     }
     
-    public static int calculateShippingFeeIncl(int totalPriceIncl) {
-        return (totalPriceIncl >= 3000) ? 0 : 500;
-    }
-    
-    private static <T> int sumBy(List<T> items, ToIntFunction<T> mapper) {
+    public static <T> int sumBy(List<T> items, ToIntFunction<T> mapper) {
         return items.stream().mapToInt(mapper).sum();
     }
 }

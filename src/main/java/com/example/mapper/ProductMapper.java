@@ -9,7 +9,6 @@ import com.example.dto.ProductDetailDto;
 import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
 import com.example.enums.SortType;
-import com.example.request.admin.InventoryMovementRequest;
 
 @Mapper
 public interface ProductMapper {
@@ -28,9 +27,8 @@ public interface ProductMapper {
 
     ProductDetailDto findProductDetail(String productId, String userId);
 
-    int increaseStock(String productId, InventoryMovementRequest req);
+    int increaseStock(String productId, int qty, Integer version);
     
-    // checkout時はversion不要のためInteger型
     int decreaseStock(String productId, int qty, Integer version);
 
     record SearchCondition(String userId,

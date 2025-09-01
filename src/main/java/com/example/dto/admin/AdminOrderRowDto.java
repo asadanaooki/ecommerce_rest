@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
-public class AdminOrderDto {
+@Getter
+public class AdminOrderRowDto {
 
     /* ---------- 識別情報 ---------- */
     private String orderId;
@@ -19,7 +19,7 @@ public class AdminOrderDto {
     private String name;
 
     /* ---------- 金額 ---------- */
-    private int totalPriceIncl;
+    private int grandTotalIncl;
 
     /* ---------- ステータス ---------- */
     private OrderStatus orderStatus;

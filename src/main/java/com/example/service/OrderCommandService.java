@@ -75,7 +75,7 @@ public class OrderCommandService {
                         o.getName(),
                         OrderUtil.formatOrderNumber(o.getOrderNumber()),
                         items,
-                        o.getTotalPriceIncl())));
+                        o.getGrandTotalIncl())));
     }
     
     @Transactional
@@ -94,7 +94,7 @@ public class OrderCommandService {
                             o.getAddress(),
                             OrderUtil.formatOrderNumber(o.getOrderNumber()),
                             items,
-                            o.getTotalPriceIncl())));
+                            o.getGrandTotalIncl())));
         } else if (cur.getOrder() == OrderStatus.CANCEL_REQUESTED) {
             gateway.send(MailTemplate.SHIPPED_AND_CANCEL_REJECTED.build(
                     new MailTemplate.CancelRejectedContext(
@@ -102,7 +102,7 @@ public class OrderCommandService {
                            o.getName(),
                             OrderUtil.formatOrderNumber(o.getOrderNumber()),
                             items,
-                            o.getTotalPriceIncl())));
+                            o.getGrandTotalIncl())));
         }
     }
     

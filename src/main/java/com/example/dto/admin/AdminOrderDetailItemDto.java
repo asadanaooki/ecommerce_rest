@@ -1,8 +1,8 @@
 package com.example.dto.admin;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class AdminOrderDetailItemDto {
 
     private String productId;

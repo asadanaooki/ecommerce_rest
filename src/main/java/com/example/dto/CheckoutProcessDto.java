@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.example.util.OrderUtil;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class CheckoutProcessDto {
 
     private String fullName;
@@ -19,10 +19,13 @@ public class CheckoutProcessDto {
 
     private int totalQty;
 
-    private int totalPriceIncl;
+    private int itemsSubtotalIncl;
 
     private int shippingFeeIncl;
 
+    private int grandTotalIncl;
+
+    
     public CheckoutProcessDto(
             String fullName,
             String postalCode,
@@ -33,9 +36,11 @@ public class CheckoutProcessDto {
         this.fullAddress = fullAddress;
 
         this.items = items;
-        this.totalQty = OrderUtil.calculateTotalQty(items, CheckoutItemDto::getQty);
-        this.totalPriceIncl = OrderUtil.calculateTotalPriceIncl(items, CheckoutItemDto::getSubtotalIncl);
-        this.shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(totalPriceIncl);
+        this.totalQty = OrderUtil.sumBy(items, CheckoutItemDto::getQty);
+        this.itemsSubtotalIncl = OrderUtil.sumBy(items, CheckoutItemDto::getSubtotalIncl);
+        this.shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(itemsSubtotalIncl);
+        this.grandTotalIncl = OrderUtil
+                .calculateGrandTotalIncl(itemsSubtotalIncl, shippingFeeIncl);
     }
 
 }

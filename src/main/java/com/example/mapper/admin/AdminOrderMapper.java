@@ -6,10 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderDetailItemDto;
-import com.example.dto.admin.AdminOrderDto;
-import com.example.entity.Order;
-import com.example.entity.OrderItem;
-import com.example.entity.Product;
+import com.example.dto.admin.AdminOrderRowDto;
 import com.example.request.admin.OrderSearchRequest;
 
 @Mapper
@@ -22,25 +19,11 @@ public interface AdminOrderMapper {
     
     int count(OrderSearchRequest req);
     
-    List<AdminOrderDto> selectPage(OrderSearchRequest req, int limit, int offset);
+    List<AdminOrderRowDto> selectPage(OrderSearchRequest req, int limit, int offset);
     
     AdminOrderDetailDto selectOrderHeader(String orderId);
     
     // TODO:
-    // 戻り値をEntityにして汎用的にするか検討
+    // リネーム検討
     List<AdminOrderDetailItemDto> selectOrderItems(String orderId);
-    
-    Order selectOrderForUpdate(String orderId);
-    
-    List<OrderItem> selectOrderItemsForUpdate(String orderId);
-    
-    List<Product> selectProductsForUpdate(List<String> productIds);
-    
-    int updateItemQty(OrderItem item);
-    
-    int addStock(String productId, int qty);
-    
-    int updateTotals(String orderId);
-    
-    int deleteOrderItem(String orderId, String productId);
 }

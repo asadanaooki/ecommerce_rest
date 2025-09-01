@@ -15,4 +15,5 @@ alter table `order`
   
 alter table `order`
   add column grand_total_incl int
-    generated always as (items_subtotal_incl + shipping_fee_incl) stored;
+    generated always as (items_subtotal_incl + shipping_fee_incl) stored
+    after shipping_fee_incl;

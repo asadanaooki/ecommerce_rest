@@ -52,9 +52,10 @@ public class OrderHistoryService {
                     setPostalCode(o.getPostalCode());
                     setAddress(o.getAddress());
                     setItems(itemDtos);
-                    setTotalPriceIncl(o.getTotalPriceIncl());
+                    setItemsSubtotalIncl(o.getItemsSubtotalIncl());
+                    setShippingFeeIncl(o.getShippingFeeIncl());
+                    setGrandTotalIncl(o.getGrandTotalIncl());
                     setOrderStatus(o.getOrderStatus());
-
                 }
             });
         }

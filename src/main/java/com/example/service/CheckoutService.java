@@ -167,7 +167,8 @@ public class CheckoutService {
     private int finalizeOrder(String orderId, User user, CheckoutProcessDto ck) {
 
         /* ---------- 在庫減算 ---------- */
-        ck.getItems().forEach(i -> productMapper.decreaseStock(i.getProductId(), i.getQty(), null));
+        ck.getItems().forEach(i -> productMapper
+                .decreaseStock(i.getProductId(), i.getQty(), null));
 
         /* ---------- 注文ヘッダ ---------- */
         Order order = new Order() {
@@ -178,7 +179,8 @@ public class CheckoutService {
                 setPostalCode(user.getPostalCode());
                 setAddress(ck.getFullAddress());
                 setTotalQty(ck.getTotalQty());
-                setTotalPriceIncl(ck.getTotalPriceIncl());
+                setItemsSubtotalIncl(ck.getItemsSubtotalIncl());
+                setShippingFeeIncl(ck.getShippingFeeIncl());
             }
         };
         orderMapper.insertOrderHeader(order);
@@ -192,7 +194,6 @@ public class CheckoutService {
                     oi.setProductName(i.getProductName());
                     oi.setQty(i.getQty());
                     oi.setUnitPriceIncl(i.getUnitPriceIncl());
-                    oi.setSubtotalIncl(i.getSubtotalIncl());
                     return oi;
                 })
                 .collect(Collectors.toList());

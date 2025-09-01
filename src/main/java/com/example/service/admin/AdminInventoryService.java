@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.dto.admin.AdminInventoryDetailDto;
-import com.example.dto.admin.AdminInventoryDto;
 import com.example.dto.admin.AdminInventoryListDto;
+import com.example.dto.admin.AdminInventoryRowDto;
 import com.example.enums.StockStatus;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminInventoryMapper;
@@ -43,8 +43,8 @@ public class AdminInventoryService {
 
     public AdminInventoryListDto search(InventorySearchRequest req) {
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
-        List<AdminInventoryDto> list = adminInventoryMapper.search(req, threshold, pageSize, offset);
-        for (AdminInventoryDto dto : list) {
+        List<AdminInventoryRowDto> list = adminInventoryMapper.search(req, threshold, pageSize, offset);
+        for (AdminInventoryRowDto dto : list) {
             dto.setStockStatus(resolveStockStatus(dto.getAvailable()));
         }
 
@@ -64,7 +64,7 @@ public class AdminInventoryService {
     }
     
     public void receiveStock(String productId, InventoryMovementRequest req) {
-       int rows = productMapper.increaseStock(productId, req);
+       int rows = productMapper.increaseStock(productId, req.getQty(), req.getVersion());
        if (rows == 0) {
            throw new ResponseStatusException(HttpStatus.CONFLICT);
        }

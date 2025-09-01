@@ -7,7 +7,7 @@
       lpad(cast(order_number as char), 4, '0') as order_number,
       created_at,
       name,
-      total_price_incl,
+      grand_total_incl,
       order_status,
       payment_status
     from `order`
@@ -64,7 +64,9 @@
     select
       o.order_id,
       lpad(cast(o.order_number as char), 4, '0') as order_number,
-      o.total_price_incl,
+      o.items_subtotal_incl,
+      o.shipping_fee_incl,
+      o.grand_total_incl,
       o.order_status,
       o.shipping_status,
       o.payment_status,
@@ -92,62 +94,5 @@
     where order_id = #{orderId}
     order by product_id
   </select>
-
-  <select id="selectOrderForUpdate" resultType="com.example.entity.Order">
-    select *
-    from `order`
-    where order_id = #{orderId}
-    for update
-  </select>
-  
-  <select id="selectOrderItemsForUpdate" resultType="com.example.entity.OrderItem">
-    select *
-    from order_item
-    where order_id = #{orderId}
-    for update
-  </select>
-  
-  <select id="selectProductsForUpdate" resultType="com.example.entity.Product">
-    select *
-    from product
-    where product_id in
-    <foreach collection="productIds" item="id" open="(" separator="," close=")">
-      #{id}
-    </foreach>
-    for update
-  </select>
-  
-  <update id="updateItemQty">
-    update order_item
-    set qty = #{qty},
-        subtotal_incl = #{subtotalIncl}
-    where order_id = #{orderId}
-      and product_id = #{productId}
-  </update>
-  
-  <update id="addStock">
-    update product
-    set stock = stock + #{qty}
-    where product_id = #{productId}
-  </update>
-  
-  <update id="updateTotals">
-    update `order` o
-    join (
-      select order_id, sum(qty) as sum_qty, sum(subtotal_incl) as sum_price
-      from order_item
-      where order_id = #{orderId}
-    ) oi on o.order_id = oi.order_id
-    set
-      o.total_qty = oi.sum_qty,
-      o.total_price_incl = oi.sum_price
-    where o.order_id = #{orderId}
-  </update>
-  
-  <delete id="deleteOrderItem">
-    delete from order_item
-    where order_id = #{orderId}
-      and product_id = #{productId}
-  </delete>
 
 </mapper>
