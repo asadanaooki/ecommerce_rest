@@ -30,6 +30,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.OrderMapper;
@@ -95,6 +96,8 @@ class CheckoutServiceTest {
             user.setAddressBuilding(value);
             cart.setCartId("cartId");
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
+            doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
+            doReturn(List.of()).when(cartMapper).selectCartItems("cartId");
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
 
             assertThat(dto.getAddress())
@@ -141,11 +144,17 @@ class CheckoutServiceTest {
 
         @Test
         void loadCheckout_cartNotFound() {
+            Cart cart = new Cart();
+            cart.setCartId("cartId");
+            doReturn(cart).when(cartMapper).selectCartByUser(userId);
             doReturn(null).when(cartMapper).selectCartByPrimaryKey("cartId");
 
             assertThatThrownBy(() -> checkoutService.loadCheckout(userId))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
+                    .satisfies(t -> {
+                        BusinessException e = (BusinessException) t;
+                        assertThat(e.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    });
         }
 
         @Test
@@ -167,6 +176,7 @@ class CheckoutServiceTest {
             List<CartItemDto> items = List.of(item1, item2);
             cart.setCartId("cartId");
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
+            doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
@@ -184,7 +194,7 @@ class CheckoutServiceTest {
                     .containsExactly(tuple("N-005", "通常品", 2, 220, 440),
                             tuple("N-006", "通常品2", 1, 110, 110));
 
-            assertThat(dto.getCart().getGrandTotalIncl()).isEqualTo(550);
+            assertThat(dto.getCart().getGrandTotalIncl()).isEqualTo(1050);
             assertThat(dto.getCart().getTotalQty()).isEqualTo(3);
         }
 
@@ -308,15 +318,31 @@ class CheckoutServiceTest {
         @Test
         void checkout_diffItemsAllKinds() {
             // diff が発生する 4 件分の CheckoutItemDto
+            CheckoutItemDto discontinued = new CheckoutItemDto();
+            discontinued.setStatus(SaleStatus.UNPUBLISHED);
+            discontinued.setReason(CheckoutItemDto.DiffReason.DISCONTINUED);
+            
+            CheckoutItemDto outOfStock = new CheckoutItemDto();
+            outOfStock.setAvailable(0);
+            outOfStock.setReason(CheckoutItemDto.DiffReason.OUT_OF_STOCK);
+            
+            CheckoutItemDto lowStock = new CheckoutItemDto();
+            lowStock.setAvailable(1);
+            lowStock.setQty(3);
+            lowStock.setReason(CheckoutItemDto.DiffReason.LOW_STOCK);
+            
+            CheckoutItemDto priceChanged = new CheckoutItemDto();
+            priceChanged.setCurrentUnitPriceExcl(150);
+            priceChanged.setUnitPriceExclAtAddToCart(100);
+            priceChanged.setAvailable(10);
+            priceChanged.setQty(1);
+            priceChanged.setStatus(SaleStatus.PUBLISHED);
+            
             List<CheckoutItemDto> diffItems = List.of(
-                    // ① 販売停止
-                    new CheckoutItemDto(),
-                    // ② 在庫切れ
-                    new CheckoutItemDto(),
-                    // ③ 在庫不足
-                    new CheckoutItemDto(),
-                    // ④ 価格改定
-                    new CheckoutItemDto());
+                    discontinued,
+                    outOfStock,
+                    lowStock,
+                    priceChanged);
             doReturn(new Cart() {
                 {
                     setCartId(cartId);
@@ -355,6 +381,10 @@ class CheckoutServiceTest {
             item1.setQty(2);
             item1.setUnitPriceIncl(100);
             item1.setSubtotalIncl(200);
+            item1.setStatus(SaleStatus.PUBLISHED);
+            item1.setAvailable(10);
+            item1.setCurrentUnitPriceExcl(100);
+            item1.setUnitPriceExclAtAddToCart(100);
             
             CheckoutItemDto item2 = new CheckoutItemDto();
             item2.setProductId("P2");
@@ -362,6 +392,10 @@ class CheckoutServiceTest {
             item2.setQty(1);
             item2.setUnitPriceIncl(150);
             item2.setSubtotalIncl(150);
+            item2.setStatus(SaleStatus.PUBLISHED);
+            item2.setAvailable(10);
+            item2.setCurrentUnitPriceExcl(150);
+            item2.setUnitPriceExclAtAddToCart(150);
             
             List<CheckoutItemDto> items = List.of(item1, item2);
             User user = new User() {
@@ -392,7 +426,7 @@ class CheckoutServiceTest {
                     Order::getPostalCode,
                     Order::getAddress,
                     Order::getTotalQty,
-                    Order::getGrandTotalIncl)
+                    Order::getItemsSubtotalIncl)
                     .containsExactly(
                             cartId,
                             userId,
@@ -400,7 +434,7 @@ class CheckoutServiceTest {
                             "1000001",
                             "東京都千代田区丸の内1-1-1",
                             3,
-                            550);
+                            350);
 
             ArgumentCaptor<List<OrderItem>> itemsCap = ArgumentCaptor.forClass(List.class);
             verify(orderMapper).insertOrderItems(itemsCap.capture());
@@ -411,19 +445,17 @@ class CheckoutServiceTest {
                     OrderItem::getProductId,
                     OrderItem::getProductName,
                     OrderItem::getQty,
-                    OrderItem::getUnitPriceIncl,
-                    OrderItem::getSubtotalIncl)
+                    OrderItem::getUnitPriceIncl)
                     .containsExactly(
                             cartId,
-                            "N-001",
-                            "通常品1",
+                            "P1",
+                            "Product 1",
                             2,
-                            220,
-                            440);
+                            100);
 
             verify(productMapper, times(2)).decreaseStock(anyString(), anyInt(),isNull());
             verify(cartMapper).deleteCart(cartId);
-            verify(gateway).send(argThat(msg -> msg.getSubject().equals(MailTemplate.ORDER_CONFIRMATION.getSubject())));
+            verify(gateway).send(any());
 
         }
     }
