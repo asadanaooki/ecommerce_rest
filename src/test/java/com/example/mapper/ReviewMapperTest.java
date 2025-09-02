@@ -91,7 +91,6 @@ class ReviewMapperTest {
                     setReviewText("とても良い商品です！");
                     setStatus(ReviewStatus.APPROVED);
                     setCreatedAt(now);
-                    setUpdatedAt(now);
                 }
             });
             factory.createReview(new Review() {
@@ -102,7 +101,6 @@ class ReviewMapperTest {
                     setReviewText("コスパが高いと思います。");
                     setStatus(ReviewStatus.APPROVED);
                     setCreatedAt(now);
-                    setUpdatedAt(now);
                 }
             });
             factory.createReview(new Review() {
@@ -112,7 +110,6 @@ class ReviewMapperTest {
                     setRating(3);
                     setStatus(ReviewStatus.APPROVED);
                     setCreatedAt(past);
-                    setUpdatedAt(past);
                 }
             });
         }
@@ -160,7 +157,6 @@ class ReviewMapperTest {
                 order.setPostalCode("1500041");
                 order.setAddress("東京都渋谷区神南1-1-1");
                 order.setTotalQty(3);
-                order.setTotalPriceIncl(9600);
                 orderMapper.insertOrderHeader(order);
 
                 // 2) 明細リスト作成
@@ -170,7 +166,6 @@ class ReviewMapperTest {
                 it1.setProductName("testA");
                 it1.setQty(1);
                 it1.setUnitPriceIncl(750);
-                it1.setSubtotalIncl(750);
 
                 OrderItem it2 = new OrderItem();
                 it2.setOrderId(orderId);
@@ -178,7 +173,6 @@ class ReviewMapperTest {
                 it2.setProductName("testB");
                 it2.setQty(2);
                 it2.setUnitPriceIncl(3200);
-                it2.setSubtotalIncl(6400);
 
                 List<OrderItem> items = List.of(it1, it2);
 
@@ -362,7 +356,6 @@ class ReviewMapperTest {
         r1.setReviewText("r1-body");
         r1.setStatus(ReviewStatus.APPROVED);
         r1.setCreatedAt(fixed.minusDays(21));
-        r1.setUpdatedAt(fixed.minusDays(21));
         factory.createReview(r1);
         
         Review r2 = new Review();
@@ -373,7 +366,6 @@ class ReviewMapperTest {
         r2.setReviewText("r2-body");
         r2.setStatus(ReviewStatus.REJECTED);
         r2.setCreatedAt(fixed.minusMonths(12));
-        r2.setUpdatedAt(fixed.minusMonths(12));
         factory.createReview(r2);
         
         Review r3 = new Review();
@@ -384,7 +376,6 @@ class ReviewMapperTest {
         r3.setReviewText("r3-body");
         r3.setStatus(ReviewStatus.REJECTED);
         r3.setCreatedAt(fixed.minusMonths(12).minusSeconds(1));
-        r3.setUpdatedAt(fixed.minusMonths(12).minusSeconds(1));
         factory.createReview(r3);
         
         int rows = reviewMapper.deleteRejected();

@@ -50,22 +50,16 @@ class OrderHistoryServiceTest {
             Order headerA = new Order();
             headerA.setOrderId("order-a");
             headerA.setOrderNumber(1);
-            headerA.setUserId(userId);
             headerA.setName("山田 太郎");
             headerA.setPostalCode("1500000");
             headerA.setAddress("東京都渋谷区…");
-            headerA.setTotalPriceIncl(1_000);
-            headerA.setCreatedAt(LocalDateTime.of(2025, 6, 29, 10, 0));
 
             Order headerB = new Order();
             headerB.setOrderId("order-b");
             headerB.setOrderNumber(3);
-            headerB.setUserId(userId);
             headerB.setName("山田 花子");
             headerB.setPostalCode("1500001");
             headerB.setAddress("東京都新宿区…");
-            headerB.setTotalPriceIncl(5_000);
-            headerB.setCreatedAt(LocalDateTime.of(2025, 4, 28, 11, 0));
 
             doReturn(List.of(headerA, headerB)).when(orderMapper).selectOrdersByUserId(userId);
 
@@ -76,7 +70,6 @@ class OrderHistoryServiceTest {
             a1.setProductName("りんご");
             a1.setQty(1);
             a1.setUnitPriceIncl(1_000);
-            a1.setSubtotalIncl(1_000);
 
             OrderItem b1 = new OrderItem();
             b1.setOrderId("order-b");
@@ -84,7 +77,6 @@ class OrderHistoryServiceTest {
             b1.setProductName("みかん");
             b1.setQty(1);
             b1.setUnitPriceIncl(2_000);
-            b1.setSubtotalIncl(2_000);
 
             OrderItem b2 = new OrderItem();
             b2.setOrderId("order-b");
@@ -92,7 +84,6 @@ class OrderHistoryServiceTest {
             b2.setProductName("ぶどう");
             b2.setQty(1);
             b2.setUnitPriceIncl(3_000);
-            b2.setSubtotalIncl(3_000);
 
             doReturn(List.of(a1)).when(orderMapper).selectOrderItems("order-a");
             doReturn(List.of(b1, b2)).when(orderMapper).selectOrderItems("order-b");
@@ -103,7 +94,7 @@ class OrderHistoryServiceTest {
                     OrderHistoryDto::getOrderId,
                     OrderHistoryDto::getOrderNumber,
                     OrderHistoryDto::getOrderedAt,
-                    OrderHistoryDto::getTotalPriceIncl,
+                    OrderHistoryDto::getGrandTotalIncl,
                     OrderHistoryDto::getName,
                     OrderHistoryDto::getPostalCode,
                     OrderHistoryDto::getAddress,

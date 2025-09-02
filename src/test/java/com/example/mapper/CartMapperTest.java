@@ -172,16 +172,10 @@ class CartMapperTest {
             factory.deleteCartByUser(userId);
             factory.createCart(new Cart() {
                 {
-                    setCartId(guestCart);
-                    setUserId(null);
-                    setTtlDays(14);
                 }
             });
             factory.createCart(new Cart() {
                 {
-                    setCartId(userCart);
-                    setUserId(userId);
-                    setTtlDays(60);
                 }
             });
         }
@@ -262,9 +256,6 @@ class CartMapperTest {
             factory.deleteCartByUser(userId);
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartId);
-                    setUserId(userId);
-                    setTtlDays(60);
                 }
             });
         }
@@ -352,11 +343,6 @@ class CartMapperTest {
 
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartId);
-                    setUserId(null);
-                    setTtlDays(14);
-                    setUpdatedAt(time);
-                    setCreatedAt(time);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -378,11 +364,6 @@ class CartMapperTest {
 
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartId);
-                    setUserId("111e8400-e29b-41d4-a716-446655440111");
-                    setTtlDays(60);
-                    setUpdatedAt(time);
-                    setCreatedAt(time);
                 }
             });
             cartMapper.insertCartIfAbsent(cartId, "111e8400-e29b-41d4-a716-446655440111");
@@ -409,11 +390,6 @@ class CartMapperTest {
         void isCartExpired_boundary(LocalDateTime time, String userId, boolean expected) {
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartId);
-                    setUserId(userId);
-                    setTtlDays(userId == null ? 14 : 60);
-                    setCreatedAt(time);
-                    setUpdatedAt(time);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -443,11 +419,6 @@ class CartMapperTest {
             LocalDateTime a = LocalDateTime.of(2025, 7, 30, 10, 40, 10);
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartA);
-                    setUserId(null);
-                    setTtlDays(14);
-                    setCreatedAt(a);
-                    setUpdatedAt(a);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -465,11 +436,6 @@ class CartMapperTest {
             LocalDateTime b = LocalDateTime.of(2025, 6, 3, 10, 40, 10);
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartB);
-                    setUserId("111e8400-e29b-41d4-a716-446655440111");
-                    setTtlDays(60);
-                    setCreatedAt(b);
-                    setUpdatedAt(b);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -487,11 +453,6 @@ class CartMapperTest {
             LocalDateTime c = LocalDateTime.of(2025, 8, 16, 10, 40, 10);
             factory.createCart(new Cart() {
                 {
-                    setCartId(cartC);
-                    setUserId(null);
-                    setTtlDays(14);
-                    setCreatedAt(c);
-                    setUpdatedAt(c);
                 }
             });
             factory.createCartItem(new CartItem() {

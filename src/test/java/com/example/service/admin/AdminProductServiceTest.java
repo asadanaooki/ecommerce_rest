@@ -60,22 +60,7 @@ class AdminProductServiceTest {
         ProductSearchRequest req = new ProductSearchRequest();
 
         AdminProductDto p1 = new AdminProductDto();
-        p1.setProductId("id-1");
-        p1.setSku(1);
-        p1.setProductName("Product One");
-        p1.setPriceExcl(110);
-        p1.setAvailable(5);
-        p1.setStatus(SaleStatus.UNPUBLISHED);
-        p1.setUpdatedAt(LocalDateTime.of(2025, 7, 1, 12, 0));
-
         AdminProductDto p2 = new AdminProductDto();
-        p2.setProductId("id-2");
-        p2.setSku(2);
-        p2.setProductName("Product Two");
-        p2.setPriceExcl(220);
-        p2.setAvailable(10);
-        p2.setStatus(SaleStatus.PUBLISHED);
-        p2.setUpdatedAt(LocalDateTime.of(2025, 7, 2, 15, 30));
 
         doReturn(2).when(adminProductMapper).countProducts(req);
         doReturn(List.of(p1, p2)).when(adminProductMapper).searchProducts(req, 10, 0);

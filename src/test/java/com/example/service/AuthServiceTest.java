@@ -106,7 +106,7 @@ class AuthServiceTest {
                 assertThat(pr.getEmail()).isEqualTo(email);
                 assertThat(pr.getExpiresAt()).isAfter(LocalDateTime.now());
 
-                verify(gateway).send(argThat(msg -> msg.subject().equals(MailTemplate.REGISTRATION.getSubject())));
+                verify(gateway).send(argThat(msg -> msg.getSubject().equals(MailTemplate.REGISTRATION.getSubject())));
                 ;
             }
         }
@@ -345,7 +345,7 @@ class AuthServiceTest {
                                 "sample@example.com",
                                 fixed.plusMinutes(expireMin));
 
-                verify(gateway).send(assertArg(msg -> msg.subject().equals(MailTemplate.PASSWORD_RESET.getSubject())));
+                verify(gateway).send(assertArg(msg -> msg.getSubject().equals(MailTemplate.PASSWORD_RESET.getSubject())));
             }
         }
 
@@ -524,14 +524,14 @@ class AuthServiceTest {
                                 ld.plusMinutes(30));
 
                 verify(gateway).send(
-                        argThat(mail -> mail.subject().equals(MailTemplate.EMAIL_CHANGE_COMPLETE_NEW.getSubject())
-                                && mail.to().equals("test@example.com")
-                                && mail.body().contains(fixedToken)));
+                        argThat(mail -> mail.getSubject().equals(MailTemplate.EMAIL_CHANGE_COMPLETE_NEW.getSubject())
+                                && mail.getTo().equals("test@example.com")
+                                && mail.getBody().contains(fixedToken)));
 
                 verify(gateway).send(
-                        argThat(mail -> mail.subject().equals(MailTemplate.EMAIL_CHANGE_ALERT_OLD.getSubject())
-                                && mail.to().equals("sample@example.com")
-                                && mail.body().contains("2025年07月02日 10時40分")));
+                        argThat(mail -> mail.getSubject().equals(MailTemplate.EMAIL_CHANGE_ALERT_OLD.getSubject())
+                                && mail.getTo().equals("sample@example.com")
+                                && mail.getBody().contains("2025年07月02日 10時40分")));
             }
         }
     }

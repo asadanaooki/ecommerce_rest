@@ -83,11 +83,7 @@ class CartControllerTest {
 
             @Test
             void showCart_valid() throws Exception {
-                CartDto dto = new CartDto() {{
-                    setItems(List.of(new CartItemDto()));
-                    setTotalQty(2);
-                    setTotalPriceIncl(5000);
-                }};
+                CartDto dto = new CartDto(List.of(new CartItemDto()));
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 MvcResult result = mockMvc.perform(get("/cart").cookie(cookie))
@@ -144,10 +140,7 @@ class CartControllerTest {
             void showCart_valid() throws Exception {
                 doReturn(Optional.of("id")).when(cartService).findUserCartId(anyString());
 
-                CartDto dto = new CartDto() {{
-                    setTotalQty(2);
-                    setTotalPriceIncl(5000);
-                }};
+                CartDto dto = new CartDto(List.of());
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 mockMvc.perform(get("/cart"))
