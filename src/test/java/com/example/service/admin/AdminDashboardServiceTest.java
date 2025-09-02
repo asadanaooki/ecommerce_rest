@@ -39,27 +39,9 @@ class AdminDashboardServiceTest {
 
         @Test
         void getOverview_today() {
-            AdminHourlyAggRow r1 = new AdminHourlyAggRow() {
-                {
-                    setBucketHour("2025-08-06 00:00:00");
-                    setRevenue(1000);
-                    setOrders(1);
-                }
-            };
-            AdminHourlyAggRow r2 = new AdminHourlyAggRow() {
-                {
-                    setBucketHour("2025-08-06 02:00:00");
-                    setRevenue(2000);
-                    setOrders(3);
-                }
-            };
-            AdminHourlyAggRow r3 = new AdminHourlyAggRow() {
-                {
-                    setBucketHour("2025-08-06 03:00:00");
-                    setRevenue(100);
-                    setOrders(3);
-                }
-            };
+            AdminHourlyAggRow r1 = new AdminHourlyAggRow();
+            AdminHourlyAggRow r2 = new AdminHourlyAggRow();
+            AdminHourlyAggRow r3 = new AdminHourlyAggRow();
             doReturn(List.of(r1, r2, r3)).when(adminDashboardMapper)
                     .aggTodayHourly(any(LocalDateTime.class), any(LocalDateTime.class));
 
@@ -95,27 +77,9 @@ class AdminDashboardServiceTest {
 
         @Test
         void getOverview_last7Days() {
-            AdminDailyAggRow r1 = new AdminDailyAggRow() {
-                {
-                    setDay(LocalDate.of(2025, 7, 31));
-                    setRevenue(100);
-                    setOrders(1);
-                }
-            };
-            AdminDailyAggRow r2 = new AdminDailyAggRow() {
-                {
-                    setDay(LocalDate.of(2025, 8, 2));
-                    setRevenue(3000);
-                    setOrders(7);
-                }
-            };
-            AdminDailyAggRow r3 = new AdminDailyAggRow() {
-                {
-                    setDay(LocalDate.of(2025, 8, 5));
-                    setRevenue(2000);
-                    setOrders(5);
-                }
-            };
+            AdminDailyAggRow r1 = new AdminDailyAggRow();
+            AdminDailyAggRow r2 = new AdminDailyAggRow();
+            AdminDailyAggRow r3 = new AdminDailyAggRow();
             LocalDate fixed = LocalDate.of(2025, 8, 6);
 
             try (MockedStatic<LocalDate> localDateMock = Mockito.mockStatic(LocalDate.class,

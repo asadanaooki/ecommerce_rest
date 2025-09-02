@@ -67,7 +67,6 @@ class OrderCommandServiceTest {
                 setName("山田 太郎");
                 setAddress("東京都 1丁目 2-3");
                 setTotalQty(1);
-                setTotalPriceIncl(1200);
                 setOrderStatus(OrderStatus.OPEN);
                 setShippingStatus(ShippingStatus.UNSHIPPED);
                 setPaymentStatus(PaymentStatus.UNPAID);
@@ -81,7 +80,6 @@ class OrderCommandServiceTest {
                 setName("山田 太郎");
                 setAddress("東京都 1丁目 2-3");
                 setTotalQty(1);
-                setTotalPriceIncl(1200);
                 setOrderStatus(OrderStatus.OPEN);
                 setShippingStatus(ShippingStatus.UNSHIPPED);
                 setPaymentStatus(PaymentStatus.UNPAID);

@@ -260,7 +260,7 @@ public class TestDataFactory {
                 order.getPostalCode(),
                 order.getAddress(),
                 order.getTotalQty(),
-                order.getTotalPriceIncl()));
+                order.getGrandTotalIncl()));
 
         if (order.getOrderNumber() > 0) {
             cols.append(", order_number");

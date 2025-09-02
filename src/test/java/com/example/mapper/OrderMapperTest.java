@@ -52,9 +52,6 @@ class OrderMapperTest {
 
         factory.createCart(new Cart() {
             {
-                setCartId(cartId);
-                setUserId(userId);
-                setTtlDays(60);
             }
         });
         factory.createCartItem(new CartItem() {
@@ -124,7 +121,8 @@ class OrderMapperTest {
         order.setPostalCode("1500041");
         order.setAddress("東京都渋谷区神南1-1-1");
         order.setTotalQty(3);
-        order.setTotalPriceIncl(9600);
+        order.setItemsSubtotalIncl(8800);
+        order.setShippingFeeIncl(800);
 
         orderMapper.insertOrderHeader(order);
 
@@ -138,7 +136,7 @@ class OrderMapperTest {
                 Order::getPostalCode,
                 Order::getAddress,
                 Order::getTotalQty,
-                Order::getTotalPriceIncl,
+                Order::getGrandTotalIncl,
                 Order::getShippingStatus,
                 Order::getPaymentStatus)
                 .containsExactly(
@@ -165,7 +163,8 @@ class OrderMapperTest {
         order.setPostalCode("1500041");
         order.setAddress("東京都渋谷区神南1-1-1");
         order.setTotalQty(3);
-        order.setTotalPriceIncl(9600);
+        order.setItemsSubtotalIncl(8800);
+        order.setShippingFeeIncl(800);
         orderMapper.insertOrderHeader(order);
 
         // 2) 明細リスト作成
@@ -175,7 +174,6 @@ class OrderMapperTest {
         it1.setProductName("testA");
         it1.setQty(1);
         it1.setUnitPriceIncl(750);
-        it1.setSubtotalIncl(750);
 
         OrderItem it2 = new OrderItem();
         it2.setOrderId(orderId);
@@ -183,7 +181,6 @@ class OrderMapperTest {
         it2.setProductName("testB");
         it2.setQty(2);
         it2.setUnitPriceIncl(3200);
-        it2.setSubtotalIncl(6400);
 
         List<OrderItem> items = List.of(it1, it2);
 
@@ -276,7 +273,8 @@ class OrderMapperTest {
             order.setPostalCode("1500041");
             order.setAddress("東京都渋谷区神南1-1-1");
             order.setTotalQty(3);
-            order.setTotalPriceIncl(9600);
+            order.setItemsSubtotalIncl(8800);
+            order.setShippingFeeIncl(800);
             orderMapper.insertOrderHeader(order);
         }
         
@@ -355,7 +353,8 @@ class OrderMapperTest {
     //        o2.setPostalCode("1600000");
     //        o2.setAddress("東京都新宿区西新宿2-2-2");
     //        o2.setTotalQty(1);
-    //        o2.setTotalPriceIncl(3200);
+    //        o2.setItemsSubtotalIncl(2900);
+    //        o2.setShippingFeeIncl(300);
     //        orderMapper.insertOrderHeader(o2);
     //        
     //        Thread.sleep(2000);           // 1 秒待機（テスト用なので簡易に）
@@ -368,7 +367,8 @@ class OrderMapperTest {
     //        o1.setPostalCode("1500041");
     //        o1.setAddress("東京都渋谷区神南1-1-1");
     //        o1.setTotalQty(3);
-    //        o1.setTotalPriceIncl(9600);
+    //        o1.setItemsSubtotalIncl(8800);
+    //        o1.setShippingFeeIncl(800);
     //        orderMapper.insertOrderHeader(o1);
     //        
     //        List<OrderHeaderDto> headers = orderMapper.selectOrdersByUserId(userId);
@@ -405,7 +405,8 @@ class OrderMapperTest {
     //        h1.setPostalCode("1000001");
     //        h1.setAddress("東京都千代田区千代田1-1-1");
     //        h1.setTotalQty(3);
-    //        h1.setTotalPriceIncl(7150);
+    //        h1.setItemsSubtotalIncl(6650);
+    //        h1.setShippingFeeIncl(500);
     //        orderMapper.insertOrderHeader(h1);
     //
     //        OrderItem h1i1 = new OrderItem();
@@ -435,7 +436,8 @@ class OrderMapperTest {
     //        h2.setPostalCode("1000002");
     //        h2.setAddress("東京都千代田区丸の内2-2-2");
     //        h2.setTotalQty(1);
-    //        h2.setTotalPriceIncl(1800);
+    //        h2.setItemsSubtotalIncl(1500);
+    //        h2.setShippingFeeIncl(300);
     //        orderMapper.insertOrderHeader(h2);
     //
     //        OrderItem h2i1 = new OrderItem();

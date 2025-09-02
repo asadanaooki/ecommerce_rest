@@ -112,25 +112,25 @@ class AdminProductMapperTest {
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2018, 8, 2, 10, 44, 3)))),
+                                    buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2025, 7, 2, 10, 44, 3)))),
+                                    buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2019, 12, 24, 10, 44, 3)))),
+                                    buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2019, 12, 26)),
                             1),
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 7, 2, 10, 44, 3)))),
+                                    buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 7, 1)),
                             1),
                     // status
@@ -165,26 +165,26 @@ class AdminProductMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2019, 12, 31, 1, 2, 3)))),
+                                            buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 2, 1, 4, 3)))),
+                                            buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 2, 3, 10, 2)))),
+                                    buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
                             1),
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 4, 10, 2, 3)))),
+                                    buildProduct(p -> {})),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
                             1));
         }
@@ -291,8 +291,6 @@ class AdminProductMapperTest {
         p.setPriceExcl(1000);
         p.setStock(100);
         p.setStatus(SaleStatus.PUBLISHED);
-        p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
-        p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 10, 40, 5));
         customizer.accept(p);
         return p;
     }

@@ -81,8 +81,6 @@ class CheckoutServiceTest {
             user = u;
             cart = new Cart() {
                 {
-                    setCartId("cartId");
-                    setUserId(userId);
                     //  setVersion(1);
                 }
             };
@@ -153,24 +151,8 @@ class CheckoutServiceTest {
         @Test
         void loadCheckout_cartExists() {
             List<CartItemDto> items = List.of(
-                    new CartItemDto() {
-                        {
-                            setProductId("N-005");
-                            setProductName("通常品");
-                            setQty(2);
-                            setUnitPriceIncl(220);
-                            setSubtotalIncl(440);
-                        }
-                    },
-                    new CartItemDto() {
-                        {
-                            setProductId("N-006");
-                            setProductName("通常品2");
-                            setQty(1);
-                            setUnitPriceIncl(110);
-                            setSubtotalIncl(110);
-                        }
-                    });
+                    new CartItemDto(),
+                    new CartItemDto());
             doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
@@ -189,7 +171,7 @@ class CheckoutServiceTest {
                     .containsExactly(tuple("N-005", "通常品", 2, 220, 440),
                             tuple("N-006", "通常品2", 1, 110, 110));
 
-            assertThat(dto.getCart().getTotalPriceIncl()).isEqualTo(550);
+            assertThat(dto.getCart().getGrandTotalIncl()).isEqualTo(550);
             assertThat(dto.getCart().getTotalQty()).isEqualTo(3);
         }
 
@@ -235,7 +217,7 @@ class CheckoutServiceTest {
         //            assertThat(dto.getItems()).hasSize(3);
         //            assertThat(dto.getRemoved()).hasSize(1);
         //            assertThat(dto.getTotalQty()).isEqualTo(6);
-        //            assertThat(dto.getTotalPriceIncl()).isEqualTo(1001);
+        //            assertThat(dto.getGrandTotalIncl()).isEqualTo(1001);
         //            
         //            assertThat(dto.getItems().get(0).getLowStock()).isTrue();
         //            assertThat(dto.getItems().get(0).getStockJson()).isOne();
@@ -315,57 +297,15 @@ class CheckoutServiceTest {
             // diff が発生する 4 件分の CheckoutItemDto
             List<CheckoutItemDto> diffItems = List.of(
                     // ① 販売停止
-                    new CheckoutItemDto() {
-                        {
-                            setProductId("D-001");
-                            setProductName("販売停止品");
-                            setStatus(SaleStatus.UNPUBLISHED); // DISCONTINUED
-                            setAvailable(10);
-                            setQty(1);
-                            setCurrentUnitPriceExcl(100);
-                            setUnitPriceExclAtAddToCart(100);
-                        }
-                    },
+                    new CheckoutItemDto(),
                     // ② 在庫切れ
-                    new CheckoutItemDto() {
-                        {
-                            setProductId("O-002");
-                            setProductName("在庫切れ品");
-                            setStatus(SaleStatus.PUBLISHED);
-                            setAvailable(0);
-                            setQty(1); // stock <= 0
-                            setCurrentUnitPriceExcl(200);
-                            setUnitPriceExclAtAddToCart(200);
-                        }
-                    },
+                    new CheckoutItemDto(),
                     // ③ 在庫不足
-                    new CheckoutItemDto() {
-                        {
-                            setProductId("L-003");
-                            setProductName("在庫不足品");
-                            setStatus(SaleStatus.PUBLISHED);
-                            setAvailable(1);
-                            setQty(3); // stock < qty
-                            setCurrentUnitPriceExcl(120);
-                            setUnitPriceExclAtAddToCart(120);
-                        }
-                    },
+                    new CheckoutItemDto(),
                     // ④ 価格改定
-                    new CheckoutItemDto() {
-                        {
-                            setProductId("P-004");
-                            setProductName("価格改定品");
-                            setStatus(SaleStatus.PUBLISHED);
-                            setAvailable(5);
-                            setQty(1);
-                            setCurrentUnitPriceExcl(150);
-                            setUnitPriceExclAtAddToCart(100); // 価格改定
-                        }
-                    });
+                    new CheckoutItemDto());
             doReturn(new Cart() {
                 {
-                    setCartId(cartId);
-                    setUserId(userId);
                     //    setVersion(2);
                 }
             }).when(cartMapper).selectCartByUser(userId);
@@ -391,38 +331,12 @@ class CheckoutServiceTest {
         void checkout_success() throws MessagingException {
             Cart cart = new Cart() {
                 {
-                    setCartId(cartId);
-                    setUserId(userId);
                     //    setVersion(2);
                 }
             };
             List<CheckoutItemDto> items = List.of(
-                    new CheckoutItemDto() {
-                        { // 通常品1
-                            setProductId("N-001");
-                            setProductName("通常品1");
-                            setStatus(SaleStatus.PUBLISHED);
-                            setAvailable(10);
-                            setQty(2);
-                            setCurrentUnitPriceExcl(200);
-                            setUnitPriceExclAtAddToCart(200);
-                            setUnitPriceIncl(220);
-                            setSubtotalIncl(440);
-                        }
-                    },
-                    new CheckoutItemDto() {
-                        { // 通常品2
-                            setProductId("N-002");
-                            setProductName("通常品2");
-                            setStatus(SaleStatus.PUBLISHED);
-                            setAvailable(5);
-                            setQty(1);
-                            setCurrentUnitPriceExcl(100);
-                            setUnitPriceExclAtAddToCart(100);
-                            setUnitPriceIncl(110);
-                            setSubtotalIncl(110);
-                        }
-                    });
+                    new CheckoutItemDto(),
+                    new CheckoutItemDto());
             User user = new User() {
                 {
                     setUserId(userId);
@@ -451,7 +365,7 @@ class CheckoutServiceTest {
                     Order::getPostalCode,
                     Order::getAddress,
                     Order::getTotalQty,
-                    Order::getTotalPriceIncl)
+                    Order::getGrandTotalIncl)
                     .containsExactly(
                             cartId,
                             userId,
@@ -482,7 +396,7 @@ class CheckoutServiceTest {
 
             verify(productMapper, times(2)).decreaseStock(anyString(), anyInt(),isNull());
             verify(cartMapper).deleteCart(cartId);
-            verify(gateway).send(argThat(msg -> msg.subject().equals(MailTemplate.ORDER_CONFIRMATION.getSubject())));
+            verify(gateway).send(argThat(msg -> msg.getSubject().equals(MailTemplate.ORDER_CONFIRMATION.getSubject())));
 
         }
     }

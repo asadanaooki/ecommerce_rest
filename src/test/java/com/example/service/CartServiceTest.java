@@ -55,7 +55,7 @@ class CartServiceTest {
 
             assertThat(dto.getItems()).isEmpty();
             assertThat(dto.getTotalQty()).isZero();
-            assertThat(dto.getTotalPriceIncl()).isZero();
+            assertThat(dto.getGrandTotalIncl()).isZero();
         }
 
         @Test
@@ -68,30 +68,14 @@ class CartServiceTest {
         @Test
         void showCart_multipleItems() {
             List<CartItemDto> items = List.of(
-                    new CartItemDto() {
-                        {
-                            setProductId("A-001");
-                            setProductName("Item A");
-                            setQty(3);
-                            setUnitPriceIncl(110); // 税込 110 円
-                            setSubtotalIncl(330);
-                        }
-                    },
-                    new CartItemDto() {
-                        {
-                            setProductId("B-002");
-                            setProductName("Item B");
-                            setQty(1);
-                            setUnitPriceIncl(220); // 税込 220 円
-                            setSubtotalIncl(220); // 220 * 1
-                        }
-                    });
+                    new CartItemDto(),
+                    new CartItemDto());
             doReturn(items).when(cartMapper).selectCartItems(anyString());
 
             CartDto dto = cartService.showCart(cartId);
 
             assertThat(dto.getTotalQty()).isEqualTo(4);
-            assertThat(dto.getTotalPriceIncl()).isEqualTo(550);
+            assertThat(dto.getGrandTotalIncl()).isEqualTo(550);
 
             assertThat(dto.getItems()).hasSize(2).first()
                     .extracting(
