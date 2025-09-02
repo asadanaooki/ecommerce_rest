@@ -30,7 +30,6 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
-import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.OrderMapper;
@@ -320,6 +319,7 @@ class CheckoutServiceTest {
                     new CheckoutItemDto());
             doReturn(new Cart() {
                 {
+                    setCartId(cartId);
                     //    setVersion(2);
                 }
             }).when(cartMapper).selectCartByUser(userId);

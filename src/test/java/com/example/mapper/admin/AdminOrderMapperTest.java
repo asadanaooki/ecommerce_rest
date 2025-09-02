@@ -20,7 +20,6 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -74,11 +73,6 @@ class AdminOrderMapperTest {
                 Consumer<OrderSearchRequest> customizeReq, int expected) {
             insertMismatch.accept(factory);
             
-            List<Order> orders = jdbcTemplate.query(
-                    "SELECT * FROM `order` ",
-                    new BeanPropertyRowMapper<>(Order.class)
-                );
-
             OrderSearchRequest req = new OrderSearchRequest();
             customizeReq.accept(req);
           int a =  adminOrderMapper.count(req);

@@ -19,6 +19,7 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.jdbc.Sql;
 
 import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
@@ -31,6 +32,9 @@ import com.example.testUtil.TestDataFactory;
 @MybatisTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestDataFactory.class)
+@Sql(scripts = {
+        "/reset-cart-data.sql"
+})
 class CartMapperTest {
 
     @Autowired
@@ -49,8 +53,6 @@ class CartMapperTest {
     class insertCartIfAbsent {
         @Test
         void insertCartIfAbsent_absent() {
-            factory.deleteCartItemByCartId(cartId);
-            factory.deleteCart(cartId);
             int row = cartMapper.insertCartIfAbsent(cartId, null);
             Cart cart = cartMapper.selectCartByPrimaryKey(cartId);
 
@@ -60,6 +62,14 @@ class CartMapperTest {
 
         @Test
         void insertCartIfAbsent_exists() {
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setTtlDays(14);
+                    setUserId(null);
+                }
+            });
+            
             int row = cartMapper.insertCartIfAbsent(cartId, null);
             assertThat(row).isEqualTo(0);
         }
@@ -70,7 +80,14 @@ class CartMapperTest {
         @Test
         void upsertCartItem_insert() {
             AddCartRequest req = new AddCartRequest(13);
-            factory.deleteCartItemByCartId(cartId);
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setTtlDays(14);
+                    setUserId(null);
+                }
+            });
+            
             int row = cartMapper.upsertCartItem(new CartItem() {
                 {
                     setCartId(cartId);
@@ -97,12 +114,28 @@ class CartMapperTest {
                 "19, 200, 20"
         })
         void upsertCartItem_update(int qty, int price, int expectedQty) {
-            AddCartRequest req = new AddCartRequest(qty);
+            
+            factory.createCart(new Cart() {
+                {
+                    setCartId(cartId);
+                    setTtlDays(14);
+                    setUserId(null);
+                }
+            });
+            cartMapper.upsertCartItem(new CartItem() {
+                {
+                    setCartId(cartId);
+                    setProductId(productId);
+                    setQty(2);
+                    setUnitPriceExcl(1300);
+                }
+            });
+            
             int row = cartMapper.upsertCartItem(new CartItem() {
                 {
                     setCartId(cartId);
                     setProductId(productId);
-                    setQty(req.getQty());
+                    setQty(qty);
                     setUnitPriceExcl(price);
                 }
             });
@@ -113,6 +146,8 @@ class CartMapperTest {
             assertThat(ci.getCartId()).isEqualTo(cartId);
             assertThat(ci.getUnitPriceExcl()).isEqualTo(price);
             assertThat(ci.getQty()).isEqualTo(expectedQty);
+            assertThat(ci.getUnitPriceIncl()).isEqualTo((price * 110) / 100);
+            assertThat(ci.getSubtotalIncl()).isEqualTo(((price * 110) / 100) * expectedQty);
         }
     }
 
@@ -376,6 +411,8 @@ class CartMapperTest {
                     setCartId(cartId);
                     setTtlDays(60);
                     setUserId("111e8400-e29b-41d4-a716-446655440111");
+                    setCreatedAt(time);
+                    setUpdatedAt(time);
                 }
             });
             cartMapper.insertCartIfAbsent(cartId, "111e8400-e29b-41d4-a716-446655440111");
@@ -405,6 +442,8 @@ class CartMapperTest {
                     setCartId(cartId);
                     setTtlDays(userId != null ? 60 : 14);
                     setUserId(userId);
+                    setCreatedAt(time);
+                    setUpdatedAt(time);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -436,6 +475,8 @@ class CartMapperTest {
                 {
                     setCartId(cartA);
                     setTtlDays(14);
+                    setCreatedAt(a);
+                    setUpdatedAt(a);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -456,6 +497,8 @@ class CartMapperTest {
                     setCartId(cartB);
                     setTtlDays(60);
                     setUserId(userId);
+                    setCreatedAt(b);
+                    setUpdatedAt(b);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -475,6 +518,8 @@ class CartMapperTest {
                 {
                     setCartId(cartC);
                     setTtlDays(14);
+                    setCreatedAt(c);
+                    setUpdatedAt(c);
                 }
             });
             factory.createCartItem(new CartItem() {

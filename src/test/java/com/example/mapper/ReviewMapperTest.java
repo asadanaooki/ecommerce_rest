@@ -356,6 +356,7 @@ class ReviewMapperTest {
         r1.setReviewText("r1-body");
         r1.setStatus(ReviewStatus.APPROVED);
         r1.setCreatedAt(fixed.minusDays(21));
+        r1.setUpdatedAt(fixed.minusDays(21));
         factory.createReview(r1);
         
         Review r2 = new Review();
@@ -366,6 +367,7 @@ class ReviewMapperTest {
         r2.setReviewText("r2-body");
         r2.setStatus(ReviewStatus.REJECTED);
         r2.setCreatedAt(fixed.minusMonths(12));
+        r2.setUpdatedAt(fixed.minusMonths(12));
         factory.createReview(r2);
         
         Review r3 = new Review();
@@ -376,6 +378,7 @@ class ReviewMapperTest {
         r3.setReviewText("r3-body");
         r3.setStatus(ReviewStatus.REJECTED);
         r3.setCreatedAt(fixed.minusMonths(12).minusSeconds(1));
+        r3.setUpdatedAt(fixed.minusMonths(12).minusSeconds(1));
         factory.createReview(r3);
         
         int rows = reviewMapper.deleteRejected();
