@@ -94,7 +94,8 @@ class CheckoutServiceTest {
         @ValueSource(strings = { "testビル" })
         void loadCheckout_address(String value) {
             user.setAddressBuilding(value);
-            doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
+            cart.setCartId("cartId");
+            doReturn(cart).when(cartMapper).selectCartByUser(userId);
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
 
             assertThat(dto.getAddress())
@@ -150,10 +151,23 @@ class CheckoutServiceTest {
 
         @Test
         void loadCheckout_cartExists() {
-            List<CartItemDto> items = List.of(
-                    new CartItemDto(),
-                    new CartItemDto());
-            doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
+            CartItemDto item1 = new CartItemDto();
+            item1.setProductId("N-005");
+            item1.setProductName("通常品");
+            item1.setQty(2);
+            item1.setUnitPriceIncl(220);
+            item1.setSubtotalIncl(440);
+            
+            CartItemDto item2 = new CartItemDto();
+            item2.setProductId("N-006");
+            item2.setProductName("通常品2");
+            item2.setQty(1);
+            item2.setUnitPriceIncl(110);
+            item2.setSubtotalIncl(110);
+            
+            List<CartItemDto> items = List.of(item1, item2);
+            cart.setCartId("cartId");
+            doReturn(cart).when(cartMapper).selectCartByUser(userId);
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
@@ -331,12 +345,25 @@ class CheckoutServiceTest {
         void checkout_success() throws MessagingException {
             Cart cart = new Cart() {
                 {
+                    setCartId(cartId);
                     //    setVersion(2);
                 }
             };
-            List<CheckoutItemDto> items = List.of(
-                    new CheckoutItemDto(),
-                    new CheckoutItemDto());
+            CheckoutItemDto item1 = new CheckoutItemDto();
+            item1.setProductId("P1");
+            item1.setProductName("Product 1");
+            item1.setQty(2);
+            item1.setUnitPriceIncl(100);
+            item1.setSubtotalIncl(200);
+            
+            CheckoutItemDto item2 = new CheckoutItemDto();
+            item2.setProductId("P2");
+            item2.setProductName("Product 2");
+            item2.setQty(1);
+            item2.setUnitPriceIncl(150);
+            item2.setSubtotalIncl(150);
+            
+            List<CheckoutItemDto> items = List.of(item1, item2);
             User user = new User() {
                 {
                     setUserId(userId);

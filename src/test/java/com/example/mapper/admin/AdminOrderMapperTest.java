@@ -20,9 +20,12 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
 import com.example.dto.admin.AdminOrderDetailDto;
+import com.example.dto.admin.AdminOrderDetailItemDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.enums.order.OrderStatus;
@@ -50,9 +53,15 @@ class AdminOrderMapperTest {
 
     @Autowired
     TestDataFactory factory;
+    
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Nested
     class Count {
+        @Autowired
+        TestDataFactory factory;
+
         @BeforeEach
         void setup() {
             factory.createOrder(buildOrder(o -> {
@@ -64,11 +73,17 @@ class AdminOrderMapperTest {
         void count_singleFilterAndBoundary(Consumer<TestDataFactory> insertMismatch,
                 Consumer<OrderSearchRequest> customizeReq, int expected) {
             insertMismatch.accept(factory);
+            
+            List<Order> orders = jdbcTemplate.query(
+                    "SELECT * FROM `order` ",
+                    new BeanPropertyRowMapper<>(Order.class)
+                );
 
             OrderSearchRequest req = new OrderSearchRequest();
             customizeReq.accept(req);
+          int a =  adminOrderMapper.count(req);
 
-            assertThat(adminOrderMapper.count(req)).isEqualTo(expected);
+            assertThat(a).isEqualTo(expected);
         }
 
         static Stream<Arguments> provideSingleFilterAndBoundaryCases() {
@@ -111,13 +126,13 @@ class AdminOrderMapperTest {
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(
-                                    buildOrder(o -> {})),
+                                    buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2018, 1, 1, 10, 3, 4)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(
-                                    buildOrder(o -> {})),
+                                    buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2022, 4, 2, 10, 3, 4)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
 
@@ -126,27 +141,28 @@ class AdminOrderMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> {})),
+                                            buildOrder(
+                                                    o -> o.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59, 59)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> {})),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2019, 12, 31)),
+                                            buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0)))),
+                            (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             2),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> {})),
+                                            buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0, 0)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> {})),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 2)),
+                                            buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
+                            (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             2));
         }
 
@@ -193,19 +209,33 @@ class AdminOrderMapperTest {
             o.setOrderId(orderId);
             o.setOrderNumber(200);
         }));
+        OrderItem i1 = new OrderItem();
+        i1.setOrderId(orderId);
+        i1.setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
+        i1.setProductName("test");
+        i1.setQty(3);
+        i1.setUnitPriceIncl(220);
 
+        OrderItem i2 = new OrderItem();
+        i2.setOrderId(orderId);
+        i2.setProductId("6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd");
+        i2.setProductName("test2");
+        i2.setQty(1);
+        i2.setUnitPriceIncl(100);
+
+        orderMapper.insertOrderItems(List.of(i1, i2));
         AdminOrderDetailDto dto = adminOrderMapper.selectOrderDetail(orderId);
 
         assertThat(dto).extracting(
                 AdminOrderDetailDto::getOrderId,
                 AdminOrderDetailDto::getOrderNumber,
+                AdminOrderDetailDto::getItemsSubtotalIncl,
+                AdminOrderDetailDto::getShippingFeeIncl,
                 AdminOrderDetailDto::getGrandTotalIncl,
                 AdminOrderDetailDto::getOrderStatus,
                 AdminOrderDetailDto::getShippingStatus,
                 AdminOrderDetailDto::getPaymentStatus,
                 AdminOrderDetailDto::getCreatedAt,
-
-                AdminOrderDetailDto::getItems,
 
                 AdminOrderDetailDto::getName,
                 AdminOrderDetailDto::getNameKana,
@@ -216,13 +246,13 @@ class AdminOrderMapperTest {
                 .containsExactly(
                         orderId,
                         "0200",
-                        3000,
+                        4000,
+                        500,
+                        4500,
                         OrderStatus.OPEN,
                         ShippingStatus.UNSHIPPED,
                         PaymentStatus.UNPAID,
                         LocalDateTime.of(2020, 1, 1, 10, 3, 4),
-
-                        null,
 
                         "山田 太郎",
                         "ヤマダ タロウ",
@@ -230,6 +260,17 @@ class AdminOrderMapperTest {
                         "1500041",
                         "test",
                         "0312345678");
+
+        assertThat(dto.getItems()).hasSize(2);
+        AdminOrderDetailItemDto d1 = dto.getItems().get(0);
+        assertThat(d1.getProductId()).isEqualTo("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
+        assertThat(d1.getProductName()).isEqualTo("test");
+        assertThat(d1.getQty()).isEqualTo(3);
+        assertThat(d1.getUnitPriceIncl()).isEqualTo(220);
+        assertThat(d1.getSubtotalIncl()).isEqualTo(660);
+
+        AdminOrderDetailItemDto d2 = dto.getItems().get(1);
+        assertThat(d2.getProductId()).isEqualTo("6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd");
     }
 
     @Test
@@ -238,29 +279,14 @@ class AdminOrderMapperTest {
         factory.createOrder(buildOrder(o -> {
             o.setOrderId(orderId);
         }));
-        orderMapper.insertOrderItems(List.of(new OrderItem() {
-            {
-                setOrderId(orderId);
-                setProductId("97113c2c-719a-490c-9979-144d92905c33");
-                setProductName("test");
-                setQty(2);
-                setUnitPriceIncl(1000);
-                // setSubtotalIncl(2000); // Removed - subtotalIncl has @Setter(AccessLevel.NONE)
-            }
-        }));
-        orderMapper.insertOrderItems(List.of(new OrderItem() {
-            {
-                setOrderId(orderId);
-                setProductId("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
-                setProductName("test2");
-                setQty(1);
-                setUnitPriceIncl(1000);
-            }
-        }));
+
+        int updated = orderMapper.updateTotals(orderId, 2000, 0);
 
         Order order = orderMapper.selectOrderByPrimaryKey(orderId);
-        
+
         assertThat(order.getTotalQty()).isEqualTo(2);
+        assertThat(order.getItemsSubtotalIncl()).isEqualTo(2000);
+        assertThat(order.getShippingFeeIncl()).isEqualTo(0);
         assertThat(order.getGrandTotalIncl()).isEqualTo(2000);
 
     }
@@ -268,9 +294,18 @@ class AdminOrderMapperTest {
     static Order buildOrder(Consumer<Order> customizer) {
         Order o = new Order();
         o.setOrderId(UUID.randomUUID().toString());
+        o.setUserId("550e8400-e29b-41d4-a716-446655440000");
         o.setName("山田 太郎");
         o.setPostalCode("1500041");
         o.setAddress("test");
+        o.setTotalQty(2);
+        o.setItemsSubtotalIncl(4000);
+        o.setShippingFeeIncl(500);
+        o.setOrderStatus(OrderStatus.OPEN);
+        o.setShippingStatus(ShippingStatus.UNSHIPPED);
+        o.setPaymentStatus(PaymentStatus.UNPAID);
+        o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
+        o.setUpdatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
         customizer.accept(o);
         return o;
     }

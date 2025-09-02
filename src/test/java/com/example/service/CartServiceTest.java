@@ -55,7 +55,7 @@ class CartServiceTest {
 
             assertThat(dto.getItems()).isEmpty();
             assertThat(dto.getTotalQty()).isZero();
-            assertThat(dto.getGrandTotalIncl()).isZero();
+            assertThat(dto.getGrandTotalIncl()).isEqualTo(500);  // Empty cart still has shipping fee
         }
 
         @Test
@@ -67,15 +67,28 @@ class CartServiceTest {
 
         @Test
         void showCart_multipleItems() {
-            List<CartItemDto> items = List.of(
-                    new CartItemDto(),
-                    new CartItemDto());
+            // Create properly populated CartItemDto objects
+            CartItemDto item1 = new CartItemDto();
+            item1.setProductId("A-001");
+            item1.setProductName("Item A");
+            item1.setQty(3);
+            item1.setUnitPriceIncl(110);
+            item1.setSubtotalIncl(330);  // 3 * 110
+            
+            CartItemDto item2 = new CartItemDto();
+            item2.setProductId("B-002");
+            item2.setProductName("Item B");
+            item2.setQty(1);
+            item2.setUnitPriceIncl(220);
+            item2.setSubtotalIncl(220);  // 1 * 220
+            
+            List<CartItemDto> items = List.of(item1, item2);
             doReturn(items).when(cartMapper).selectCartItems(anyString());
 
             CartDto dto = cartService.showCart(cartId);
 
             assertThat(dto.getTotalQty()).isEqualTo(4);
-            assertThat(dto.getGrandTotalIncl()).isEqualTo(550);
+            assertThat(dto.getGrandTotalIncl()).isEqualTo(1050);  // 550 (items) + 500 (shipping)
 
             assertThat(dto.getItems()).hasSize(2).first()
                     .extracting(

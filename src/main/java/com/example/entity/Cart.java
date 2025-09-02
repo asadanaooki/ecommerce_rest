@@ -2,9 +2,9 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class Cart {
 
     private String cartId;

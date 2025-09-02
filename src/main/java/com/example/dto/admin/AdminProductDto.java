@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 
 import com.example.enums.SaleStatus;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class AdminProductDto {
 
     /** 商品ID（UUID） */

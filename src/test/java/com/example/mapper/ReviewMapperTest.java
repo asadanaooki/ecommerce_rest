@@ -379,7 +379,7 @@ class ReviewMapperTest {
         factory.createReview(r3);
         
         int rows = reviewMapper.deleteRejected();
-        assertThat(rows).isOne();
+        assertThat(rows).isEqualTo(1);
         
         Review ra1 = reviewMapper.selectByPrimaryKey(productId, "550e8400-e29b-41d4-a716-446655440000");
         Review ra2 = reviewMapper.selectByPrimaryKey(productId, "111e8400-e29b-41d4-a716-446655440111");

@@ -3,8 +3,14 @@
     "allow": [
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Bash(./mvnw test:*)"
+      "Bash(./mvnw test:*)",
+      "Bash(mvn test:*)",
+      "Bash(sed:*)",
+      "Bash(python:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\pleiades\\2024-06\\ecommerce"
+    ]
   }
 }

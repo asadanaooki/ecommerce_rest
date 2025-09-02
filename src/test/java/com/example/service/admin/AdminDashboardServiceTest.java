@@ -40,8 +40,19 @@ class AdminDashboardServiceTest {
         @Test
         void getOverview_today() {
             AdminHourlyAggRow r1 = new AdminHourlyAggRow();
+            r1.setBucketHour("2025-08-06 00:00:00");
+            r1.setRevenue(1000);
+            r1.setOrders(1);
+            
             AdminHourlyAggRow r2 = new AdminHourlyAggRow();
+            r2.setBucketHour("2025-08-06 02:00:00");
+            r2.setRevenue(2000);
+            r2.setOrders(3);
+            
             AdminHourlyAggRow r3 = new AdminHourlyAggRow();
+            r3.setBucketHour("2025-08-06 03:00:00");
+            r3.setRevenue(100);
+            r3.setOrders(3);
             doReturn(List.of(r1, r2, r3)).when(adminDashboardMapper)
                     .aggTodayHourly(any(LocalDateTime.class), any(LocalDateTime.class));
 
@@ -78,8 +89,19 @@ class AdminDashboardServiceTest {
         @Test
         void getOverview_last7Days() {
             AdminDailyAggRow r1 = new AdminDailyAggRow();
+            r1.setDay(LocalDate.of(2025, 7, 31));
+            r1.setRevenue(100);
+            r1.setOrders(1);
+            
             AdminDailyAggRow r2 = new AdminDailyAggRow();
+            r2.setDay(LocalDate.of(2025, 8, 2));
+            r2.setRevenue(3000);
+            r2.setOrders(7);
+            
             AdminDailyAggRow r3 = new AdminDailyAggRow();
+            r3.setDay(LocalDate.of(2025, 8, 5));
+            r3.setRevenue(2000);
+            r3.setOrders(5);
             LocalDate fixed = LocalDate.of(2025, 8, 6);
 
             try (MockedStatic<LocalDate> localDateMock = Mockito.mockStatic(LocalDate.class,

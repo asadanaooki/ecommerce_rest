@@ -78,19 +78,22 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
+                        .andExpect(jsonPath("$.grandTotalIncl").value(0));
             }
 
             @Test
             void showCart_valid() throws Exception {
-                CartDto dto = new CartDto(List.of(new CartItemDto()));
+                CartItemDto item = new CartItemDto();
+                item.setQty(2);
+                item.setSubtotalIncl(1000);
+                CartDto dto = new CartDto(List.of(item));
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 MvcResult result = mockMvc.perform(get("/cart").cookie(cookie))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items", hasSize(1)))
                         .andExpect(jsonPath("$.totalQty").value(2))
-                        .andExpect(jsonPath("$.totalPriceIncl").value(5000))
+                        .andExpect(jsonPath("$.grandTotalIncl").value(1500))
                         .andReturn();
 
                 assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
@@ -107,7 +110,7 @@ class CartControllerTest {
                                 CartController.EVENT_CART_EXPIRED))
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
+                        .andExpect(jsonPath("$.grandTotalIncl").value(0));
             }
         }
 
@@ -133,21 +136,24 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
+                        .andExpect(jsonPath("$.grandTotalIncl").value(0));
             }
 
             @Test
             void showCart_valid() throws Exception {
                 doReturn(Optional.of("id")).when(cartService).findUserCartId(anyString());
 
-                CartDto dto = new CartDto(List.of());
+                CartItemDto item = new CartItemDto();
+                item.setQty(2);
+                item.setSubtotalIncl(1000);
+                CartDto dto = new CartDto(List.of(item));
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 mockMvc.perform(get("/cart"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.items").isEmpty())
+                        .andExpect(jsonPath("$.items", hasSize(1)))
                         .andExpect(jsonPath("$.totalQty").value(2))
-                        .andExpect(jsonPath("$.totalPriceIncl").value(5000));
+                        .andExpect(jsonPath("$.grandTotalIncl").value(1500));
             }
 
             @Test
@@ -162,7 +168,7 @@ class CartControllerTest {
                                 CartController.EVENT_CART_EXPIRED))
                         .andExpect(jsonPath("$.items").isEmpty())
                         .andExpect(jsonPath("$.totalQty").value(0))
-                        .andExpect(jsonPath("$.totalPriceIncl").value(0));
+                        .andExpect(jsonPath("$.grandTotalIncl").value(0));
             }
         }
     }

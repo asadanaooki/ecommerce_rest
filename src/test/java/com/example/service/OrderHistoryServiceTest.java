@@ -53,6 +53,8 @@ class OrderHistoryServiceTest {
             headerA.setName("山田 太郎");
             headerA.setPostalCode("1500000");
             headerA.setAddress("東京都渋谷区…");
+            org.springframework.test.util.ReflectionTestUtils.setField(headerA, "grandTotalIncl", 1000);
+            headerA.setCreatedAt(LocalDateTime.of(2025, 6, 29, 10, 0));
 
             Order headerB = new Order();
             headerB.setOrderId("order-b");
@@ -60,6 +62,8 @@ class OrderHistoryServiceTest {
             headerB.setName("山田 花子");
             headerB.setPostalCode("1500001");
             headerB.setAddress("東京都新宿区…");
+            org.springframework.test.util.ReflectionTestUtils.setField(headerB, "grandTotalIncl", 5000);
+            headerB.setCreatedAt(LocalDateTime.of(2025, 4, 28, 10, 0));
 
             doReturn(List.of(headerA, headerB)).when(orderMapper).selectOrdersByUserId(userId);
 

@@ -113,7 +113,7 @@
     set 
       items_subtotal_incl = #{itemsSubtotalIncl},
       shipping_fee_incl   = #{shippingFeeIncl}
-    where o.order_id = #{orderId}
+    where order_id = #{orderId}
   </update>
   
   <update id="updateItemQty">

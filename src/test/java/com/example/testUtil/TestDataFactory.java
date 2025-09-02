@@ -250,9 +250,9 @@ public class TestDataFactory {
     public void createOrder(Order order) {
         // まず必須のカラムをセット
         StringBuilder cols = new StringBuilder(
-                "order_id, user_id, name, postal_code, address, total_qty, total_price_incl");
+                "order_id, user_id, name, postal_code, address, total_qty, items_subtotal_incl, shipping_fee_incl");
         StringBuilder marks = new StringBuilder(
-                "?, ?, ?, ?, ?, ?, ?");
+                "?, ?, ?, ?, ?, ?, ?, ?");
         List<Object> params = new ArrayList<>(List.of(
                 order.getOrderId(),
                 order.getUserId(),
@@ -260,7 +260,8 @@ public class TestDataFactory {
                 order.getPostalCode(),
                 order.getAddress(),
                 order.getTotalQty(),
-                order.getGrandTotalIncl()));
+                order.getItemsSubtotalIncl(),
+                order.getShippingFeeIncl()));
 
         if (order.getOrderNumber() > 0) {
             cols.append(", order_number");

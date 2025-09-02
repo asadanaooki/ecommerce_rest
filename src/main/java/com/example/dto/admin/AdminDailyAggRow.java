@@ -2,9 +2,9 @@ package com.example.dto.admin;
 
 import java.time.LocalDate;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class AdminDailyAggRow {
 
     private LocalDate day;

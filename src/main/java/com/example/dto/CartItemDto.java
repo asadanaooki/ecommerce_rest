@@ -1,8 +1,8 @@
 package com.example.dto;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class CartItemDto {
     // TODO:
     // SKU表示するほうがよい？

@@ -61,9 +61,33 @@
   </select>
   
   <resultMap type="com.example.dto.admin.AdminOrderDetailDto" id="AdminOrderDetailMap">
-    <id property="orderId" column="order_id"></id>
-    <collection property="items" ofType="com.example.dto.admin.AdminOrderDetailItemDto"></collection>
+    <!-- Order本体 -->
+    <id     property="orderId"           column="order_id"/>
+    <result property="orderNumber"       column="order_number"/>
+    <result property="itemsSubtotalIncl" column="items_subtotal_incl"/>
+    <result property="shippingFeeIncl"   column="shipping_fee_incl"/>
+    <result property="grandTotalIncl"    column="grand_total_incl"/>
+    <result property="orderStatus"       column="order_status"/>
+    <result property="shippingStatus"    column="shipping_status"/>
+    <result property="paymentStatus"     column="payment_status"/>
+    <result property="createdAt"         column="created_at"/>
+    <result property="name"              column="name"/>
+    <result property="nameKana"          column="name_kana"/>
+    <result property="email"             column="email"/>
+    <result property="postalCode"        column="postal_code"/>
+    <result property="address"           column="address"/>
+    <result property="phoneNumber"       column="phone_number"/>
+  
+    <!-- Itemsコレクション -->
+    <collection property="items" ofType="com.example.dto.admin.AdminOrderDetailItemDto">
+      <result property="productId"     column="product_id"/>
+      <result property="productName"   column="product_name"/>
+      <result property="unitPriceIncl" column="unit_price_incl"/>
+      <result property="qty"           column="qty"/>
+      <result property="subtotalIncl"  column="subtotal_incl"/>
+    </collection>
   </resultMap>
+
   
   <select id="selectOrderDetail" resultMap="AdminOrderDetailMap">
     SELECT
@@ -91,7 +115,7 @@
     FROM `order` o
     JOIN `user` u
       ON u.user_id = o.user_id
-    LEFT JOIN order_items i
+    LEFT JOIN order_item i
       ON i.order_id = o.order_id
     WHERE o.order_id = #{orderId}
     ORDER BY i.product_id

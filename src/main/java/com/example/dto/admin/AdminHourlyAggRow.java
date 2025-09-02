@@ -1,8 +1,8 @@
 package com.example.dto.admin;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class AdminHourlyAggRow {
 
     private String bucketHour;

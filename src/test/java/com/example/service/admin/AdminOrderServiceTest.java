@@ -1,9 +1,11 @@
 package com.example.service.admin;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +25,8 @@ import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
+import com.example.mapper.OrderMapper;
+import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
 import com.example.request.admin.OrderEditRequest;
@@ -38,7 +42,13 @@ class AdminOrderServiceTest {
     AdminOrderMapper adminOrderMapper;
 
     @Mock
+    OrderMapper orderMapper;
+
+    @Mock
     UserMapper userMapper;
+
+    @Mock
+    ProductMapper productMapper;
 
     @Mock
     MailGateway gateway;
@@ -61,14 +71,24 @@ class AdminOrderServiceTest {
                     setShippingStatus(ShippingStatus.UNSHIPPED);
                 }
             };
-            // doReturn(o).when(adminOrderMapper).selectOrderForUpdate(orderId); // Method doesn't exist
+            doReturn(o).when(orderMapper).selectOrderByPrimaryKey(orderId);
 
             OrderItem i1 = item(orderId, "p1", 5, 1000);
             OrderItem i2 = item(orderId, "p2", 3, 2000);
             OrderItem i3 = item(orderId, "p3", 1, 500);
             OrderItem i4 = item(orderId, "p4", 4, 800);
             OrderItem i5 = item(orderId, "p5", 1, 100);
-            // doReturn(List.of(i1, i2, i3, i4, i5)).when(adminOrderMapper).selectOrderItemsForUpdate(orderId); // Method doesn't exist
+
+            // For the updated items after quantity reduction and deletion
+            OrderItem i1Updated = item(orderId, "p1", 3, 1000);
+            OrderItem i2Updated = item(orderId, "p2", 1, 2000);
+            OrderItem i3Updated = item(orderId, "p3", 1, 500);
+
+            // Mock the three calls to selectOrderItems in order
+            when(orderMapper.selectOrderItems(orderId))
+                    .thenReturn(List.of(i1, i2, i3, i4, i5))  // First call in prepareContext
+                    .thenReturn(List.of(i1Updated, i2Updated, i3Updated))  // Second call for totals
+                    .thenReturn(List.of(i1Updated, i2Updated, i3Updated)); // Third call for email
 
             User user = new User();
             user.setEmail("user@example.com");
@@ -76,44 +96,41 @@ class AdminOrderServiceTest {
 
             OrderEditRequest req = new OrderEditRequest() {
                 {
-                    setItems(Map.of("p1", 3, "p2", 1, "p3", 1));
+                    setItems(Map.of("p1", 3, "p2", 1));  // Only items with quantity changes
                     setDeleted(List.of("p4", "p5"));
                 }
             };
 
             adminOrderService.editOrder(orderId, req);
 
-            // verify(adminOrderMapper).addStock("p1", 2); // Method doesn't exist
-            // verify(adminOrderMapper).addStock("p2", 2); // Method doesn't exist
-            // verify(adminOrderMapper).addStock("p4", 4); // Method doesn't exist
-            // verify(adminOrderMapper).addStock("p5", 1); // Method doesn't exist
-            // verify(adminOrderMapper, times(4)).addStock(anyString(), anyInt()); // Method doesn't exist
+            verify(productMapper).increaseStock("p1", 2, null);
+            verify(productMapper).increaseStock("p2", 2, null);
+            verify(productMapper).increaseStock("p4", 4, null);
+            verify(productMapper).increaseStock("p5", 1, null);
+            verify(productMapper, times(4)).increaseStock(anyString(), anyInt(), any());
 
-            // verify(adminOrderMapper).deleteOrderItem(orderId, "p4"); // Method doesn't exist
-            // verify(adminOrderMapper).deleteOrderItem(orderId, "p5"); // Method doesn't exist
-            // verify(adminOrderMapper, times(2)).deleteOrderItem(anyString(), anyString()); // Method doesn't exist
+            verify(orderMapper).deleteOrderItem(orderId, "p4");
+            verify(orderMapper).deleteOrderItem(orderId, "p5");
+            verify(orderMapper, times(2)).deleteOrderItem(anyString(), anyString());
 
-            // ArgumentCaptor<OrderItem> cap = ArgumentCaptor.forClass(OrderItem.class);
-            // verify(adminOrderMapper, times(2)).updateItemQty(cap.capture());
-            // List<OrderItem> updated = cap.getAllValues();
-            // assertThat(updated).extracting(
-            //         OrderItem::getOrderId,
-            //         OrderItem::getProductId,
-            //         OrderItem::getQty,
-            //         OrderItem::getSubtotalIncl)
-            //         .containsExactlyInAnyOrder(
-            //                 tuple(
-            //                         orderId,
-            //                         "p1",
-            //                         3,
-            //                         3000),
-            //                 tuple(
-            //                         orderId,
-            //                         "p2",
-            //                         1,
-            //                         2000));
+            ArgumentCaptor<OrderItem> cap = ArgumentCaptor.forClass(OrderItem.class);
+            verify(orderMapper, times(2)).updateItemQty(cap.capture());
+            List<OrderItem> updated = cap.getAllValues();
+            assertThat(updated).extracting(
+                    OrderItem::getOrderId,
+                    OrderItem::getProductId,
+                    OrderItem::getQty)
+                    .containsExactlyInAnyOrder(
+                            tuple(
+                                    orderId,
+                                    "p1",
+                                    3),
+                            tuple(
+                                    orderId,
+                                    "p2",
+                                    1));
 
-            // verify(adminOrderMapper).updateTotals(orderId); // Method doesn't exist in AdminOrderMapper
+            verify(orderMapper).updateTotals(eq(orderId), anyInt(), anyInt());
 
             verify(gateway).send(any());
         }
@@ -129,10 +146,18 @@ class AdminOrderServiceTest {
                     setShippingStatus(ShippingStatus.UNSHIPPED);
                 }
             };
-            // doReturn(o).when(adminOrderMapper).selectOrderForUpdate(orderId); // Method doesn't exist
+            doReturn(o).when(orderMapper).selectOrderByPrimaryKey(orderId);
 
             OrderItem i3 = item(orderId, "p3", 2, 500);
-            // doReturn(List.of(i3)).when(adminOrderMapper).selectOrderItemsForUpdate(orderId); // Method doesn't exist
+
+            // For the updated item after quantity reduction
+            OrderItem i3Updated = item(orderId, "p3", 1, 500);
+
+            // Mock the three calls to selectOrderItems in order
+            when(orderMapper.selectOrderItems(orderId))
+                    .thenReturn(List.of(i3))  // First call in prepareContext
+                    .thenReturn(List.of(i3Updated))  // Second call for totals
+                    .thenReturn(List.of(i3Updated)); // Third call for email
 
             User user = new User();
             user.setEmail("user@example.com");
@@ -146,24 +171,22 @@ class AdminOrderServiceTest {
 
             adminOrderService.editOrder(orderId, req);
 
-            // verify(adminOrderMapper).addStock(anyString(), anyInt()); // Method doesn't exist
-            // verify(adminOrderMapper, never()).deleteOrderItem(anyString(), anyString()); // Method doesn't exist
+            verify(productMapper).increaseStock("p3", 1, null);
+            verify(orderMapper, never()).deleteOrderItem(anyString(), anyString());
 
-            // ArgumentCaptor<OrderItem> cap = ArgumentCaptor.forClass(OrderItem.class);
-            // verify(adminOrderMapper).updateItemQty(cap.capture());
-            // OrderItem updated = cap.getValue();
-            // assertThat(updated).extracting(
-            //         OrderItem::getOrderId,
-            //         OrderItem::getProductId,
-            //         OrderItem::getQty,
-            //         OrderItem::getSubtotalIncl)
-            //         .containsExactly(
-            //                 orderId,
-            //                 "p3",
-            //                 1,
-            //                 500);
+            ArgumentCaptor<OrderItem> cap = ArgumentCaptor.forClass(OrderItem.class);
+            verify(orderMapper).updateItemQty(cap.capture());
+            OrderItem updated = cap.getValue();
+            assertThat(updated).extracting(
+                    OrderItem::getOrderId,
+                    OrderItem::getProductId,
+                    OrderItem::getQty)
+                    .containsExactly(
+                            orderId,
+                            "p3",
+                            1);
 
-            // verify(adminOrderMapper).updateTotals(orderId); // Method doesn't exist in AdminOrderMapper
+            verify(orderMapper).updateTotals(eq(orderId), anyInt(), anyInt());
 
             verify(gateway).send(any());
         }
@@ -178,7 +201,7 @@ class AdminOrderServiceTest {
                     setShippingStatus(ShippingStatus.SHIPPED);
                 }
             };
-            // doReturn(order).when(adminOrderMapper).selectOrderForUpdate(orderId); // Method doesn't exist
+            doReturn(order).when(orderMapper).selectOrderByPrimaryKey(orderId);
             OrderEditRequest req = new OrderEditRequest();
 
             assertThatThrownBy(() -> adminOrderService.editOrder(orderId, req))
@@ -205,8 +228,8 @@ class AdminOrderServiceTest {
             oldItem.setQty(5);
             oldItem.setUnitPriceIncl(1000);
 
-            // doReturn(order).when(adminOrderMapper).selectOrderForUpdate(orderId); // Method doesn't exist
-            // doReturn(List.of(oldItem)).when(adminOrderMapper).selectOrderItemsForUpdate(orderId); // Method doesn't exist
+            doReturn(order).when(orderMapper).selectOrderByPrimaryKey(orderId);
+            doReturn(List.of(oldItem)).when(orderMapper).selectOrderItems(orderId);
 
             OrderEditRequest req = new OrderEditRequest() {
                 {
@@ -232,6 +255,16 @@ class AdminOrderServiceTest {
             oi.setProductName(pid + "_name");
             oi.setQty(qty);
             oi.setUnitPriceIncl(price);
+            
+            // Set subtotal using reflection since setter is private
+            try {
+                Field subtotalField = OrderItem.class.getDeclaredField("subtotalIncl");
+                subtotalField.setAccessible(true);
+                subtotalField.set(oi, qty * price);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to set subtotalIncl", e);
+            }
+            
             return oi;
         }
     }

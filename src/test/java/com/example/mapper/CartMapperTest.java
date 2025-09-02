@@ -54,14 +54,14 @@ class CartMapperTest {
             int row = cartMapper.insertCartIfAbsent(cartId, null);
             Cart cart = cartMapper.selectCartByPrimaryKey(cartId);
 
-            assertThat(row).isOne();
+            assertThat(row).isEqualTo(1);
             assertThat(cart.getCartId()).isEqualTo(cartId);
         }
 
         @Test
         void insertCartIfAbsent_exists() {
             int row = cartMapper.insertCartIfAbsent(cartId, null);
-            assertThat(row).isZero();
+            assertThat(row).isEqualTo(0);
         }
     }
 
@@ -82,7 +82,7 @@ class CartMapperTest {
 
             CartItem ci = cartMapper.selectCartItemByPrimaryKey(cartId, productId);
 
-            assertThat(row).isOne();
+            assertThat(row).isEqualTo(1);
             assertThat(ci.getCartId()).isEqualTo(cartId);
             assertThat(ci.getUnitPriceExcl()).isEqualTo(300);
             assertThat(ci.getQty()).isEqualTo(13);
@@ -128,7 +128,7 @@ class CartMapperTest {
             p.put("candidateCartId", candidate);
 
             int rows = cartMapper.findOrCreateCartIdByUser(p);
-            assertThat(rows).isOne();
+            assertThat(rows).isEqualTo(1);
             assertThat(p.get("cartId")).isEqualTo(candidate);
 
             Cart cart = cartMapper.selectCartByPrimaryKey(candidate);
@@ -150,7 +150,7 @@ class CartMapperTest {
             p.put("candidateCartId", candidate);
 
             int rows = cartMapper.findOrCreateCartIdByUser(p);
-            assertThat(rows).isZero();
+            assertThat(rows).isEqualTo(0);
             assertThat(p.get("cartId")).isEqualTo(cartId);
 
             Cart cart = cartMapper.selectCartByPrimaryKey(cartId);
@@ -172,10 +172,15 @@ class CartMapperTest {
             factory.deleteCartByUser(userId);
             factory.createCart(new Cart() {
                 {
+                    setCartId(userCart);
+                    setTtlDays(14);
+                    setUserId(userId);
                 }
             });
             factory.createCart(new Cart() {
                 {
+                    setCartId(guestCart);
+                    setTtlDays(14);
                 }
             });
         }
@@ -183,7 +188,7 @@ class CartMapperTest {
         @Test
         void mergeCart_guestEmpty() {
             int rows = cartMapper.mergeCart(guestCart, userCart);
-            assertThat(rows).isZero();
+            assertThat(rows).isEqualTo(0);
         }
 
         @Test
@@ -197,7 +202,7 @@ class CartMapperTest {
                 }
             });
             int rows = cartMapper.mergeCart(guestCart, userCart);
-            assertThat(rows).isOne();
+            assertThat(rows).isEqualTo(1);
 
             CartItem item = cartMapper.selectCartItemByPrimaryKey(userCart, productId);
             assertThat(item)
@@ -256,6 +261,8 @@ class CartMapperTest {
             factory.deleteCartByUser(userId);
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartId);
+                    setTtlDays(14);
                 }
             });
         }
@@ -343,6 +350,8 @@ class CartMapperTest {
 
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartId);
+                    setTtlDays(14);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -364,6 +373,9 @@ class CartMapperTest {
 
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartId);
+                    setTtlDays(60);
+                    setUserId("111e8400-e29b-41d4-a716-446655440111");
                 }
             });
             cartMapper.insertCartIfAbsent(cartId, "111e8400-e29b-41d4-a716-446655440111");
@@ -390,6 +402,9 @@ class CartMapperTest {
         void isCartExpired_boundary(LocalDateTime time, String userId, boolean expected) {
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartId);
+                    setTtlDays(userId != null ? 60 : 14);
+                    setUserId(userId);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -419,6 +434,8 @@ class CartMapperTest {
             LocalDateTime a = LocalDateTime.of(2025, 7, 30, 10, 40, 10);
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartA);
+                    setTtlDays(14);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -436,6 +453,9 @@ class CartMapperTest {
             LocalDateTime b = LocalDateTime.of(2025, 6, 3, 10, 40, 10);
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartB);
+                    setTtlDays(60);
+                    setUserId(userId);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -453,6 +473,8 @@ class CartMapperTest {
             LocalDateTime c = LocalDateTime.of(2025, 8, 16, 10, 40, 10);
             factory.createCart(new Cart() {
                 {
+                    setCartId(cartC);
+                    setTtlDays(14);
                 }
             });
             factory.createCartItem(new CartItem() {
@@ -478,7 +500,7 @@ class CartMapperTest {
             
             int deleted = cartMapper.deleteExpiredCarts();
             
-            assertThat(deleted).isOne();
+            assertThat(deleted).isEqualTo(1);
             
          // 残存確認：cartAは等号なので残る、cartBは期限切れで消える、cartCは未来で残る
             assertThat(cartMapper.selectCartByPrimaryKey(cartA)).isNotNull();

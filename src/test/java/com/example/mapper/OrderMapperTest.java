@@ -52,11 +52,13 @@ class OrderMapperTest {
 
         factory.createCart(new Cart() {
             {
+                setCartId("bbbbeeee-cccc-dddd-aaaa-111122223333");
+                setTtlDays(7);
             }
         });
         factory.createCartItem(new CartItem() {
             {
-                setCartId(cartId);
+                setCartId("bbbbeeee-cccc-dddd-aaaa-111122223333");
                 setProductId("1e7b4cd6-79cf-4c6f-8a8f-be1f4eda7d68");
                 setQty(1);
                 setUnitPriceExcl(750);
@@ -66,7 +68,7 @@ class OrderMapperTest {
         });
         factory.createCartItem(new CartItem() {
             {
-                setCartId(cartId);
+                setCartId("bbbbeeee-cccc-dddd-aaaa-111122223333");
                 setProductId("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
                 setQty(1);
                 setUnitPriceExcl(3300);
@@ -76,7 +78,7 @@ class OrderMapperTest {
         });
         factory.createCartItem(new CartItem() {
             {
-                setCartId(cartId);
+                setCartId("bbbbeeee-cccc-dddd-aaaa-111122223333");
                 setProductId("4a2a9e1e-4503-4cfa-ae03-3c1a5a4f2d07");
                 setQty(4);
                 setUnitPriceExcl(1800);

@@ -60,6 +60,14 @@ class AdminProductServiceTest {
         ProductSearchRequest req = new ProductSearchRequest();
 
         AdminProductDto p1 = new AdminProductDto();
+        p1.setProductId("id-1");
+        p1.setSku(1);
+        p1.setProductName("Product One");
+        p1.setPriceExcl(110);
+        p1.setAvailable(5);
+        p1.setStatus(SaleStatus.UNPUBLISHED);
+        p1.setUpdatedAt(LocalDateTime.of(2025, 7, 1, 12, 0));
+        
         AdminProductDto p2 = new AdminProductDto();
 
         doReturn(2).when(adminProductMapper).countProducts(req);

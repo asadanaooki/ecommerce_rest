@@ -15,6 +15,9 @@ spring:
     properties:
       mail.smtp.auth: false
       mail.smtp.starttls.enable: false
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 #  sql:
 #    init:

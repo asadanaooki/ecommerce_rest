@@ -3,6 +3,7 @@ package com.example.request.admin;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
@@ -52,7 +53,7 @@ public class OrderSearchRequest {
     }
 
     public void setCreatedTo(LocalDate date) {
-        createdTo = date.atTime(LocalTime.MAX);
+        createdTo = date.atTime(LocalTime.MAX).truncatedTo(ChronoUnit.SECONDS);
     }
 
     public String getKeyword() {
