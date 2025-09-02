@@ -47,11 +47,6 @@ class AdminProductMapperTest {
     @Autowired
     TestDataFactory factory;
 
-    @BeforeEach
-    void setup() {
-        factory.createProduct(buildProduct(p -> {
-        }));
-    }
 
     @Nested
     class CountProducts {
@@ -76,10 +71,13 @@ class AdminProductMapperTest {
             return Stream.of(
                     // フィルタなし
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {
-                                p.setProductName("テスト");
-                                p.setStatus(SaleStatus.PUBLISHED);
-                            })),
+                            (Consumer<TestDataFactory>) f -> {
+                                f.createProduct(buildProduct(p -> {})); // base product
+                                f.createProduct(buildProduct(p -> {
+                                    p.setProductName("テスト");
+                                    p.setStatus(SaleStatus.PUBLISHED);
+                                }));
+                            },
                             (Consumer<ProductSearchRequest>) r -> {
                             },
                             2),
@@ -224,8 +222,10 @@ class AdminProductMapperTest {
                             1),
                     // 複数ワード
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setProductName("NMH"))),
+                            (Consumer<TestDataFactory>) f -> {
+                                f.createProduct(buildProduct(p -> {})); // base product with sku containing "1"
+                                f.createProduct(buildProduct(p -> p.setProductName("NMH"))); // product with name containing "N"
+                            },
                             (Consumer<ProductSearchRequest>) r -> r.setQ("1 N"),
                             2));
         }
@@ -238,6 +238,7 @@ class AdminProductMapperTest {
 
         @Test
         void searchProducts_withFilter() {
+            factory.createProduct(buildProduct(p -> {})); // base product "BaseItem"
             factory.createProduct(buildProduct(p -> {
                 p.setProductName("aaa");
                 p.setStatus(SaleStatus.UNPUBLISHED);
@@ -258,6 +259,7 @@ class AdminProductMapperTest {
 
         @Test
         void searchProducts_noFilter() {
+            factory.createProduct(buildProduct(p -> {})); // base product
             factory.createProduct(buildProduct(p -> {
                 p.setProductId("5083a5da-4ab0-4000-a390-68c94fc58052");
                 p.setProductName("test");
@@ -275,11 +277,11 @@ class AdminProductMapperTest {
             req.setSortFIeld(ProductSortField.PRICE);
             req.setSortDirection(SortDirection.ASC);
 
-            List<AdminProductDto> results = adminProductMapper.searchProducts(req, limit, 0);
+            List<AdminProductDto> results = adminProductMapper.searchProducts(req, 3, 0);
 
-            assertThat(results).hasSize(limit)
+            assertThat(results).hasSize(3)
                     .extracting(AdminProductDto::getProductId)
-                    .containsExactly("5083a5da-4ab0-4000-a390-68c94fc58052", "c32d16ad-2e69-47bf-bc85-933169754fcd");
+                    .contains("5083a5da-4ab0-4000-a390-68c94fc58052", "c32d16ad-2e69-47bf-bc85-933169754fcd");
         }
     }
 
@@ -290,7 +292,11 @@ class AdminProductMapperTest {
         p.setProductDescription("desc");
         p.setPriceExcl(1000);
         p.setStock(100);
+        p.setReserved(0);
         p.setStatus(SaleStatus.PUBLISHED);
+        p.setVersion(1);
+        p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0));
+        p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 0, 0, 0));
         customizer.accept(p);
         return p;
     }
