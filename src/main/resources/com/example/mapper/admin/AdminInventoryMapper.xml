@@ -1,7 +1,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.admin.AdminInventoryMapper">
 
-  <select id="search" resultType="com.example.dto.admin.AdminInventoryDto">
+  <select id="search" resultType="com.example.dto.admin.AdminInventoryRowDto">
   SELECT product_id,
          sku,
          product_name,

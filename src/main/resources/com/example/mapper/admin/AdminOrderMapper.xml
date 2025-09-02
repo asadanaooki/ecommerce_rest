@@ -1,7 +1,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.admin.AdminOrderMapper">
 
-  <select id="selectPage" resultType="com.example.dto.admin.AdminOrderDto">
+  <select id="selectPage" resultType="com.example.dto.admin.AdminOrderRowDto">
     select 
       order_id,
       lpad(cast(order_number as char), 4, '0') as order_number,
