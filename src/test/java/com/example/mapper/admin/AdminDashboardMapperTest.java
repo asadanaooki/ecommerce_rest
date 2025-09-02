@@ -221,9 +221,9 @@ class AdminDashboardMapperTest {
             o1.setTotalQty(1);
             o1.setPaymentStatus(PaymentStatus.PAID);
             o1.setCreatedAt(LocalDateTime.of(2025, 7, 20, 0, 0));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o1.setItemsSubtotalIncl(500);
+            o1.setShippingFeeIncl(500);
+            o1.setUpdatedAt(o1.getCreatedAt());
             factory.createOrder(o1);
 
             Order o2 = new Order();
@@ -235,9 +235,9 @@ class AdminDashboardMapperTest {
             o2.setTotalQty(1);
             o2.setPaymentStatus(PaymentStatus.PAID);
             o2.setCreatedAt(LocalDateTime.of(2025, 7, 19, 23, 59, 59));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o2.setItemsSubtotalIncl(500);
+            o2.setShippingFeeIncl(500);
+            o2.setUpdatedAt(o2.getCreatedAt());
             factory.createOrder(o2);
 
             Order o3 = new Order();
@@ -249,9 +249,9 @@ class AdminDashboardMapperTest {
             o3.setTotalQty(1);
             o3.setPaymentStatus(PaymentStatus.PAID);
             o3.setCreatedAt(LocalDateTime.of(2025, 7, 27, 0, 0, 0));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o3.setItemsSubtotalIncl(500);
+            o3.setShippingFeeIncl(500);
+            o3.setUpdatedAt(o3.getCreatedAt());
             factory.createOrder(o3);
 
             Order o4 = new Order();
@@ -263,9 +263,9 @@ class AdminDashboardMapperTest {
             o4.setTotalQty(1);
             o4.setPaymentStatus(PaymentStatus.PAID);
             o4.setCreatedAt(LocalDateTime.of(2025, 7, 26, 23, 59, 59));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o4.setItemsSubtotalIncl(500);
+            o4.setShippingFeeIncl(500);
+            o4.setUpdatedAt(o4.getCreatedAt());
             factory.createOrder(o4);
 
             Order o5 = new Order();
@@ -277,9 +277,9 @@ class AdminDashboardMapperTest {
             o5.setTotalQty(1);
             o5.setPaymentStatus(PaymentStatus.PAID);
             o5.setCreatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o5.setItemsSubtotalIncl(500);
+            o5.setShippingFeeIncl(500);
+            o5.setUpdatedAt(o5.getCreatedAt());
             factory.createOrder(o5);
 
             Order o6 = new Order();
@@ -291,9 +291,9 @@ class AdminDashboardMapperTest {
             o6.setTotalQty(1);
             o6.setPaymentStatus(PaymentStatus.PAID);
             o6.setCreatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o6.setItemsSubtotalIncl(500);
+            o6.setShippingFeeIncl(500);
+            o6.setUpdatedAt(o6.getCreatedAt());
             factory.createOrder(o6);
 
             Order o7 = new Order();
@@ -305,9 +305,9 @@ class AdminDashboardMapperTest {
             o7.setTotalQty(1);
             o7.setPaymentStatus(PaymentStatus.UNPAID);
             o7.setCreatedAt(LocalDateTime.of(2025, 7, 24, 10, 59, 59));
-            o&.setItemsSubtotalIncl(500);
-            o&.setShippingFeeIncl(500);
-            o&.setUpdatedAt(o&.getCreatedAt());
+            o7.setItemsSubtotalIncl(500);
+            o7.setShippingFeeIncl(500);
+            o7.setUpdatedAt(o7.getCreatedAt());
             factory.createOrder(o7);
         }
 
