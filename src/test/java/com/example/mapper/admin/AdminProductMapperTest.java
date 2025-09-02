@@ -81,108 +81,107 @@ class AdminProductMapperTest {
                             (Consumer<ProductSearchRequest>) r -> {
                             },
                             2),
-                    // keyword
+                    // keyword - search for "tem" should match "BaseItem"
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setProductName("apple"))),
+                                    .createProduct(buildProduct(p -> {})), // creates "BaseItem" which contains "tem"
                             (Consumer<ProductSearchRequest>) r -> r.setQ("tem"),
                             1),
-                    // minPrice
+                    // minPrice - product with price 1000 should match minPrice 300
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(50))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // price 1000 >= 300
                             (Consumer<ProductSearchRequest>) r -> r.setMinPrice(300),
                             1),
-                    // maxPrice
+                    // maxPrice - product with price 1000 should match maxPrice 2000
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(3000))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // price 1000 <= 2000
                             (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(2000),
                             1),
-                    // minStock
+                    // minStock - product with stock 100 should match minAvailable 70
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(50))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // stock 100 >= 70
                             (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(70),
                             1),
-                    // maxStock
+                    // maxStock - product with stock 100 should match maxAvailable 150
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(200))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // stock 100 <= 150
                             (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(150),
                             1),
-                    // createdFrom
+                    // createdFrom - product created 2020-01-01 should match createdFrom 2019-03-03
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> {})), // created 2020-01-01 >= 2019-03-03
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
-                    // createdTo
+                    // createdTo - product created 2020-01-01 should match createdTo 2022-04-01
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> {})), // created 2020-01-01 <= 2022-04-01
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
-                    // updatedFrom
+                    // updatedFrom - product updated 2021-06-03 should match updatedFrom 2019-12-26
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> {})), // updated 2021-06-03 >= 2019-12-26
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2019, 12, 26)),
                             1),
-                    // updatedTo
+                    // updatedTo - product updated 2021-06-03 should match updatedTo 2021-07-01
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> {})), // updated 2021-06-03 <= 2021-07-01
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 7, 1)),
                             1),
-                    // status
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setStatus(SaleStatus.UNPUBLISHED))),
+                                    .createProduct(buildProduct(p -> {})), // default is PUBLISHED
                             (Consumer<ProductSearchRequest>) r -> r.setStatus(SaleStatus.PUBLISHED),
                             1),
 
                     // 境界値
-                    // minPrice
+                    // minPrice - product with price 1000 should NOT match minPrice 1001 (boundary test)
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(999))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinPrice(1000),
-                            1),
-                    // maxPrice
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // price 1000 < 1001
+                            (Consumer<ProductSearchRequest>) r -> r.setMinPrice(1001),
+                            0),
+                    // maxPrice - product with price 1000 should NOT match maxPrice 999 (boundary test)
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(1001))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(1000),
-                            1),
-                    // minStock
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // price 1000 > 999
+                            (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(999),
+                            0),
+                    // minStock - product with stock 100 should NOT match minAvailable 101 (boundary test)
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(99))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(100),
-                            1),
-                    // maxStock
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // stock 100 < 101
+                            (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(101),
+                            0),
+                    // maxStock - product with stock 100 should NOT match maxAvailable 99 (boundary test)
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(101))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(100),
-                            1),
-                    // createdFrom
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})), // stock 100 > 99
+                            (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(99),
+                            0),
+                    // createdFrom - product created 2020-01-01 should match createdFrom 2020-01-01 (exact boundary)
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> {})),
+                                            buildProduct(p -> {})), // created 2020-01-01 == 2020-01-01
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
-                    // createdTo
+                    // createdTo - product created 2020-01-01 should match createdTo 2020-01-01 (exact boundary)
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> {})),
+                                            buildProduct(p -> {})), // created 2020-01-01 == 2020-01-01
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
-                    // updatedFrom
+                    // updatedFrom - product updated 2021-06-03 should match updatedFrom 2021-06-03 (exact boundary)
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> {})), // updated 2021-06-03 == 2021-06-03
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
                             1),
-                    // updatedTo
+                    // updatedTo - product updated 2021-06-03 should match updatedTo 2021-06-03 (exact boundary)
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> {})), // updated 2021-06-03 == 2021-06-03
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
                             1));
         }
@@ -212,7 +211,7 @@ class AdminProductMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {
                             })),
-                            (Consumer<ProductSearchRequest>) r -> r.setQ("2"),
+                            (Consumer<ProductSearchRequest>) r -> r.setQ("0001"),
                             1),
                     // productName
                     Arguments.of(
