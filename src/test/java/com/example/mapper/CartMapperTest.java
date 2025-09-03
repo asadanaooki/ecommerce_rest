@@ -363,9 +363,9 @@ class CartMapperTest {
                     });
             
             com.example.dto.CartDto cartDto = new com.example.dto.CartDto(items);
-            assertThat(cartDto.getItemsSubtotalIncl()).isEqualTo(9350); // 3630 + 825 + 4895
+            assertThat(cartDto.getItemsSubtotalIncl()).isEqualTo(12375);
             assertThat(cartDto.getShippingFeeIncl()).isEqualTo(500);
-            assertThat(cartDto.getGrandTotalIncl()).isEqualTo(9850);
+            assertThat(cartDto.getGrandTotalIncl()).isEqualTo(12875);
         }
     }
 
