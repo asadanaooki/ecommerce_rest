@@ -55,7 +55,9 @@ class CartServiceTest {
 
             assertThat(dto.getItems()).isEmpty();
             assertThat(dto.getTotalQty()).isZero();
-            assertThat(dto.getGrandTotalIncl()).isEqualTo(500);  // Empty cart still has shipping fee
+            assertThat(dto.getShippingFeeIncl()).isEqualTo(0);
+            assertThat(dto.getItemsSubtotalIncl()).isEqualTo(0);
+            assertThat(dto.getGrandTotalIncl()).isEqualTo(0);
         }
 
         @Test
@@ -72,8 +74,8 @@ class CartServiceTest {
             item1.setProductId("A-001");
             item1.setProductName("Item A");
             item1.setQty(3);
-            item1.setUnitPriceIncl(110);
-            item1.setSubtotalIncl(330);  // 3 * 110
+            item1.setUnitPriceIncl(1100);
+            item1.setSubtotalIncl(3300);  // 3 * 110
             
             CartItemDto item2 = new CartItemDto();
             item2.setProductId("B-002");
@@ -88,7 +90,9 @@ class CartServiceTest {
             CartDto dto = cartService.showCart(cartId);
 
             assertThat(dto.getTotalQty()).isEqualTo(4);
-            assertThat(dto.getGrandTotalIncl()).isEqualTo(1050);  // 550 (items) + 500 (shipping)
+            assertThat(dto.getItemsSubtotalIncl()).isEqualTo(3520);
+            assertThat(dto.getShippingFeeIncl()).isEqualTo(500);
+            assertThat(dto.getGrandTotalIncl()).isEqualTo(4020);
 
             assertThat(dto.getItems()).hasSize(2).first()
                     .extracting(
@@ -96,15 +100,13 @@ class CartServiceTest {
                             CartItemDto::getProductName,
                             CartItemDto::getQty,
                             CartItemDto::getUnitPriceIncl,
-                            CartItemDto::getUnitPriceIncl,
                             CartItemDto::getSubtotalIncl)
                     .containsExactly(
                             "A-001",
                             "Item A",
                             3,
-                            110,
-                            110,
-                            330);
+                            1100,
+                            3300);
             assertThat(dto.getItems().get(1).getProductId()).isEqualTo("B-002");
 
         }

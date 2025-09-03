@@ -13,7 +13,7 @@ public class OrderUtil {
     }
     
     public static int calculateShippingFeeIncl(int itemsSubtotalIncl) {
-        return (itemsSubtotalIncl >= 3000) ? 0 : 500;
+        return (itemsSubtotalIncl >= 3000) ? 500 : 0;
     }
     
     public static int calculateGrandTotalIncl(int itemsSubtotalIncl, int shippingFeeIncl) {

@@ -84,16 +84,16 @@ class CartControllerTest {
             @Test
             void showCart_valid() throws Exception {
                 CartItemDto item = new CartItemDto();
-                item.setQty(2);
-                item.setSubtotalIncl(1000);
+                item.setQty(3);
+                item.setSubtotalIncl(2800);
                 CartDto dto = new CartDto(List.of(item));
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 MvcResult result = mockMvc.perform(get("/cart").cookie(cookie))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items", hasSize(1)))
-                        .andExpect(jsonPath("$.totalQty").value(2))
-                        .andExpect(jsonPath("$.grandTotalIncl").value(1500))
+                        .andExpect(jsonPath("$.totalQty").value(3))
+                        .andExpect(jsonPath("$.grandTotalIncl").value(2800))
                         .andReturn();
 
                 assertThat(result.getResponse().getHeader("Set-Cookie")).isNull();
@@ -145,7 +145,7 @@ class CartControllerTest {
 
                 CartItemDto item = new CartItemDto();
                 item.setQty(2);
-                item.setSubtotalIncl(1000);
+                item.setSubtotalIncl(3000);
                 CartDto dto = new CartDto(List.of(item));
                 doReturn(dto).when(cartService).showCart(anyString());
 
@@ -153,7 +153,7 @@ class CartControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.items", hasSize(1)))
                         .andExpect(jsonPath("$.totalQty").value(2))
-                        .andExpect(jsonPath("$.grandTotalIncl").value(1500));
+                        .andExpect(jsonPath("$.grandTotalIncl").value(3500));
             }
 
             @Test

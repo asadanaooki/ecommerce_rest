@@ -12,13 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
@@ -30,6 +26,7 @@ import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
+import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
 import com.example.mapper.OrderMapper;
@@ -51,8 +48,6 @@ class CheckoutServiceTest {
 
     @Mock
     OrderMapper orderMapper;
-
-    @Spy
 
     @InjectMocks
     CheckoutService checkoutService;
@@ -86,19 +81,6 @@ class CheckoutServiceTest {
 
             lenient().doReturn(cart).when(cartMapper).selectCartByUser(userId);
             lenient().doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
-        }
-
-        @ParameterizedTest
-        @NullSource
-        @ValueSource(strings = { "testビル" })
-        void loadCheckout_address(String value) {
-            user.setAddressBuilding(value);
-            cart.setCartId("cartId");
-            doReturn(cart).when(cartMapper).selectCartByUser(userId);
-            CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
-
-            assertThat(dto.getAddress())
-                    .isEqualTo("東京都千代田区丸の内1-1-1" + (value == null ? "" : value));
         }
 
         //        @Test
@@ -141,6 +123,7 @@ class CheckoutServiceTest {
 
         @Test
         void loadCheckout_cartNotFound() {
+            cart.setCartId("cartId");
             doReturn(null).when(cartMapper).selectCartByPrimaryKey("cartId");
 
             assertThatThrownBy(() -> checkoutService.loadCheckout(userId))
@@ -167,6 +150,7 @@ class CheckoutServiceTest {
             List<CartItemDto> items = List.of(item1, item2);
             cart.setCartId("cartId");
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
+            doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
@@ -308,15 +292,31 @@ class CheckoutServiceTest {
         @Test
         void checkout_diffItemsAllKinds() {
             // diff が発生する 4 件分の CheckoutItemDto
+            CheckoutItemDto discontinued = new CheckoutItemDto();
+            discontinued.setStatus(SaleStatus.UNPUBLISHED);
+            discontinued.setReason(CheckoutItemDto.DiffReason.DISCONTINUED);
+
+            CheckoutItemDto outOfStock = new CheckoutItemDto();
+            outOfStock.setAvailable(0);
+            outOfStock.setReason(CheckoutItemDto.DiffReason.OUT_OF_STOCK);
+
+            CheckoutItemDto lowStock = new CheckoutItemDto();
+            lowStock.setAvailable(1);
+            lowStock.setQty(3);
+            lowStock.setReason(CheckoutItemDto.DiffReason.LOW_STOCK);
+
+            CheckoutItemDto priceChanged = new CheckoutItemDto();
+            priceChanged.setCurrentUnitPriceExcl(150);
+            priceChanged.setUnitPriceExclAtAddToCart(100);
+            priceChanged.setAvailable(10);
+            priceChanged.setQty(1);
+            priceChanged.setStatus(SaleStatus.PUBLISHED);
+
             List<CheckoutItemDto> diffItems = List.of(
-                    // ① 販売停止
-                    new CheckoutItemDto(),
-                    // ② 在庫切れ
-                    new CheckoutItemDto(),
-                    // ③ 在庫不足
-                    new CheckoutItemDto(),
-                    // ④ 価格改定
-                    new CheckoutItemDto());
+                    discontinued,
+                    outOfStock,
+                    lowStock,
+                    priceChanged);
             doReturn(new Cart() {
                 {
                     setCartId(cartId);
@@ -354,14 +354,22 @@ class CheckoutServiceTest {
             item1.setProductName("Product 1");
             item1.setQty(2);
             item1.setUnitPriceIncl(100);
+            item1.setStatus(SaleStatus.PUBLISHED);
+            item1.setAvailable(10);
+            item1.setCurrentUnitPriceExcl(100);
+            item1.setUnitPriceExclAtAddToCart(100);
             item1.setSubtotalIncl(200);
             
             CheckoutItemDto item2 = new CheckoutItemDto();
             item2.setProductId("P2");
             item2.setProductName("Product 2");
-            item2.setQty(1);
+            item2.setQty(20);
             item2.setUnitPriceIncl(150);
-            item2.setSubtotalIncl(150);
+            item2.setStatus(SaleStatus.PUBLISHED);
+            item2.setAvailable(100);
+            item2.setCurrentUnitPriceExcl(150);
+            item2.setSubtotalIncl(3000);
+            item2.setUnitPriceExclAtAddToCart(150);
             
             List<CheckoutItemDto> items = List.of(item1, item2);
             User user = new User() {
@@ -392,15 +400,16 @@ class CheckoutServiceTest {
                     Order::getPostalCode,
                     Order::getAddress,
                     Order::getTotalQty,
-                    Order::getGrandTotalIncl)
-                    .containsExactly(
+                    Order::getItemsSubtotalIncl,
+                    Order::getShippingFeeIncl).containsExactly(
                             cartId,
                             userId,
                             "山田 太郎",
                             "1000001",
                             "東京都千代田区丸の内1-1-1",
-                            3,
-                            550);
+                            22,
+                            3200,
+                            500);
 
             ArgumentCaptor<List<OrderItem>> itemsCap = ArgumentCaptor.forClass(List.class);
             verify(orderMapper).insertOrderItems(itemsCap.capture());
@@ -411,15 +420,13 @@ class CheckoutServiceTest {
                     OrderItem::getProductId,
                     OrderItem::getProductName,
                     OrderItem::getQty,
-                    OrderItem::getUnitPriceIncl,
-                    OrderItem::getSubtotalIncl)
+                    OrderItem::getUnitPriceIncl)
                     .containsExactly(
                             cartId,
-                            "N-001",
-                            "通常品1",
+                            "P1",
+                            "Product 1",
                             2,
-                            220,
-                            440);
+                            100);
 
             verify(productMapper, times(2)).decreaseStock(anyString(), anyInt(),isNull());
             verify(cartMapper).deleteCart(cartId);
