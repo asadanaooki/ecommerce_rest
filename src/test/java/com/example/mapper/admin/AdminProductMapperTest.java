@@ -77,7 +77,7 @@ class AdminProductMapperTest {
                     // フィルタなし
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {
-                                p.setProductName("テスト");
+                                p.setProductName("DifferentProduct");
                                 p.setStatus(SaleStatus.PUBLISHED);
                             })),
                             (Consumer<ProductSearchRequest>) r -> {
@@ -91,7 +91,7 @@ class AdminProductMapperTest {
                             1),
                     // minPrice
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(50))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(200))),
                             (Consumer<ProductSearchRequest>) r -> r.setMinPrice(300),
                             1),
                     // maxPrice
@@ -112,25 +112,25 @@ class AdminProductMapperTest {
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2018, 1, 1, 0, 0)))),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2023, 1, 1, 0, 0)))),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2018, 1, 1, 0, 0)))),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2019, 12, 26)),
                             1),
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2022, 1, 1, 0, 0)))),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 7, 1)),
                             1),
                     // status
@@ -165,26 +165,26 @@ class AdminProductMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> {})),
+                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59)))),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> {})),
+                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 1)))),
                             (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2019, 1, 1, 0, 0)))),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
                             1),
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> {})),
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2022, 1, 1, 0, 0)))),
                             (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
                             1));
         }
@@ -291,6 +291,9 @@ class AdminProductMapperTest {
         p.setPriceExcl(1000);
         p.setStock(100);
         p.setStatus(SaleStatus.PUBLISHED);
+        p.setVersion(1);
+        p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 12, 0));
+        p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 12, 0));
         customizer.accept(p);
         return p;
     }
