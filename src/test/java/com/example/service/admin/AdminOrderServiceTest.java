@@ -130,7 +130,7 @@ class AdminOrderServiceTest {
                                     "p2",
                                     1));
 
-            verify(orderMapper).updateTotals(eq(orderId), anyInt(), anyInt());
+            verify(orderMapper).updateTotals(eq(orderId), eq(5500), eq(500));
 
             verify(gateway).send(any());
         }
@@ -186,7 +186,7 @@ class AdminOrderServiceTest {
                             "p3",
                             1);
 
-            verify(orderMapper).updateTotals(eq(orderId), anyInt(), anyInt());
+            verify(orderMapper).updateTotals(eq(orderId), eq(500), eq(0));
 
             verify(gateway).send(any());
         }

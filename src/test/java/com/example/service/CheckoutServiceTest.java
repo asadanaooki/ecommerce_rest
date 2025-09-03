@@ -401,7 +401,8 @@ class CheckoutServiceTest {
                     Order::getAddress,
                     Order::getTotalQty,
                     Order::getItemsSubtotalIncl,
-                    Order::getShippingFeeIncl).containsExactly(
+                    Order::getShippingFeeIncl,
+                    Order::getGrandTotalIncl).containsExactly(
                             cartId,
                             userId,
                             "山田 太郎",
@@ -409,7 +410,8 @@ class CheckoutServiceTest {
                             "東京都千代田区丸の内1-1-1",
                             22,
                             3200,
-                            500);
+                            500,
+                            0);
 
             ArgumentCaptor<List<OrderItem>> itemsCap = ArgumentCaptor.forClass(List.class);
             verify(orderMapper).insertOrderItems(itemsCap.capture());
