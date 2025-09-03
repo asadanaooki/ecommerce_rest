@@ -1,6 +1,7 @@
 package com.example.controller.admin;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -11,6 +12,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.service.OrderCommandService;
 import com.example.service.admin.AdminOrderService;
 import com.example.testConfig.CommonMockConfig;
@@ -95,6 +98,25 @@ class AdminOrderControllerTest {
                   "deleted": [%s ]
                 }
                 """.formatted(itemsPart, deletedPart);
+    }
+
+    @Test
+    void getDetail_success() throws Exception {
+        String orderId = "550e8400-e29b-41d4-a716-446655440000";
+        AdminOrderDetailDto dto = new AdminOrderDetailDto();
+        org.springframework.test.util.ReflectionTestUtils.setField(dto, "orderId", orderId);
+        org.springframework.test.util.ReflectionTestUtils.setField(dto, "itemsSubtotalIncl", 5000);
+        org.springframework.test.util.ReflectionTestUtils.setField(dto, "shippingFeeIncl", 500);
+        org.springframework.test.util.ReflectionTestUtils.setField(dto, "grandTotalIncl", 5500);
+        
+        doReturn(dto).when(adminOrderService).findDetail(orderId);
+        
+        mockMvc.perform(get("/admin/order/{orderId}", orderId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId").value(orderId))
+                .andExpect(jsonPath("$.itemsSubtotalIncl").value(5000))
+                .andExpect(jsonPath("$.shippingFeeIncl").value(500))
+                .andExpect(jsonPath("$.grandTotalIncl").value(5500));
     }
 
 }

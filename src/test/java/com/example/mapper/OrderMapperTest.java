@@ -138,6 +138,8 @@ class OrderMapperTest {
                 Order::getPostalCode,
                 Order::getAddress,
                 Order::getTotalQty,
+                Order::getItemsSubtotalIncl,
+                Order::getShippingFeeIncl,
                 Order::getGrandTotalIncl,
                 Order::getShippingStatus,
                 Order::getPaymentStatus)
@@ -148,6 +150,8 @@ class OrderMapperTest {
                         "1500041",
                         "東京都渋谷区神南1-1-1",
                         3,
+                        8800,
+                        800,
                         9600,
                         ShippingStatus.UNSHIPPED,
                         PaymentStatus.UNPAID);

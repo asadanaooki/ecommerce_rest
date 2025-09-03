@@ -53,6 +53,8 @@ class OrderHistoryServiceTest {
             headerA.setName("山田 太郎");
             headerA.setPostalCode("1500000");
             headerA.setAddress("東京都渋谷区…");
+            org.springframework.test.util.ReflectionTestUtils.setField(headerA, "itemsSubtotalIncl", 900);
+            org.springframework.test.util.ReflectionTestUtils.setField(headerA, "shippingFeeIncl", 100);
             org.springframework.test.util.ReflectionTestUtils.setField(headerA, "grandTotalIncl", 1000);
             headerA.setCreatedAt(LocalDateTime.of(2025, 6, 29, 10, 0));
 
@@ -62,6 +64,8 @@ class OrderHistoryServiceTest {
             headerB.setName("山田 花子");
             headerB.setPostalCode("1500001");
             headerB.setAddress("東京都新宿区…");
+            org.springframework.test.util.ReflectionTestUtils.setField(headerB, "itemsSubtotalIncl", 4700);
+            org.springframework.test.util.ReflectionTestUtils.setField(headerB, "shippingFeeIncl", 300);
             org.springframework.test.util.ReflectionTestUtils.setField(headerB, "grandTotalIncl", 5000);
             headerB.setCreatedAt(LocalDateTime.of(2025, 4, 28, 10, 0));
 
@@ -98,6 +102,8 @@ class OrderHistoryServiceTest {
                     OrderHistoryDto::getOrderId,
                     OrderHistoryDto::getOrderNumber,
                     OrderHistoryDto::getOrderedAt,
+                    OrderHistoryDto::getItemsSubtotalIncl,
+                    OrderHistoryDto::getShippingFeeIncl,
                     OrderHistoryDto::getGrandTotalIncl,
                     OrderHistoryDto::getName,
                     OrderHistoryDto::getPostalCode,
@@ -108,6 +114,8 @@ class OrderHistoryServiceTest {
                                     "order-a",
                                     "0001",
                                     LocalDate.of(2025, 6, 29),
+                                    900,
+                                    100,
                                     1000,
                                     "山田 太郎",
                                     "1500000",
@@ -117,6 +125,8 @@ class OrderHistoryServiceTest {
                                     "order-b",
                                     "0003",
                                     LocalDate.of(2025, 4, 28),
+                                    4700,
+                                    300,
                                     5000,
                                     "山田 花子",
                                     "1500001",
