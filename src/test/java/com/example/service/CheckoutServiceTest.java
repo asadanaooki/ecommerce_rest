@@ -168,6 +168,8 @@ class CheckoutServiceTest {
                     .containsExactly(tuple("N-005", "通常品", 2, 220, 440),
                             tuple("N-006", "通常品2", 1, 110, 110));
 
+            assertThat(dto.getCart().getItemsSubtotalIncl()).isEqualTo(550);
+            assertThat(dto.getCart().getShippingFeeIncl()).isEqualTo(0);
             assertThat(dto.getCart().getGrandTotalIncl()).isEqualTo(550);
             assertThat(dto.getCart().getTotalQty()).isEqualTo(3);
         }
