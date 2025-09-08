@@ -7,11 +7,12 @@ import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
+@Data
 public class AdminOrderDetailDto {
+    // TODO:
+    // フリガナ追加を検討
 
     private String orderId;
 
@@ -20,6 +21,8 @@ public class AdminOrderDetailDto {
     private int itemsSubtotalIncl;
 
     private int shippingFeeIncl;
+    
+    private int codFeeIncl;
 
     private int grandTotalIncl;
 
@@ -31,13 +34,12 @@ public class AdminOrderDetailDto {
 
     private LocalDateTime createdAt;
 
-    @Setter
     private List<AdminOrderDetailItemDto> items;
 
     // 購入者情報
     private String name;
 
-    private String nameKana;
+   // private String nameKana;
 
     private String email;
 

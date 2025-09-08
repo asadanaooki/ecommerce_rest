@@ -14,12 +14,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.dto.OrderHistoryDto;
 import com.example.dto.OrderItemDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.mapper.OrderMapper;
+import com.example.util.OrderUtil;
 
 @ExtendWith(MockitoExtension.class)
 class OrderHistoryServiceTest {
@@ -53,9 +55,10 @@ class OrderHistoryServiceTest {
             headerA.setName("山田 太郎");
             headerA.setPostalCode("1500000");
             headerA.setAddress("東京都渋谷区…");
-            org.springframework.test.util.ReflectionTestUtils.setField(headerA, "itemsSubtotalIncl", 900);
-            org.springframework.test.util.ReflectionTestUtils.setField(headerA, "shippingFeeIncl", 100);
-            org.springframework.test.util.ReflectionTestUtils.setField(headerA, "grandTotalIncl", 1000);
+            ReflectionTestUtils.setField(headerA, "itemsSubtotalIncl", 900);
+            ReflectionTestUtils.setField(headerA, "shippingFeeIncl", 100);
+            ReflectionTestUtils.setField(headerA, "codFeeIncl", OrderUtil.obtainCodFeeIncl());
+            ReflectionTestUtils.setField(headerA, "grandTotalIncl", 1330);
             headerA.setCreatedAt(LocalDateTime.of(2025, 6, 29, 10, 0));
 
             Order headerB = new Order();
@@ -64,9 +67,10 @@ class OrderHistoryServiceTest {
             headerB.setName("山田 花子");
             headerB.setPostalCode("1500001");
             headerB.setAddress("東京都新宿区…");
-            org.springframework.test.util.ReflectionTestUtils.setField(headerB, "itemsSubtotalIncl", 4700);
-            org.springframework.test.util.ReflectionTestUtils.setField(headerB, "shippingFeeIncl", 300);
-            org.springframework.test.util.ReflectionTestUtils.setField(headerB, "grandTotalIncl", 5000);
+            ReflectionTestUtils.setField(headerB, "itemsSubtotalIncl", 4700);
+            ReflectionTestUtils.setField(headerB, "shippingFeeIncl", 300);
+            ReflectionTestUtils.setField(headerB, "codFeeIncl", OrderUtil.obtainCodFeeIncl());
+            ReflectionTestUtils.setField(headerB, "grandTotalIncl", 5330);
             headerB.setCreatedAt(LocalDateTime.of(2025, 4, 28, 10, 0));
 
             doReturn(List.of(headerA, headerB)).when(orderMapper).selectOrdersByUserId(userId);
@@ -104,6 +108,7 @@ class OrderHistoryServiceTest {
                     OrderHistoryDto::getOrderedAt,
                     OrderHistoryDto::getItemsSubtotalIncl,
                     OrderHistoryDto::getShippingFeeIncl,
+                    OrderHistoryDto::getCodFeeIncl,
                     OrderHistoryDto::getGrandTotalIncl,
                     OrderHistoryDto::getName,
                     OrderHistoryDto::getPostalCode,
@@ -116,7 +121,8 @@ class OrderHistoryServiceTest {
                                     LocalDate.of(2025, 6, 29),
                                     900,
                                     100,
-                                    1000,
+                                    330,
+                                    1330,
                                     "山田 太郎",
                                     "1500000",
                                     "東京都渋谷区…",
@@ -127,7 +133,8 @@ class OrderHistoryServiceTest {
                                     LocalDate.of(2025, 4, 28),
                                     4700,
                                     300,
-                                    5000,
+                                    330,
+                                    5330,
                                     "山田 花子",
                                     "1500001",
                                     "東京都新宿区…",

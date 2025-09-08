@@ -27,7 +27,7 @@ public class InquiryService {
                 req.getFirstName(),
                 req.getEmail(),
                 req.getPhoneNumber(),
-                req.getOrderNumber(),
+                req.getOrderNumber() == null ? "" : req.getOrderNumber(),
                 req.getMessage());
         mailGateway.send(MailTemplate.INQUIRY_ADMIN_NOTIFICATION.build(adminCtx));
 
@@ -37,7 +37,7 @@ public class InquiryService {
                 req.getFirstName(),
                 req.getEmail(),
                 req.getPhoneNumber(),
-                req.getOrderNumber(),
+                req.getOrderNumber() == null ? "" : req.getOrderNumber(),
                 null);
         mailGateway.send(MailTemplate.INQUIRY_AUTO_REPLY.build(userCtx));
     }

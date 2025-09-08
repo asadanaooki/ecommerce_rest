@@ -54,7 +54,8 @@
       address,
       total_qty,
       items_subtotal_incl,
-      shipping_fee_incl
+      shipping_fee_incl,
+      cod_fee_incl
     ) values (
         #{orderId},
         #{userId},
@@ -63,7 +64,8 @@
         #{address},
         #{totalQty},
         #{itemsSubtotalIncl},
-        #{shippingFeeIncl}
+        #{shippingFeeIncl},
+        #{codFeeIncl}
     )
   </insert>
   

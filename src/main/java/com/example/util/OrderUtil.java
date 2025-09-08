@@ -16,8 +16,17 @@ public class OrderUtil {
         return (itemsSubtotalIncl >= 3000) ? 500 : 0;
     }
     
+    public static int obtainCodFeeIncl() {
+        return 330;
+    }
+    
     public static int calculateGrandTotalIncl(int itemsSubtotalIncl, int shippingFeeIncl) {
         return itemsSubtotalIncl + shippingFeeIncl;
+    }
+    
+    public static int calculateGrandTotalIncl(int itemsSubtotalIncl, int shippingFeeIncl,
+            int codFeeIncl) {
+        return itemsSubtotalIncl + shippingFeeIncl + codFeeIncl;
     }
     
     public static <T> int sumBy(List<T> items, ToIntFunction<T> mapper) {

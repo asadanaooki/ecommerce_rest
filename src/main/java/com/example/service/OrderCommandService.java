@@ -19,6 +19,7 @@ import com.example.mapper.OrderMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
 import com.example.util.OrderUtil;
+import com.example.util.UserUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -72,9 +73,14 @@ public class OrderCommandService {
         gateway.send(MailTemplate.CANCEL_APPROVED
                 .build(new MailTemplate.CancelApprovedContext(
                         u.getEmail(),
-                        o.getName(),
-                        o.getOrderNumber(),
-                        items)));
+                        UserUtil.buildFullName(u),
+                        OrderUtil.formatOrderNumber(o.getOrderNumber()),
+                        items,
+                        o.getItemsSubtotalIncl(),
+                        o.getShippingFeeIncl(),
+                        o.getCodFeeIncl(),
+                        o.getGrandTotalIncl()
+                        )));
     }
     
     @Transactional
@@ -91,15 +97,25 @@ public class OrderCommandService {
                             u.getEmail(),
                             o.getName(),
                             o.getAddress(),
-                            o.getOrderNumber(),
-                            items)));
+                            OrderUtil.formatOrderNumber(o.getOrderNumber()),
+                            items,
+                            o.getItemsSubtotalIncl(),
+                            o.getShippingFeeIncl(),
+                            o.getCodFeeIncl(),
+                            o.getGrandTotalIncl()
+                            )));
         } else if (cur.getOrder() == OrderStatus.CANCEL_REQUESTED) {
             gateway.send(MailTemplate.SHIPPED_AND_CANCEL_REJECTED.build(
                     new MailTemplate.CancelRejectedContext(
                             u.getEmail(),
-                           o.getName(),
-                            o.getOrderNumber(),
-                            items)));
+                            o.getName(),
+                            OrderUtil.formatOrderNumber(o.getOrderNumber()),
+                            items,
+                            o.getItemsSubtotalIncl(),
+                            o.getShippingFeeIncl(),
+                            o.getCodFeeIncl(),
+                            o.getGrandTotalIncl()
+                            )));
         }
     }
     

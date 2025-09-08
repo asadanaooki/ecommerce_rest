@@ -1,0 +1,65 @@
+<html lang="ja" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>納品書</title>
+  <style>
+    @page {size: A4; margin: 16mm;}
+    body {font-family: "Noto Sans JP", sans-serif; font-size: 11pt; color: #222;}
+    h1 {font-size: 18pt;}
+    h2 {font-size: 13pt; margin-top: 14px;}
+    
+    .kv {margin-top: 14px;}
+    .kv div {margin-top: 6px;}
+    
+    table {width: 100%; border-collapse: collapse;}
+    th, td {border:1px solid #ddd; padding:8px;}
+    th {text-align: center;}
+    td.qty {text-align: center;}
+    .sku {color:#808080; font-size: 9.5pt;}
+    .price {text-align: right; white-space:nowrap;}
+    
+    tr {page-break-inside:avoid;}
+  </style>
+</head>
+<body>
+  <h1>納品書</h1>
+  <h2>ご注文内容</h2>
+  
+  <div class="kv">
+    <div>注文番号:<span th:text="${v.orderNumber}"></span></div>
+    <div>ご注文日付:<span th:text="${v.orderDate}"></span></div>
+  </div>
+  
+  <table>
+    <thead>
+      <tr>
+        <th style="width:55%">商品番号/商品名</th>
+        <th style="width:15%">単価(税込)</th>
+        <th style="width:10%">数量</th>
+        <th style="width:20%">小計(税込)</th>
+      </tr>
+      
+    </thead>
+    <tbody>
+      <tr th:each="r : ${v.items}">
+        <td>
+          <div class="sku" th:text="${r.sku}"></div>
+          <div th:text="${r.productName}"></div>
+        </td>
+        <td class="price">
+          <span>消費税込 </span>
+          <span th:text="${#numbers.formatInteger(r.unitPriceIncl, 0, 'COMMA')}"></span>
+          <span> 円</span>
+        </td>
+        <td class="qty" th:text="${r.qty}"></td>
+        <td class="price">
+          <span>消費税込 </span>
+          <span th:text="${#numbers.formatInteger(r.subtotalIncl, 0, 'COMMA')}"></span>
+          <span> 円</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

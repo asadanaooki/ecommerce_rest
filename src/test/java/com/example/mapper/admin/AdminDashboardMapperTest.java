@@ -27,6 +27,7 @@ import com.example.entity.Order;
 import com.example.enums.order.PaymentStatus;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
+import com.example.util.OrderUtil;
 
 @ExtendWith(FlywayResetExtension.class)
 @MybatisTest
@@ -61,6 +62,7 @@ class AdminDashboardMapperTest {
             o1.setTotalQty(1);
             o1.setItemsSubtotalIncl(500);
             o1.setShippingFeeIncl(500);
+            o1.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o1.setPaymentStatus(PaymentStatus.PAID);
             o1.setCreatedAt(LocalDateTime.of(2025, 8, 4, 0, 0));
             o1.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 0, 0));
@@ -75,6 +77,7 @@ class AdminDashboardMapperTest {
             o2.setTotalQty(1);
             o2.setItemsSubtotalIncl(500);
             o2.setShippingFeeIncl(500);
+            o2.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o2.setPaymentStatus(PaymentStatus.PAID);
             o2.setCreatedAt(LocalDateTime.of(2025, 8, 3, 23, 59, 59));
             o2.setUpdatedAt(LocalDateTime.of(2025, 8, 3, 23, 59, 59));
@@ -89,6 +92,7 @@ class AdminDashboardMapperTest {
             o3.setTotalQty(1);
             o3.setItemsSubtotalIncl(500);
             o3.setShippingFeeIncl(500);
+            o3.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o3.setPaymentStatus(PaymentStatus.PAID);
             o3.setCreatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 20));
             o3.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 20));
@@ -103,6 +107,7 @@ class AdminDashboardMapperTest {
             o4.setTotalQty(1);
             o4.setItemsSubtotalIncl(500);
             o4.setShippingFeeIncl(500);
+            o4.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o4.setPaymentStatus(PaymentStatus.PAID);
             o4.setCreatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 19));
             o4.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 17, 54, 19));
@@ -117,6 +122,7 @@ class AdminDashboardMapperTest {
             o5.setTotalQty(1);
             o5.setItemsSubtotalIncl(500);
             o5.setShippingFeeIncl(500);
+            o5.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o5.setPaymentStatus(PaymentStatus.PAID);
             o5.setCreatedAt(LocalDateTime.of(2025, 8, 4, 12, 0, 0));
             o5.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 12, 0, 0));
@@ -131,6 +137,7 @@ class AdminDashboardMapperTest {
             o6.setTotalQty(1);
             o6.setItemsSubtotalIncl(500);
             o6.setShippingFeeIncl(500);
+            o6.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o6.setPaymentStatus(PaymentStatus.PAID);
             o6.setCreatedAt(LocalDateTime.of(2025, 8, 4, 12, 20, 10));
             o6.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 12, 20, 10));
@@ -145,6 +152,7 @@ class AdminDashboardMapperTest {
             o7.setTotalQty(1);
             o7.setItemsSubtotalIncl(500);
             o7.setShippingFeeIncl(500);
+            o7.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o7.setPaymentStatus(PaymentStatus.UNPAID);
             o7.setCreatedAt(LocalDateTime.of(2025, 8, 4, 10, 5, 0));
             o7.setUpdatedAt(LocalDateTime.of(2025, 8, 4, 10, 5, 0));
@@ -163,7 +171,7 @@ class AdminDashboardMapperTest {
                     .filteredOn(r -> r.getBucketHour().equals(LocalDateTime.of(2025, 8, 4, 12, 0, 0).format(formatter)))
                     .singleElement()
                     .satisfies(r -> {
-                        assertThat(r.getRevenue()).isEqualTo(2000);
+                        assertThat(r.getRevenue()).isEqualTo(2660);
                         assertThat(r.getOrders()).isEqualTo(2);
                     });
         }
@@ -180,6 +188,7 @@ class AdminDashboardMapperTest {
             o1.setTotalQty(1);
             o1.setItemsSubtotalIncl(500);
             o1.setShippingFeeIncl(500);
+            o1.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o1.setPaymentStatus(PaymentStatus.PAID);
             o1.setCreatedAt(createdAt);
             o1.setUpdatedAt(createdAt);
@@ -223,6 +232,7 @@ class AdminDashboardMapperTest {
             o1.setCreatedAt(LocalDateTime.of(2025, 7, 20, 0, 0));
             o1.setItemsSubtotalIncl(500);
             o1.setShippingFeeIncl(500);
+            o1.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o1.setUpdatedAt(o1.getCreatedAt());
             factory.createOrder(o1);
 
@@ -237,6 +247,7 @@ class AdminDashboardMapperTest {
             o2.setCreatedAt(LocalDateTime.of(2025, 7, 19, 23, 59, 59));
             o2.setItemsSubtotalIncl(500);
             o2.setShippingFeeIncl(500);
+            o2.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o2.setUpdatedAt(o2.getCreatedAt());
             factory.createOrder(o2);
 
@@ -251,6 +262,7 @@ class AdminDashboardMapperTest {
             o3.setCreatedAt(LocalDateTime.of(2025, 7, 27, 0, 0, 0));
             o3.setItemsSubtotalIncl(500);
             o3.setShippingFeeIncl(500);
+            o3.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o3.setUpdatedAt(o3.getCreatedAt());
             factory.createOrder(o3);
 
@@ -265,6 +277,7 @@ class AdminDashboardMapperTest {
             o4.setCreatedAt(LocalDateTime.of(2025, 7, 26, 23, 59, 59));
             o4.setItemsSubtotalIncl(500);
             o4.setShippingFeeIncl(500);
+            o4.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o4.setUpdatedAt(o4.getCreatedAt());
             factory.createOrder(o4);
 
@@ -279,6 +292,7 @@ class AdminDashboardMapperTest {
             o5.setCreatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
             o5.setItemsSubtotalIncl(500);
             o5.setShippingFeeIncl(500);
+            o5.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o5.setUpdatedAt(o5.getCreatedAt());
             factory.createOrder(o5);
 
@@ -293,6 +307,7 @@ class AdminDashboardMapperTest {
             o6.setCreatedAt(LocalDateTime.of(2025, 7, 23, 20, 52, 59));
             o6.setItemsSubtotalIncl(500);
             o6.setShippingFeeIncl(500);
+            o6.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o6.setUpdatedAt(o6.getCreatedAt());
             factory.createOrder(o6);
 
@@ -307,6 +322,7 @@ class AdminDashboardMapperTest {
             o7.setCreatedAt(LocalDateTime.of(2025, 7, 24, 10, 59, 59));
             o7.setItemsSubtotalIncl(500);
             o7.setShippingFeeIncl(500);
+            o7.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
             o7.setUpdatedAt(o7.getCreatedAt());
             factory.createOrder(o7);
         }
@@ -324,7 +340,7 @@ class AdminDashboardMapperTest {
                     .filteredOn(r -> r.getDay().equals(LocalDate.of(2025, 7, 23)))
                     .singleElement()
                     .satisfies(r -> {
-                        assertThat(r.getRevenue()).isEqualTo(2000);
+                        assertThat(r.getRevenue()).isEqualTo(2660);
                         assertThat(r.getOrders()).isEqualTo(2);
                     });
         }

@@ -54,6 +54,7 @@ public class OrderHistoryService {
                     setItems(itemDtos);
                     setItemsSubtotalIncl(o.getItemsSubtotalIncl());
                     setShippingFeeIncl(o.getShippingFeeIncl());
+                    setCodFeeIncl(o.getCodFeeIncl());
                     setGrandTotalIncl(o.getGrandTotalIncl());
                     setOrderStatus(o.getOrderStatus());
                 }

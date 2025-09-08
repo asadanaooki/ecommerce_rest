@@ -26,6 +26,7 @@ public class OrderHistoryDto {
     /* ---------- 金額・状態 ---------- */
     private int itemsSubtotalIncl;
     private int shippingFeeIncl;
+    private int codFeeIncl;
     private int grandTotalIncl;
     private OrderStatus orderStatus;
 }

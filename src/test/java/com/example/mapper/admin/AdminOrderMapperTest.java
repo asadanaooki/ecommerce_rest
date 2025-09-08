@@ -34,6 +34,7 @@ import com.example.mapper.OrderMapper;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
+import com.example.util.OrderUtil;
 
 @ExtendWith(FlywayResetExtension.class)
 @MybatisTest
@@ -200,6 +201,8 @@ class AdminOrderMapperTest {
     void selectOrderDetail() {
         String orderId = "a12f3e45-6789-4abc-de01-23456789abcd";
         factory.createOrder(buildOrder(o -> {
+            o.setName("abc");
+            o.setPostalCode("4500311");
             o.setOrderId(orderId);
             o.setOrderNumber(200);
         }));
@@ -225,6 +228,7 @@ class AdminOrderMapperTest {
                 AdminOrderDetailDto::getOrderNumber,
                 AdminOrderDetailDto::getItemsSubtotalIncl,
                 AdminOrderDetailDto::getShippingFeeIncl,
+                AdminOrderDetailDto::getCodFeeIncl,
                 AdminOrderDetailDto::getGrandTotalIncl,
                 AdminOrderDetailDto::getOrderStatus,
                 AdminOrderDetailDto::getShippingStatus,
@@ -232,7 +236,6 @@ class AdminOrderMapperTest {
                 AdminOrderDetailDto::getCreatedAt,
 
                 AdminOrderDetailDto::getName,
-                AdminOrderDetailDto::getNameKana,
                 AdminOrderDetailDto::getEmail,
                 AdminOrderDetailDto::getPostalCode,
                 AdminOrderDetailDto::getAddress,
@@ -242,22 +245,23 @@ class AdminOrderMapperTest {
                         "0200",
                         4000,
                         500,
-                        4500,
+                        330,
+                        4830,
                         OrderStatus.OPEN,
                         ShippingStatus.UNSHIPPED,
                         PaymentStatus.UNPAID,
                         LocalDateTime.of(2020, 1, 1, 10, 3, 4),
 
-                        "山田 太郎",
-                        "ヤマダ タロウ",
+                        "abc",
                         "sample@example.com",
-                        "1500041",
+                        "4500311",
                         "test",
                         "0312345678");
 
         assertThat(dto.getItems()).hasSize(2);
         AdminOrderDetailItemDto d1 = dto.getItems().get(0);
         assertThat(d1.getProductId()).isEqualTo("09d5a43a-d24c-41c7-af2b-9fb7b0c9e049");
+        assertThat(d1.getSku()).isEqualTo("0002");
         assertThat(d1.getProductName()).isEqualTo("test");
         assertThat(d1.getQty()).isEqualTo(3);
         assertThat(d1.getUnitPriceIncl()).isEqualTo(220);
@@ -265,6 +269,7 @@ class AdminOrderMapperTest {
 
         AdminOrderDetailItemDto d2 = dto.getItems().get(1);
         assertThat(d2.getProductId()).isEqualTo("6e1a12d8-71ab-43e6-b2fc-6ab0e5e813fd");
+        assertThat(d2.getSku()).isEqualTo("0003");
     }
 
     @Test
@@ -281,7 +286,8 @@ class AdminOrderMapperTest {
         assertThat(order.getTotalQty()).isEqualTo(2);
         assertThat(order.getItemsSubtotalIncl()).isEqualTo(2000);
         assertThat(order.getShippingFeeIncl()).isEqualTo(0);
-        assertThat(order.getGrandTotalIncl()).isEqualTo(2000);
+        assertThat(order.getCodFeeIncl()).isEqualTo(330);
+        assertThat(order.getGrandTotalIncl()).isEqualTo(2330);
 
     }
 
@@ -295,6 +301,7 @@ class AdminOrderMapperTest {
         o.setTotalQty(2);
         o.setItemsSubtotalIncl(4000);
         o.setShippingFeeIncl(500);
+        o.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
         o.setOrderStatus(OrderStatus.OPEN);
         o.setShippingStatus(ShippingStatus.UNSHIPPED);
         o.setPaymentStatus(PaymentStatus.UNPAID);

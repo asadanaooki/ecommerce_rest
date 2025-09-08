@@ -22,9 +22,11 @@ public class CheckoutProcessDto {
     private int itemsSubtotalIncl;
 
     private int shippingFeeIncl;
-
+    
+    private int codFeeIncl;
+    
     private int grandTotalIncl;
-
+    
     
     public CheckoutProcessDto(
             String fullName,
@@ -39,8 +41,11 @@ public class CheckoutProcessDto {
         this.totalQty = OrderUtil.sumBy(items, CheckoutItemDto::getQty);
         this.itemsSubtotalIncl = OrderUtil.sumBy(items, CheckoutItemDto::getSubtotalIncl);
         this.shippingFeeIncl = OrderUtil.calculateShippingFeeIncl(itemsSubtotalIncl);
-        this.grandTotalIncl = OrderUtil
-                .calculateGrandTotalIncl(itemsSubtotalIncl, shippingFeeIncl);
+        this.codFeeIncl = OrderUtil.obtainCodFeeIncl();
+        this.grandTotalIncl = OrderUtil.calculateGrandTotalIncl(itemsSubtotalIncl,
+                        shippingFeeIncl,
+                        codFeeIncl
+                        );
     }
 
 }

@@ -17,6 +17,7 @@ import lombok.Setter;
 public class Order {
     // TODO:
     // 税額、税抜き合計保留→会計処理や売上分析などで必要になったら検討
+    // スナップとして、電話番号やEmailの追加検討
 
     /** orders.order_id */
     private String orderId;
@@ -42,6 +43,8 @@ public class Order {
 
     /** 発送送料（税込）: orders.shipping_fee_incl */
     private int shippingFeeIncl;
+    
+    private int codFeeIncl;
 
     /** 総額（税込）: orders.grand_total_incl (GENERATED ALWAYS STORED) */
     @Setter(AccessLevel.NONE)
@@ -50,6 +53,8 @@ public class Order {
     private OrderStatus orderStatus;
 
     private ShippingStatus shippingStatus;
+    
+    private LocalDateTime shippedAt;
 
     private PaymentStatus paymentStatus;
 

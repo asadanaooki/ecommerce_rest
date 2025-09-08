@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>領収書</title>
+  <style>
+    @page {size: A4; margin: 16mm;}
+    body { font-family: "Noto Sans JP", sans-serif; font-size: 11pt; color: #222; }
+    h1 {font-size: 18pt; margin-bottom: 12px;}
+    .kv {width: 100%; border-collapse: collapse; margin-top: 8px;}
+    .kv th, td {border-bottom: 1px solid #ddd; padding: 12px;}
+    tr {page-break-inside: avoid;}
+  </style>
+</head>
+<body>
+  <h1>領収書</h1>
+  <table class="kv">
+    <tr>
+      <th>宛名</th>
+      <td><span th:text="${v.name}"></span> 様</td>
+    </tr>
+    <tr>
+      <th>金額</th>
+        <td>
+          <span th:text="${#numbers.formatInteger(v.grandTotalIncl, 0, 'COMMA')}"></span> 円
+          <span style="color:#666; font-size:10pt;">（消費税込み）</span>
+        </td>
+    </tr>
+    <tr>
+      <th>但し書き</th>
+      <td>商品代金として</td>
+    </tr>
+    <tr>
+      <th>お支払い方法</th>
+      <td>代金引換</td>
+    </tr>
+    <tr>
+      <th>日付</th>
+      <td th:text="${v.issueDate}"></td>
+    </tr>
+  </table>
+  
+  <p style="margin-top:28px;">上記、正に領収いたしました。</p>
+
+</body>
+</html>

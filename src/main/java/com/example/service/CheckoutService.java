@@ -27,6 +27,7 @@ import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.MailGateway;
+import com.example.util.OrderUtil;
 import com.example.util.UserUtil;
 
 import lombok.AllArgsConstructor;
@@ -71,7 +72,7 @@ public class CheckoutService {
                 UserUtil.buildFullName(user),
                 user.getPostalCode(),
                 UserUtil.buildFullAddress(user),
-                new CartDto(items));
+                new CartDto(items, OrderUtil.obtainCodFeeIncl()));
         // TODO:
         // 以下、購入不可判定入れるときに必要かも
         //   List<CartItemDto> items = new ArrayList<CartItemDto>();
@@ -144,7 +145,17 @@ public class CheckoutService {
         // TODO:メール送信 仮実装
         // 管理者にも通知する
         mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(
-                new OrderConfirmationContext(user, orderNumber, ck.getItems())));
+                new OrderConfirmationContext(
+                        user.getEmail(),
+                        UserUtil.buildFullName(user),
+                        UserUtil.buildFullAddress(user),
+                        OrderUtil.formatOrderNumber(orderNumber),
+                        items,
+                        ck.getItemsSubtotalIncl(),
+                        ck.getShippingFeeIncl(),
+                        ck.getCodFeeIncl(),
+                        ck.getGrandTotalIncl()
+                        )));
     }
 
     /**
@@ -183,6 +194,7 @@ public class CheckoutService {
                 setTotalQty(ck.getTotalQty());
                 setItemsSubtotalIncl(ck.getItemsSubtotalIncl());
                 setShippingFeeIncl(ck.getShippingFeeIncl());
+                setCodFeeIncl(ck.getCodFeeIncl());
             }
         };
         orderMapper.insertOrderHeader(order);

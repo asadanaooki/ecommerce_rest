@@ -362,7 +362,7 @@ class CartMapperTest {
                         assertThat(dto.getSubtotalIncl()).isEqualTo(3630);  // unit_price_incl * qty(1)
                     });
             
-            com.example.dto.CartDto cartDto = new com.example.dto.CartDto(items);
+            com.example.dto.CartDto cartDto = new com.example.dto.CartDto(items, null);
             assertThat(cartDto.getItemsSubtotalIncl()).isEqualTo(12375);
             assertThat(cartDto.getShippingFeeIncl()).isEqualTo(500);
             assertThat(cartDto.getGrandTotalIncl()).isEqualTo(12875);

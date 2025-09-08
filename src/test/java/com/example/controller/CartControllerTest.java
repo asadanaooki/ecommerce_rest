@@ -86,7 +86,7 @@ class CartControllerTest {
                 CartItemDto item = new CartItemDto();
                 item.setQty(3);
                 item.setSubtotalIncl(2800);
-                CartDto dto = new CartDto(List.of(item));
+                CartDto dto = new CartDto(List.of(item), null);
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 MvcResult result = mockMvc.perform(get("/cart").cookie(cookie))
@@ -146,7 +146,7 @@ class CartControllerTest {
                 CartItemDto item = new CartItemDto();
                 item.setQty(2);
                 item.setSubtotalIncl(3000);
-                CartDto dto = new CartDto(List.of(item));
+                CartDto dto = new CartDto(List.of(item), null);
                 doReturn(dto).when(cartService).showCart(anyString());
 
                 mockMvc.perform(get("/cart"))

@@ -170,7 +170,8 @@ class CheckoutServiceTest {
 
             assertThat(dto.getCart().getItemsSubtotalIncl()).isEqualTo(550);
             assertThat(dto.getCart().getShippingFeeIncl()).isEqualTo(0);
-            assertThat(dto.getCart().getGrandTotalIncl()).isEqualTo(550);
+            assertThat(dto.getCart().getCodFeeIncl()).isEqualTo(330);
+            assertThat(dto.getCart().getGrandTotalIncl()).isEqualTo(880);
             assertThat(dto.getCart().getTotalQty()).isEqualTo(3);
         }
 
@@ -404,7 +405,7 @@ class CheckoutServiceTest {
                     Order::getTotalQty,
                     Order::getItemsSubtotalIncl,
                     Order::getShippingFeeIncl,
-                    Order::getGrandTotalIncl).containsExactly(
+                    Order::getCodFeeIncl).containsExactly(
                             cartId,
                             userId,
                             "山田 太郎",
@@ -413,7 +414,7 @@ class CheckoutServiceTest {
                             22,
                             3200,
                             500,
-                            0);
+                            330);
 
             ArgumentCaptor<List<OrderItem>> itemsCap = ArgumentCaptor.forClass(List.class);
             verify(orderMapper).insertOrderItems(itemsCap.capture());

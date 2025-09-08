@@ -60,7 +60,7 @@ public class CartService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);
-        return new CartDto(items);
+        return new CartDto(items, null);
     }
 
     // TODO:
