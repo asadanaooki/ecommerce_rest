@@ -251,7 +251,7 @@ public class TestDataFactory {
         // まず必須のカラムをセット
         StringBuilder cols = new StringBuilder(
                 "order_id, user_id, name, postal_code, address, total_qty, items_subtotal_incl, shipping_fee_incl,"
-                + "cod_fee_incl");
+                        + "cod_fee_incl");
         StringBuilder marks = new StringBuilder(
                 "?, ?, ?, ?, ?, ?, ?, ?,?");
         List<Object> params = new ArrayList<>(List.of(
@@ -283,6 +283,13 @@ public class TestDataFactory {
             marks.append(", ?");
             params.add(order.getShippingStatus().name());
         }
+        // shipped_at が設定されていれば追加
+        if (order.getShippedAt() != null) {
+            cols.append(", shipped_at");
+            marks.append(", ?");
+            params.add(Timestamp.valueOf(order.getShippedAt()));
+        }
+
         // payment_status が設定されていれば追加
         if (order.getPaymentStatus() != null) {
             cols.append(", payment_status");

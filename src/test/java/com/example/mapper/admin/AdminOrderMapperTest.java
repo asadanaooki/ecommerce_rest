@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -33,8 +32,8 @@ import com.example.enums.order.ShippingStatus;
 import com.example.mapper.OrderMapper;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.testUtil.FlywayResetExtension;
+import com.example.testUtil.OrderTestFactory;
 import com.example.testUtil.TestDataFactory;
-import com.example.util.OrderUtil;
 
 @ExtendWith(FlywayResetExtension.class)
 @MybatisTest
@@ -53,7 +52,7 @@ class AdminOrderMapperTest {
 
     @Autowired
     TestDataFactory factory;
-    
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -64,7 +63,7 @@ class AdminOrderMapperTest {
 
         @BeforeEach
         void setup() {
-            factory.createOrder(buildOrder(o -> {
+            factory.createOrder(OrderTestFactory.buildOrder(o -> {
             }));
         }
 
@@ -73,10 +72,10 @@ class AdminOrderMapperTest {
         void count_singleFilterAndBoundary(Consumer<TestDataFactory> insertMismatch,
                 Consumer<OrderSearchRequest> customizeReq, int expected) {
             insertMismatch.accept(factory);
-            
+
             OrderSearchRequest req = new OrderSearchRequest();
             customizeReq.accept(req);
-          int a =  adminOrderMapper.count(req);
+            int a = adminOrderMapper.count(req);
 
             assertThat(a).isEqualTo(expected);
         }
@@ -86,14 +85,14 @@ class AdminOrderMapperTest {
             return Stream.of(
                     // フィルタなし
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createOrder(buildOrder(o -> {
+                            (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                             })),
                             (Consumer<OrderSearchRequest>) o -> {
                             },
                             2),
                     // keyword
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createOrder(buildOrder(o -> {
+                            (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                                 o.setName("笠谷 花子");
                             })),
                             (Consumer<OrderSearchRequest>) o -> {
@@ -102,7 +101,7 @@ class AdminOrderMapperTest {
                             1),
                     // orderStatus
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createOrder(buildOrder(o -> {
+                            (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                                 o.setOrderStatus(OrderStatus.COMPLETED);
                             })),
                             (Consumer<OrderSearchRequest>) o -> {
@@ -111,7 +110,7 @@ class AdminOrderMapperTest {
                             1),
                     // paymentStatus
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createOrder(buildOrder(o -> {
+                            (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                                 o.setPaymentStatus(PaymentStatus.PAID);
                             })),
                             (Consumer<OrderSearchRequest>) o -> {
@@ -121,13 +120,15 @@ class AdminOrderMapperTest {
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(
-                                    buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2018, 1, 1, 10, 3, 4)))),
+                                    OrderTestFactory
+                                            .buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2018, 1, 1, 10, 3, 4)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(
-                                    buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2022, 4, 2, 10, 3, 4)))),
+                                    OrderTestFactory
+                                            .buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2022, 4, 2, 10, 3, 4)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
 
@@ -136,27 +137,30 @@ class AdminOrderMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(
+                                            OrderTestFactory.buildOrder(
                                                     o -> o.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59, 59)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0)))),
+                                            OrderTestFactory.buildOrder(
+                                                    o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             2),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0, 0)))),
+                                            OrderTestFactory.buildOrder(
+                                                    o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0, 0)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
-                                            buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
+                                            OrderTestFactory.buildOrder(
+                                                    o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
                             (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             2));
         }
@@ -179,19 +183,20 @@ class AdminOrderMapperTest {
             return Stream.of(
                     // name
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createOrder(buildOrder(o -> o.setName("笠谷 花子"))),
+                            (Consumer<TestDataFactory>) f -> f
+                                    .createOrder(OrderTestFactory.buildOrder(o -> o.setName("笠谷 花子"))),
                             (Consumer<OrderSearchRequest>) o -> o.setQ("笠谷花"),
                             1),
                     // orderNumber
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
-                                    .createOrder(buildOrder(o -> o.setOrderNumber(2000))),
+                                    .createOrder(OrderTestFactory.buildOrder(o -> o.setOrderNumber(2000))),
                             (Consumer<OrderSearchRequest>) r -> r.setQ("200"),
                             1),
                     // 不一致
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
-                                    .createOrder(buildOrder(o -> o.setName("NMH"))),
+                                    .createOrder(OrderTestFactory.buildOrder(o -> o.setName("NMH"))),
                             (Consumer<OrderSearchRequest>) r -> r.setQ("nbs"),
                             0));
         }
@@ -200,7 +205,7 @@ class AdminOrderMapperTest {
     @Test
     void selectOrderDetail() {
         String orderId = "a12f3e45-6789-4abc-de01-23456789abcd";
-        factory.createOrder(buildOrder(o -> {
+        factory.createOrder(OrderTestFactory.buildOrder(o -> {
             o.setName("abc");
             o.setPostalCode("4500311");
             o.setOrderId(orderId);
@@ -275,7 +280,7 @@ class AdminOrderMapperTest {
     @Test
     void updateTotals() {
         String orderId = "a12f3e45-6789-4abc-de01-23456789abcd";
-        factory.createOrder(buildOrder(o -> {
+        factory.createOrder(OrderTestFactory.buildOrder(o -> {
             o.setOrderId(orderId);
         }));
 
@@ -290,25 +295,104 @@ class AdminOrderMapperTest {
         assertThat(order.getGrandTotalIncl()).isEqualTo(2330);
 
     }
+    
+    @Nested
+    class SelectMonthlySalesTotal {
+        LocalDateTime start = LocalDateTime.of(2025, 8, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 9, 1, 0, 0);
 
-    static Order buildOrder(Consumer<Order> customizer) {
-        Order o = new Order();
-        o.setOrderId(UUID.randomUUID().toString());
-        o.setUserId("550e8400-e29b-41d4-a716-446655440000");
-        o.setName("山田 太郎");
-        o.setPostalCode("1500041");
-        o.setAddress("test");
-        o.setTotalQty(2);
-        o.setItemsSubtotalIncl(4000);
-        o.setShippingFeeIncl(500);
-        o.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
-        o.setOrderStatus(OrderStatus.OPEN);
-        o.setShippingStatus(ShippingStatus.UNSHIPPED);
-        o.setPaymentStatus(PaymentStatus.UNPAID);
-        o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
-        o.setUpdatedAt(LocalDateTime.of(2020, 1, 1, 10, 3, 4));
-        customizer.accept(o);
-        return o;
+        @ParameterizedTest
+        @MethodSource("providePeriodCases")
+        void SelectMonthlySalesTotal_boundary(Consumer<Order> customizer, int expected) {
+            LocalDateTime base = LocalDateTime.of(2025, 8, 15, 12, 0);
+            factory.createOrder(OrderTestFactory.buildOrder(o -> o.setShippedAt(base)));
+
+            Order order = OrderTestFactory.buildOrder(customizer);
+            factory.createOrder(order);
+
+
+            int actual = adminOrderMapper.selectMonthlySalesTotal(start, end);
+
+            assertThat(actual).isEqualTo(expected);
+        }
+
+        static Stream<Arguments> providePeriodCases() {
+
+            return Stream.of(
+                    Arguments.of((Consumer<Order>) o -> o.setShippedAt(
+                            LocalDateTime.of(2025, 7, 31, 23, 59, 59)), 4830),
+
+                    Arguments.of((Consumer<Order>) o -> {
+                        o.setShippedAt(LocalDateTime.of(2025, 8, 1, 0, 0));
+                        o.setItemsSubtotalIncl(5000);
+                    }, 10660),
+
+                    Arguments.of((Consumer<Order>) o -> {
+                        o.setShippedAt(LocalDateTime.of(2025, 8, 31, 23, 59, 59));
+                        o.setItemsSubtotalIncl(5000);
+                    }, 10660),
+
+                    Arguments.of((Consumer<Order>) o -> {
+                        o.setShippedAt(LocalDateTime.of(2025, 9, 1, 0, 0));
+                        o.setItemsSubtotalIncl(5000);
+                    }, 4830));
+        }
+        
+        @Test
+        void selectMonthlySalesTotal_noData() {
+            Order o1 = OrderTestFactory.buildOrder(o ->{
+                o.setShippedAt(null);
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+                o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+            });
+            factory.createOrder(o1);
+            
+            Order o2 = OrderTestFactory.buildOrder(o ->{
+                o.setShippedAt(LocalDateTime.of(2025, 6, 10, 12, 0));
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+                o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+            });
+            factory.createOrder(o2);
+            
+            int actual = adminOrderMapper.selectMonthlySalesTotal(start, end);
+            assertThat(actual).isZero();
+        }
+        
+        @Test
+        void selectMonthlySalesTotal_multiple() {
+            Order o1 = OrderTestFactory.buildOrder(o ->{
+                o.setShippedAt(null);
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+                o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+            });
+            factory.createOrder(o1);
+            
+            Order o2 = OrderTestFactory.buildOrder(o ->{
+                o.setShippedAt(LocalDateTime.of(2025, 6, 10, 12, 0));
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+                o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+            });
+            factory.createOrder(o2);
+            
+            Order o3 = OrderTestFactory.buildOrder(o ->{
+                o.setShippingFeeIncl(0);
+                o.setItemsSubtotalIncl(500);
+                o.setShippedAt(LocalDateTime.of(2025, 8, 24, 12, 0));
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+                o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+            });
+            factory.createOrder(o3);
+            
+            Order o4 = OrderTestFactory.buildOrder(o ->{
+                o.setShippedAt(LocalDateTime.of(2025, 8, 2, 12, 0));
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+                o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
+            });
+            factory.createOrder(o4);
+            
+            int actual = adminOrderMapper.selectMonthlySalesTotal(start, end);
+            assertThat(actual).isEqualTo(5660);
+        }
     }
 
 }

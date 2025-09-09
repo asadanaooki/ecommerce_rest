@@ -28,8 +28,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.dto.admin.AdminPdfFileDto;
 import com.example.dto.admin.AdminOrderDetailDto;
+import com.example.dto.admin.AdminFileDto;
 import com.example.service.OrderCommandService;
 import com.example.service.admin.AdminOrderService;
 import com.example.testConfig.CommonMockConfig;
@@ -116,6 +116,7 @@ class AdminOrderControllerTest {
         org.springframework.test.util.ReflectionTestUtils.setField(dto, "orderId", orderId);
         org.springframework.test.util.ReflectionTestUtils.setField(dto, "itemsSubtotalIncl", 5000);
         org.springframework.test.util.ReflectionTestUtils.setField(dto, "shippingFeeIncl", 500);
+        org.springframework.test.util.ReflectionTestUtils.setField(dto, "codFeeIncl", 330);
         org.springframework.test.util.ReflectionTestUtils.setField(dto, "grandTotalIncl", 5500);
 
         doReturn(dto).when(adminOrderService).findDetail(orderId);
@@ -125,6 +126,7 @@ class AdminOrderControllerTest {
                 .andExpect(jsonPath("$.orderId").value(orderId))
                 .andExpect(jsonPath("$.itemsSubtotalIncl").value(5000))
                 .andExpect(jsonPath("$.shippingFeeIncl").value(500))
+                .andExpect(jsonPath("$.codFeeIncl").value(330))
                 .andExpect(jsonPath("$.grandTotalIncl").value(5500));
     }
     
@@ -135,7 +137,7 @@ class AdminOrderControllerTest {
         String encoded = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
         byte[] bytes = new byte[] {1,2,3,4};
         
-        AdminPdfFileDto dto = new AdminPdfFileDto(fileName, bytes);
+        AdminFileDto dto = new AdminFileDto(fileName, bytes);
 
         doReturn(dto).when(adminOrderService).generateDeliveryNote(orderId);
 

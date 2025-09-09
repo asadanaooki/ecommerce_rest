@@ -57,6 +57,7 @@ class CartServiceTest {
             assertThat(dto.getTotalQty()).isZero();
             assertThat(dto.getShippingFeeIncl()).isEqualTo(0);
             assertThat(dto.getItemsSubtotalIncl()).isEqualTo(0);
+            assertThat(dto.getCodFeeIncl()).isNull();
             assertThat(dto.getGrandTotalIncl()).isEqualTo(0);
         }
 
@@ -92,6 +93,7 @@ class CartServiceTest {
             assertThat(dto.getTotalQty()).isEqualTo(4);
             assertThat(dto.getItemsSubtotalIncl()).isEqualTo(3520);
             assertThat(dto.getShippingFeeIncl()).isEqualTo(500);
+            assertThat(dto.getCodFeeIncl()).isNull();
             assertThat(dto.getGrandTotalIncl()).isEqualTo(4020);
 
             assertThat(dto.getItems()).hasSize(2).first()

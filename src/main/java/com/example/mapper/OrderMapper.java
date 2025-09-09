@@ -39,6 +39,8 @@ public interface OrderMapper {
     int updateItemQty(OrderItem item);
 
     int updateTotals(String orderId, int itemsSubtotalIncl, int shippingFeeIncl);
+    
+    int updateShippedAt(String orderId);
 
     // DELETE
     int deleteOrderItem(String orderId, String productId);

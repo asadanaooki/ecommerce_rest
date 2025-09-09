@@ -11,12 +11,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.csv.CSVPrinter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,9 +37,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.example.dto.admin.AdminFileDto;
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderDetailItemDto;
-import com.example.dto.admin.AdminPdfFileDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.User;
@@ -358,7 +360,7 @@ class AdminOrderServiceTest {
                         }).when(builder).run();
 
                     })) {
-                AdminPdfFileDto res = adminOrderService.generateDeliveryNote("ORDER-001");
+                AdminFileDto res = adminOrderService.generateDeliveryNote("ORDER-001");
 
                 assertThat(res.getFileName()).isEqualTo("納品書_0001.pdf");
                 assertThat(res.getBytes()).isNotEmpty();
@@ -440,7 +442,7 @@ class AdminOrderServiceTest {
         o.setUpdatedAt(LocalDateTime.of(2025, 9, 4, 10, 44, 21));
 
         doReturn(o).when(orderMapper).selectOrderByPrimaryKey(anyString());
-        
+
         LocalDate date = LocalDate.of(2025, 9, 5);
 
         try (MockedStatic<LocalDate> mockedNow = Mockito.mockStatic(LocalDate.class);
@@ -457,10 +459,10 @@ class AdminOrderServiceTest {
                                 return null;
                             }).when(builder).run();
                         })) {
-            
-            mockedNow.when(()->LocalDate.now()).thenReturn(date);
 
-            AdminPdfFileDto res = adminOrderService.generateReceipt("ORDER-001");
+            mockedNow.when(() -> LocalDate.now()).thenReturn(date);
+
+            AdminFileDto res = adminOrderService.generateReceipt("ORDER-001");
 
             assertThat(res.getFileName()).isEqualTo("領収書_0001.pdf");
             assertThat(res.getBytes()).isNotEmpty();
@@ -475,4 +477,37 @@ class AdminOrderServiceTest {
             assertThat(arg.getGrandTotalIncl()).isEqualTo(500);
         }
     }
+
+    @Nested
+    class GenerateMonthlySales {
+        String period = "2025-08";
+
+        @BeforeEach
+        void setup() {
+            doReturn(1234).when(adminOrderMapper).selectMonthlySalesTotal(any(), any());
+        }
+
+        @Test
+        void generateMonthlySales_ok() {
+            AdminFileDto dto = adminOrderService.generateMonthlySales(period);
+            String csv = new String(dto.getBytes(), StandardCharsets.UTF_8);
+
+            assertThat(csv).startsWith("取引日,勘定科目,金額,摘要\r\n");
+            assertThat(csv).contains("2025/08/31,売上高,1234,2025年8月売上合計");
+        }
+
+        @Test
+        void generateMonthlySales_error() {
+            try (MockedConstruction<CSVPrinter> mocked = mockConstruction(
+                    CSVPrinter.class,
+                    (printer, ctx) -> {
+                        doThrow(new IOException()).when(printer).printRecord(any(Object[].class));
+                    })) {
+                assertThatThrownBy(() -> adminOrderService.generateMonthlySales(period))
+                        .isInstanceOf(UncheckedIOException.class)
+                        .hasCauseInstanceOf(IOException.class);
+            }
+        }
+    }
+
 }

@@ -39,7 +39,6 @@ public class OrderCommandService {
     // 現状orderIdは妥当なモノである前提でNPE対策してない
     // ユーザーのEmail取得する際、毎回汎用クエリで取得してる。Orderと同時に取得するカスタムクエリ作るべきか？
     // NPE対策
-    
 
     // private final String ADMIN_EMAIL = "admin@example.com";
 
@@ -51,25 +50,24 @@ public class OrderCommandService {
 
     private final MailGateway gateway;
 
-
     @Transactional
     public void requestCancel(String orderId) {
         // TODO:
         // ユーザーに受付メール送るか検討
-        
+
         apply(orderId, OrderEvent.REQUEST_CANCEL);
     }
-    
+
     @Transactional
     public void approveCancel(String orderId) {
         apply(orderId, OrderEvent.APPROVE_CANCEL);
-        
+
         orderMapper.restoreInventory(orderId);
 
         Order o = orderMapper.selectOrderByPrimaryKey(orderId);
         List<OrderItem> items = orderMapper.selectOrderItems(orderId);
         User u = userMapper.selectUserByPrimaryKey(o.getUserId());
-        
+
         gateway.send(MailTemplate.CANCEL_APPROVED
                 .build(new MailTemplate.CancelApprovedContext(
                         u.getEmail(),
@@ -79,18 +77,18 @@ public class OrderCommandService {
                         o.getItemsSubtotalIncl(),
                         o.getShippingFeeIncl(),
                         o.getCodFeeIncl(),
-                        o.getGrandTotalIncl()
-                        )));
+                        o.getGrandTotalIncl())));
     }
-    
+
     @Transactional
     public void ship(String orderId) {
-       OrderState cur = apply(orderId, OrderEvent.SHIP);
-        
+        OrderState cur = apply(orderId, OrderEvent.SHIP);
+        orderMapper.updateShippedAt(orderId);
+
         Order o = orderMapper.selectOrderByPrimaryKey(orderId);
         List<OrderItem> items = orderMapper.selectOrderItems(orderId);
         User u = userMapper.selectUserByPrimaryKey(o.getUserId());
-        
+
         if (cur.getOrder() == OrderStatus.OPEN) {
             gateway.send(MailTemplate.SHIPPING_NOTIFICATION.build(
                     new MailTemplate.ShipmentContext(
@@ -102,8 +100,7 @@ public class OrderCommandService {
                             o.getItemsSubtotalIncl(),
                             o.getShippingFeeIncl(),
                             o.getCodFeeIncl(),
-                            o.getGrandTotalIncl()
-                            )));
+                            o.getGrandTotalIncl())));
         } else if (cur.getOrder() == OrderStatus.CANCEL_REQUESTED) {
             gateway.send(MailTemplate.SHIPPED_AND_CANCEL_REJECTED.build(
                     new MailTemplate.CancelRejectedContext(
@@ -114,37 +111,35 @@ public class OrderCommandService {
                             o.getItemsSubtotalIncl(),
                             o.getShippingFeeIncl(),
                             o.getCodFeeIncl(),
-                            o.getGrandTotalIncl()
-                            )));
+                            o.getGrandTotalIncl())));
         }
     }
-    
+
     @Transactional
     public void markAsDelivered(String orderId) {
-      apply(orderId, OrderEvent.DELIVERED);
+        apply(orderId, OrderEvent.DELIVERED);
     }
-    
-    
+
     private OrderState apply(String orderId, OrderEvent ev) {
-        Order before = orderMapper.selectOrderByPrimaryKey(orderId); 
+        Order before = orderMapper.selectOrderByPrimaryKey(orderId);
         OrderState cur = new OrderState(
                 before.getOrderStatus(),
                 before.getShippingStatus(),
                 before.getPaymentStatus());
 
-            final OrderState next;
-            try {
-              next = guard.next(cur, ev);
-            } catch (IllegalStateException e) {
-              // ガード違反 → 409 + reason を返す
-              throw new ResponseStatusException(HttpStatus.CONFLICT, "ORDER_STATE_INVALID");
-            }
+        final OrderState next;
+        try {
+            next = guard.next(cur, ev);
+        } catch (IllegalStateException e) {
+            // ガード違反 → 409 + reason を返す
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "ORDER_STATE_INVALID");
+        }
 
-            int updated = orderMapper.applyTransition(orderId, cur, next);
-            if (updated <= 0) {
-              // 楽観ロック競合など：更新されず → 409
-              throw new ResponseStatusException(HttpStatus.CONFLICT, "ORDER_STATE_CONFLICT");
-            }
-            return cur;
+        int updated = orderMapper.applyTransition(orderId, cur, next);
+        if (updated <= 0) {
+            // 楽観ロック競合など：更新されず → 409
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "ORDER_STATE_CONFLICT");
+        }
+        return cur;
     }
 }

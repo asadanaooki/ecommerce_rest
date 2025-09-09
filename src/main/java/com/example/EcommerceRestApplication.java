@@ -23,6 +23,7 @@ public class EcommerceRestApplication {
       任意項目の入力欄は受け取る際、トリミング入れる→Review関連には入れてる
       DuplicateKeyは409に変換すべきなのか？実装コストと頻度のトレードオフ
       MybatisでDtoへのマップはSetterがない場合、リフレクションだがどれくらいパフォーマンス悪くなるか
+      FakeSMTP毎回クリック起動面倒→自動化
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

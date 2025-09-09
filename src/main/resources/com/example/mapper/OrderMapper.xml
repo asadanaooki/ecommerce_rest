@@ -124,6 +124,12 @@
     where order_id = #{orderId}
       and product_id = #{productId}
   </update>
+  
+  <update id="updateShippedAt">
+    update `order`
+    set shipped_at = CURRENT_TIMESTAMP
+    where order_id = #{orderId}
+  </update>
 
   
   <!-- =========================

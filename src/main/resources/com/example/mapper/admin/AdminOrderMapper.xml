@@ -124,5 +124,12 @@
     WHERE o.order_id = #{orderId}
     ORDER BY i.product_id
   </select>
+  
+  <select id="selectMonthlySalesTotal" resultType="int">
+    select coalesce(sum(grand_total_incl), 0)
+    from `order`
+    where shipped_at &gt;= #{startInclusive}
+      and shipped_at &lt; #{endExclusive}
+  </select>
 
 </mapper>

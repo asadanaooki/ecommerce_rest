@@ -142,6 +142,7 @@ class OrderCommandServiceTest {
                             && c.getShipping() == ShippingStatus.UNSHIPPED
                             && c.getPayment() == PaymentStatus.UNPAID),
                     any());
+            verify(orderMapper).updateShippedAt(anyString());
             verify(gateway).send(any());
         }
 
@@ -157,6 +158,7 @@ class OrderCommandServiceTest {
                             && c.getShipping() == ShippingStatus.UNSHIPPED
                             && c.getPayment() == PaymentStatus.UNPAID),
                     any());
+            verify(orderMapper).updateShippedAt(anyString());
             verify(gateway).send(any());
         }
 

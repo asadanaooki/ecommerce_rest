@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 public class InquiryService {
     // TODO:
     // ダッシュボードでリアルタイムで問い合わせ検知する
-    // 注文キャンセル、返品、交換→マイページ経由を検討。現状、お問い合わせフォームで対応
+    // 返品、交換
     // メール送信の整合性
     // 管理者アドレスは仮値
 

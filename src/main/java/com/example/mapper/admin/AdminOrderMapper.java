@@ -1,5 +1,6 @@
 package com.example.mapper.admin;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -22,4 +23,6 @@ public interface AdminOrderMapper {
     List<AdminOrderRowDto> selectPage(OrderSearchRequest req, int limit, int offset);
     
     AdminOrderDetailDto selectOrderDetail(String orderId);
+    
+    int selectMonthlySalesTotal(LocalDateTime startInclusive, LocalDateTime endExclusive);
 }

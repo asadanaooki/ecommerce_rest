@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AdminPdfFileDto {
+public class AdminFileDto {
 
     private String fileName;
     

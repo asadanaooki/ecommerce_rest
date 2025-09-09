@@ -26,6 +26,7 @@ import com.example.enums.order.ShippingStatus;
 import com.example.feature.order.OrderState;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
+import com.example.util.OrderUtil;
 
 @ExtendWith(FlywayResetExtension.class)
 @MybatisTest
@@ -125,6 +126,7 @@ class OrderMapperTest {
         order.setTotalQty(3);
         order.setItemsSubtotalIncl(8800);
         order.setShippingFeeIncl(800);
+        order.setCodFeeIncl(OrderUtil.obtainCodFeeIncl());
 
         orderMapper.insertOrderHeader(order);
 
@@ -140,6 +142,7 @@ class OrderMapperTest {
                 Order::getTotalQty,
                 Order::getItemsSubtotalIncl,
                 Order::getShippingFeeIncl,
+                Order::getCodFeeIncl,
                 Order::getGrandTotalIncl,
                 Order::getShippingStatus,
                 Order::getPaymentStatus)
@@ -152,7 +155,8 @@ class OrderMapperTest {
                         3,
                         8800,
                         800,
-                        9600,
+                        330,
+                        9930,
                         ShippingStatus.UNSHIPPED,
                         PaymentStatus.UNPAID);
     }
@@ -207,28 +211,28 @@ class OrderMapperTest {
 
         assertThat(saved.get(1).getProductId()).isEqualTo("f9c9cfb2-0893-4f1c-b508-f9e909ba5274");
     }
-    
+
     @Test
     void selectOrdersByUserId_returnsOrdersForUser() {
         // Test with existing user from test data
         String userId = "550e8400-e29b-41d4-a716-446655440000";
-        
+
         List<Order> orders = orderMapper.selectOrdersByUserId(userId);
-        
+
         // The test data may or may not have orders for this user
         assertThat(orders).isNotNull();
-        
+
         // If there are orders, verify they belong to the user
         if (!orders.isEmpty()) {
             assertThat(orders).allSatisfy(order -> {
                 assertThat(order.getUserId()).isEqualTo(userId);
                 assertThat(order.getOrderId()).isNotNull();
             });
-            
+
             // Verify orders are sorted by created_at desc
             for (int i = 1; i < orders.size(); i++) {
                 assertThat(orders.get(i - 1).getCreatedAt())
-                    .isAfterOrEqualTo(orders.get(i).getCreatedAt());
+                        .isAfterOrEqualTo(orders.get(i).getCreatedAt());
             }
         }
     }
@@ -237,9 +241,9 @@ class OrderMapperTest {
     void selectOrdersByUserId_returnsEmptyForUserWithNoOrders() {
         // Use a user ID that shouldn't have orders in test data
         String userWithNoOrders = "00000000-0000-0000-0000-000000000000";
-        
+
         List<Order> orders = orderMapper.selectOrdersByUserId(userWithNoOrders);
-        
+
         assertThat(orders).isNotNull();
         assertThat(orders).isEmpty();
     }
@@ -247,9 +251,9 @@ class OrderMapperTest {
     @Test
     void selectOrderItems_returnsEmptyForNonExistentOrder() {
         String nonExistentOrderId = "NON-EXISTENT-ORDER-999";
-        
+
         List<OrderItem> items = orderMapper.selectOrderItems(nonExistentOrderId);
-        
+
         assertThat(items).isNotNull();
         assertThat(items).isEmpty();
     }
@@ -259,17 +263,17 @@ class OrderMapperTest {
         // Test that the query executes without error
         // Even if no data is returned, this validates the SQL syntax
         String testOrderId = "TEST-ORDER-001";
-        
+
         List<OrderItem> items = orderMapper.selectOrderItems(testOrderId);
-        
+
         assertThat(items).isNotNull();
         // The list may be empty if no test data exists, but the query should execute
     }
-    
+
     @Nested
-    class ApplyTransition{
+    class ApplyTransition {
         Order order;
-        
+
         @BeforeEach
         void setup() {
             order = new Order();
@@ -283,64 +287,64 @@ class OrderMapperTest {
             order.setShippingFeeIncl(800);
             orderMapper.insertOrderHeader(order);
         }
-        
+
         @Test
         void applyTransition_success() {
             OrderState expected = new OrderState(OrderStatus.OPEN,
                     ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
             OrderState next = new OrderState(OrderStatus.COMPLETED,
                     ShippingStatus.SHIPPED, PaymentStatus.PAID);
-            
+
             int rows = orderMapper.applyTransition(cartId, expected, next);
-            
+
             assertThat(rows).isOne();
             Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
             assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.COMPLETED);
             assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.SHIPPED);
             assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
         }
-        
+
         @Test
         void applyTransition_mismatchOrderStatus() {
             OrderState expected = new OrderState(OrderStatus.CANCELED,
                     ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
             OrderState next = new OrderState(OrderStatus.COMPLETED,
                     ShippingStatus.SHIPPED, PaymentStatus.PAID);
-            
+
             int rows = orderMapper.applyTransition(cartId, expected, next);
-            
+
             assertThat(rows).isZero();
             Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
             assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.OPEN);
             assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.UNSHIPPED);
             assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
         }
-        
+
         @Test
         void applyTransition_mismatchShippingStatus() {
             OrderState expected = new OrderState(OrderStatus.CANCELED,
                     ShippingStatus.SHIPPED, PaymentStatus.UNPAID);
             OrderState next = new OrderState(OrderStatus.COMPLETED,
                     ShippingStatus.SHIPPED, PaymentStatus.PAID);
-            
+
             int rows = orderMapper.applyTransition(cartId, expected, next);
-            
+
             assertThat(rows).isZero();
             Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
             assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.OPEN);
             assertThat(saved.getShippingStatus()).isEqualTo(ShippingStatus.UNSHIPPED);
             assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
         }
-        
+
         @Test
         void applyTransition_mismatchPaymentStatus() {
             OrderState expected = new OrderState(OrderStatus.CANCELED,
                     ShippingStatus.UNSHIPPED, PaymentStatus.PAID);
             OrderState next = new OrderState(OrderStatus.COMPLETED,
                     ShippingStatus.SHIPPED, PaymentStatus.PAID);
-            
+
             int rows = orderMapper.applyTransition(cartId, expected, next);
-            
+
             assertThat(rows).isZero();
             Order saved = orderMapper.selectOrderByPrimaryKey(cartId);
             assertThat(saved.getOrderStatus()).isEqualTo(OrderStatus.OPEN);

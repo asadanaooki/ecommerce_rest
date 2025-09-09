@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderListDto;
-import com.example.dto.admin.AdminPdfFileDto;
+import com.example.dto.admin.AdminFileDto;
 import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.service.OrderCommandService;
@@ -82,7 +82,7 @@ public class AdminOrderController {
     @GetMapping("/{orderId}/delivery-note")
     public ResponseEntity<ByteArrayResource> downloadDeliveryNote(
             @PathVariable @HexUuid @NotBlank String orderId) {
-        AdminPdfFileDto dto = adminOrderService.generateDeliveryNote(orderId);
+        AdminFileDto dto = adminOrderService.generateDeliveryNote(orderId);
         String encoded = URLEncoder.encode(dto.getFileName(), StandardCharsets.UTF_8);
 
         return ResponseEntity.ok()
@@ -94,7 +94,7 @@ public class AdminOrderController {
     @GetMapping("/{orderId}/receipt")
     public ResponseEntity<ByteArrayResource> downloadReceipt(
             @PathVariable @HexUuid @NotBlank String orderId) {
-        AdminPdfFileDto dto = adminOrderService.generateReceipt(orderId);
+        AdminFileDto dto = adminOrderService.generateReceipt(orderId);
         String encoded = URLEncoder.encode(dto.getFileName(), StandardCharsets.UTF_8);
 
         return ResponseEntity.ok()
