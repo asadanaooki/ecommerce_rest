@@ -11,8 +11,9 @@ import lombok.Data;
 
 @Data
 public class PreSignupRequest {
-    // TODO:
-    // 国際化ドメイン対応検討
+    /* TODO:
+     * 国際化ドメイン対応検討
+     */
     
     @NormalizeEmail
     @Email

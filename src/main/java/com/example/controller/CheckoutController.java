@@ -20,10 +20,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/checkout")
 public class CheckoutController {
-    /*
-     * TODO:
+    /* TODO:
      * 購入確定処理も一旦ここに書く。
-     */
+    */
 
     private final CheckoutService checkoutService;
 

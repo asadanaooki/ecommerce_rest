@@ -7,8 +7,12 @@ import com.example.enums.review.ReviewStatus;
 
 @Component
 public class ReviewTransitionGuard {
-    // TODO:
-    // 冪等性考慮→現状、エラー
+    /* TODO:
+     * 冪等性考慮→現状、エラー
+     * nextメソッド
+         Approve:否認後の承認ケース検討
+         Reject:承認後の否認ケース検討
+    */
 
     
     public ReviewState next(ReviewState cur, ReviewEvent ev) {
@@ -31,16 +35,12 @@ public class ReviewTransitionGuard {
             if (cur.getStatus() == ReviewStatus.PENDING) {
                 yield new ReviewState(ReviewStatus.APPROVED);
             }
-            // TODO:
-            // 否認後の承認ケース検討。
             throw new IllegalStateException("Approve not allowed");
         }
         case REJECT -> {
             if (cur.getStatus() == ReviewStatus.PENDING) {
                 yield new ReviewState(ReviewStatus.REJECTED);
             }
-            // TODO:
-            // 承認後の否認ケース検討。
             throw new IllegalStateException("Reject not allowed");
         }
         };

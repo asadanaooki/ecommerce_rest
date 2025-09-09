@@ -6,8 +6,9 @@ import lombok.Data;
 
 @Data
 public class CheckoutItemDto {
-    // TODO:
-    // SKU表示するほうがよい？
+    /* TODO:
+     * SKU表示するほうがよい？
+    */
 
     /* ---------- 基本情報 ---------- */
 

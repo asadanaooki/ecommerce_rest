@@ -24,8 +24,9 @@ import com.example.mapper.FavoriteMapper;
 
 @ExtendWith(MockitoExtension.class)
 class FavoriteServiceTest {
-    // TODO:
-    // calculatorの税率や表示件数を設定ファイルから反映させるようにしたほうがよい？
+    /* TODO:
+     * calculatorの税率や表示件数を設定ファイルから反映させるようにしたほうがよい？
+     */
 
     @Mock
     FavoriteMapper favoriteMapper;

@@ -11,9 +11,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-    // TODO:
-//    ・publicコンストラクタで実装してよいのか？
-//     ChatGPTではprivateコンストラクタでnewする方法をすすめられた
+    /* TODO:
+     * publicコンストラクタで実装してよいのか？
+     * ChatGPTではprivateコンストラクタでnewする方法をすすめられた
+    */
+    
     private final String userId;
     
     private final String username;

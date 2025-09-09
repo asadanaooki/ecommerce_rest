@@ -18,8 +18,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor         // ← フレームワーク用デフォルトコンストラクタ
 @AllArgsConstructor
 public class ProfileUpdateRequest {
-    // TODO:
-    // Mapperの引数までもっていくのやめたほうがよい？
+    /* TODO:
+     * Mapperの引数までもっていくのやめたほうがよい？
+     */
 
     // ④ 氏名
     @NotBlank @Size(max = 50) private String lastName;

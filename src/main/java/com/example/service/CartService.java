@@ -26,18 +26,21 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class CartService {
     /* TODO:
-      ・トランザクションのテストは結合テストにする
-      　フロントに持たせないほうが良いということで、カートIDを毎回バックで解決してる。パフォーマンス要検証
-      ・削除のたびにpage=1を取得してる。毎回ジャンプするため同じ位置にした方が良いかも？
-      ・販売ステータス定数を共通化したほうが良いかも。
-      ・価格計算、重複して書いてるが共通化したほうが良いのか
-       isCartExpiredの戻り値がNULLを考慮するか？
-       productIdが不正値の場合を考慮するか？addやupdateなどで
-    */
+     *トランザクションのテストは結合テストにする
+     *フロントに持たせないほうが良いということで、カートIDを毎回バックで解決してる。パフォーマンス要検証
+     *削除のたびにpage=1を取得してる。毎回ジャンプするため同じ位置にした方が良いかも？
+     *productIdが不正値の場合を考慮するか？addやupdateなどで
+     *addToCart→引数おおい。リファクタリングする？
+     * changeQty
+         show→updateしてる想定なので、カートIDがあり、期限内の想定
+         いきなりAPI叩くケースなどのガード検討
+     * removeItem
+         show→Deleteしてる想定なので、カートIDがあり、期限内の想定
+         いきなりAPI叩くケースなどのガード検討
+     */
     private final CartMapper cartMapper;
 
     private final ProductMapper productMapper;
-
 
     public Optional<String> findUserCartId(String userId) {
         return Optional.ofNullable(cartMapper.selectCartByUser(userId))
@@ -63,8 +66,6 @@ public class CartService {
         return new CartDto(items, null);
     }
 
-    // TODO:
-    // 引数おおい。リファクタリングする？
     /** 追加（idempotent） */
     public Optional<String> addToCart(
             String candidateCartId,
@@ -97,9 +98,6 @@ public class CartService {
             String userId,
             String productId,
             int qty) {
-        // TODO:
-        // show→updateしてる想定なので、カートIDがあり、期限内の想定
-        // いきなりAPI叩くケースなどのガード検討
         int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
@@ -114,9 +112,6 @@ public class CartService {
     // --- DELETE：冪等。存在しなくても期限切れでも OK ---
     @Transactional
     public void removeItem(String cartId, String productId) {
-        // TODO:
-        // show→Deleteしてる想定なので、カートIDがあり、期限内の想定
-        // いきなりAPI叩くケースなどのガード検討
         cartMapper.deleteCartItem(cartId, productId);
     }
 

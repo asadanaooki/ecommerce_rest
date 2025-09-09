@@ -6,8 +6,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-// TODO:
-// 以下、本番環境も追加する
+/* TODO:
+ * 以下、本番環境も追加する
+*/
 @Profile({"dev"})
 public class SchedulingConfig {
 

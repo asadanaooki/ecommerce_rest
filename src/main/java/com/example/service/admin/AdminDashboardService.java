@@ -25,9 +25,10 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class AdminDashboardService {
-    // TODO:
-    // 売上→現状、税込み価格の和で表示
-    // アラート機能
+    /* TODO:
+     * 売上→現状、税込み価格の和で表示
+     * アラート機能
+     */
 
     private final AdminDashboardMapper adminDashboardMapper;
 

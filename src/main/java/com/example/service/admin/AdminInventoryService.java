@@ -22,14 +22,15 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AdminInventoryService {
-    // TODO:
-    // resolveStockStatusはユーザー向けの商品画面でも使うかも。共通化検討
-    // 発注画面
-    //    第1段階（最小）：表示 ➜ ロック ➜ 手動調整
-    //    第2段階：フィルタ／並び替え／検索
-    //    第3段階：CSVエクスポート・ページネーション・監査ログ
-    //    第4段階（拡張）：商品別閾値・在庫履歴・倉庫別在庫
-    // 在庫手動調整で、同時編集や在庫変動があった場合の整合性どうするか。例：バージョンカラムなど
+    /* TODO:
+    * resolveStockStatusはユーザー向けの商品画面でも使うかも。共通化検討
+    * 発注画面
+        第1段階（最小）：表示 ➜ ロック ➜ 手動調整
+        第2段階：フィルタ／並び替え／検索
+        第3段階：CSVエクスポート・ページネーション・監査ログ
+        第4段階（拡張）：商品別閾値・在庫履歴・倉庫別在庫
+    * 在庫手動調整で、同時編集や在庫変動があった場合の整合性どうするか。例：バージョンカラムなど
+     */
 
     private final AdminInventoryMapper adminInventoryMapper;
     

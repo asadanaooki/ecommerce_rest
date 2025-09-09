@@ -12,9 +12,11 @@ import lombok.Data;
 
 @Data
 public class InquiryRequest {
-    // TODO:
-    //  電話番号はハイフンなし前提
-    //  現状半角数字のみ→ユーザーフレンドリーにする
+    /* TODO:
+     *  電話番号はハイフンなし前提
+         現状半角数字のみ→ユーザーフレンドリーにする
+    ///
+     */
 
     @NotBlank
     @Length(max = 50)

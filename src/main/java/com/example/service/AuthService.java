@@ -21,11 +21,11 @@ import com.example.entity.PasswordResetToken;
 import com.example.entity.PreRegistration;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
-import com.example.enums.MailTemplate.RegistrationContext;
-import com.example.enums.MailTemplate.PasswordResetContext;
-import com.example.enums.MailTemplate.EmailChangeCompleteNewContext;
 import com.example.enums.MailTemplate.EmailChangeAlertOldContext;
+import com.example.enums.MailTemplate.EmailChangeCompleteNewContext;
+import com.example.enums.MailTemplate.PasswordResetContext;
 import com.example.enums.MailTemplate.ProfileChangedContext;
+import com.example.enums.MailTemplate.RegistrationContext;
 import com.example.error.BusinessException;
 import com.example.mapper.UserMapper;
 import com.example.request.EmailChangeRequest;
@@ -44,22 +44,21 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    /*    // TODO:
-    ・メッセージをmessage.propertiesにまとめる
-        有効期限切れ→「再送依頼ボタン」を同画面に置くと CS 工数減
-        メール送信をトランザクション外にしたほうがよいか？メリットがわからん
-        未使用トークンをバッチで削除
-        自動ログインにする
-    ・パスワードリセットで、列挙攻撃対策としてパスワード送信時にトークンチェックする？
-    ・メール送信のUtil作成したほうがよいかも
-    ・ユーザーが登録アドレス忘れた場合どうするか？
-    プロフィール編集画面開くときは、ステップアップ認証/認証フレッシュネス／max_age検討する。無印やニトリと同じ仕様
+    /* TODO:
+     * 有効期限切れ→「再送依頼ボタン」を同画面に置くと CS 工数減
+     * 未使用トークンをバッチで削除
+     * 自動ログインにする
+     * パスワードリセットで、列挙攻撃対策としてパスワード送信時にトークンチェックする？
+     * ユーザーが登録アドレス忘れた場合どうするか？
+     * プロフィール編集画面開くときは、ステップアップ認証/認証フレッシュネス／max_age検討する。無印やニトリと同じ仕様
+     * authenticate→認証処理をfilterに閉じ込めたほうがよいかも。今は簡単さを優先
+     * register→歓迎メール送る
+     * メール送信
+        DB commit 後の失敗・HTTP 例外で片落ちの懸念。
+        Transactional Outbox 方式（DB に mail_queue 行を insert → 非同期ジョブで送信＋リトライ）を推奨
+        メール送信中のエラー再現してみる
+     */
     
-    トランザクションとメール送信  今回も 同期送信 記述。
-    DB commit 後の失敗・HTTP 例外で片落ちの懸念。
-      - Transactional Outbox 方式（DB に mail_queue 行を insert → 非同期ジョブで送信＋リトライ）を推奨
-    メール送信中のエラー再現してみる
-    */
     private final AuthenticationManager manager;
 
     private final JwtUtil jwtUtil;
@@ -80,8 +79,6 @@ public class AuthService {
     private long emailExpireMin;
 
     public AuthResult authenticate(String username, String password) {
-        // TODO:
-        // 認証処理をfilterに閉じ込めたほうがよいかも。今は簡単さを優先
         Authentication auth = manager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password));
 
@@ -135,9 +132,6 @@ public class AuthService {
         } catch (DuplicateKeyException e) {
             throw new BusinessException(HttpStatus.NOT_FOUND);
         }
-
-        // TODO:
-        // 歓迎メール送る
     }
 
     @Transactional

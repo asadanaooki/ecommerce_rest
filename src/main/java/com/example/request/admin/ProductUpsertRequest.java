@@ -14,6 +14,14 @@ import lombok.Data;
 
 @Data
 public class ProductUpsertRequest {
+    /* TODO
+     * image→NULLを削除マークにしない。そもそも、現状削除処理実装されてない
+     * isValidForPublishメソッド
+         assertTrue→status増えたら != にしたほうがよいかも
+         imageが0バイトがどいういうものか実験する→!image.isEmptyが必要
+         商品説明が空白の場合弾いたほうが良いかも
+         どのフィールドでエラーはいたらわかるようにしたい
+     */
 
     @NotBlank
     @Size(max = 100)
@@ -28,22 +36,14 @@ public class ProductUpsertRequest {
     @NotNull
     private SaleStatus status;
 
-    // TODO:
-    // NULLを削除マークにしない。そもそも、現状削除処理実装されてない
     private MultipartFile image;
 
     
     @AssertTrue(message = "PUBLISH_REQUIREMENTS")
     private boolean isValidForPublish() {
-        // TODO:
-        // status増えたら != にしたほうがよいかも
         if (status == SaleStatus.UNPUBLISHED) {
             return true;
         }
-        // TODO:
-        // imageが0バイトがどいういうものか実験する→!image.isEmptyが必要
-        // 商品説明が空白の場合弾いたほうが良いかも
-        // どのフィールドでエラーはいたらわかるようにしたい
         return  ( priceExcl != null
                && productDescription != null
                && image != null);

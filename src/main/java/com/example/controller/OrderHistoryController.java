@@ -24,8 +24,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/order-history")
 public class OrderHistoryController {
-    // TODO:
-    // requestCancelの定義場所検討
+    /* TODO:
+     * requestCancelの定義場所検討
+    */
 
     private final OrderHistoryService orderHistoryService;
 

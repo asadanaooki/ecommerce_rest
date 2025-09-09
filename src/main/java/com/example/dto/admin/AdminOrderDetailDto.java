@@ -11,8 +11,9 @@ import lombok.Data;
 
 @Data
 public class AdminOrderDetailDto {
-    // TODO:
-    // フリガナ追加を検討
+    /* TODO:
+     * フリガナ追加を検討
+    */
 
     private String orderId;
 

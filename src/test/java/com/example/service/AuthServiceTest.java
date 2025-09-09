@@ -54,9 +54,10 @@ import com.example.util.RandomTokenUtil;
 @SpringBootTest
 @Transactional
 class AuthServiceTest {
-    /*    // TODO:
-    ・トランザクションありだから@SpringBootTestを使用してるが、テストフェーズの定義どう考えるか？
-    ・@SpringBootTestのパフォーマンス調べる
+    /* TODO:
+     *トランザクションありだから@SpringBootTestを使用してるが、テストフェーズの定義どう考えるか？
+     *@SpringBootTestのパフォーマンス調べる
+     *sendRegistrationUrl_success→モックと実DBが混ざってる、どう書くのがよいか？
     */
 
     @MockitoBean
@@ -90,8 +91,6 @@ class AuthServiceTest {
 
         @Test
         void sendRegistrationUrl_success() throws MessagingException {
-            // TODO:
-            // モックと実DBが混ざってる、どう書くのがよいか？
             try (MockedConstruction<MimeMessageHelper> mocked = Mockito.mockConstruction(MimeMessageHelper.class,
                     (mock, ctx) -> {
                         // setter 系は特に何もしない

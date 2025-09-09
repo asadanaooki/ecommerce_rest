@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.dto.admin.AdminFileDto;
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderListDto;
-import com.example.dto.admin.AdminFileDto;
 import com.example.request.admin.OrderEditRequest;
 import com.example.request.admin.OrderSearchRequest;
 import com.example.service.OrderCommandService;
@@ -30,13 +31,15 @@ import com.example.validation.constraint.HexUuid;
 
 import lombok.AllArgsConstructor;
 
+
 @Validated
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin/order")
 public class AdminOrderController {
-    // TODO:
-    // コントローラの分割検討
+    /* TODO:
+     * コントローラの分割検討
+    */
 
     private final AdminOrderService adminOrderService;
 
@@ -102,5 +105,11 @@ public class AdminOrderController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encoded)
                 .body(new ByteArrayResource(dto.getBytes()));
     }
+    
+    @GetMapping("/monthly-sales")
+    public ResponseEntity<ByteArrayResource> downloadMonthlySales(@RequestParam String period) {
+        return new ResponseEntity<ByteArrayResource>();
+    }
+    
 
 }

@@ -28,13 +28,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ReviewCommandService {
-    // TODO:
-    // paramへの変換を毎回書いてるが、ここどう実装するのがよいか？
-    // レビュー投稿後の編集を許可するか？
-    // 承認→拒否(承認後に不適切な内容が見つかった場合など)はどうする？公開/非公開カラム追加を検討
-    // スパム対策→現状、更新時刻だけ変わるだけで見抜けない。ログ出力？
-    // NPE対策してない
-    // DuplictKey対策どうするか、現状放置
+    /* TODO:
+     * paramへの変換を毎回書いてるが、ここどう実装するのがよいか？
+     * レビュー投稿後の編集を許可するか？
+     * 承認→拒否(承認後に不適切な内容が見つかった場合など)はどうする？公開/非公開カラム追加を検討
+     * スパム対策→現状、更新時刻だけ変わるだけで見抜けない。ログ出力？
+     * NPE対策してない
+     * DuplictKey対策どうするか、現状放置
+     */
 
     private final ReviewMapper reviewMapper;
 

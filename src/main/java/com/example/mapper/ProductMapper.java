@@ -12,10 +12,11 @@ import com.example.enums.SortType;
 
 @Mapper
 public interface ProductMapper {
-    // TODO:
-    // searchProductsで外部結合とサブクエリの速度比較
-    // searchProductsをAND検索にする
-    // クエリでstatus = '1'を良い書き方にしたい
+    /* TODO:
+     * searchProductsで外部結合とサブクエリの速度比較
+     * searchProductsをAND検索にする
+     * クエリでstatus = '1'を良い書き方にしたい
+    */
 
     Product selectByPrimaryKey(String productId);
     

@@ -4,8 +4,9 @@ import lombok.Data;
 
 @Data
 public class CartItemDto {
-    // TODO:
-    // SKU表示するほうがよい？
+    /* TODO:
+     * SKU表示するほうがよい？
+    */
 
     private String productId;
 

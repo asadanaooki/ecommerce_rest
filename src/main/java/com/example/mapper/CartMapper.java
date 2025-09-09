@@ -11,8 +11,8 @@ import com.example.entity.CartItem;
 
 @Mapper
 public interface CartMapper {
-    /*    TODO:
-    ・CartとCartItemを分離する？
+    /* TODO:
+     *CartとCartItemを分離する？
     */
     
     

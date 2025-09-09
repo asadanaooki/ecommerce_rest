@@ -8,8 +8,9 @@ import lombok.Data;
 
 @Data
 public class Product {
-    // TODO:
-    // 税込み価格はViewで管理。インデックスを貼る場合は別の方法を検討
+    /* TODO:
+     * 税込み価格はViewで管理。インデックスを貼る場合は別の方法を検討
+    */
     
     private String productId;
     

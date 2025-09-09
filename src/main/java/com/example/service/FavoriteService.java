@@ -15,9 +15,10 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class FavoriteService {
-    // TODO:
-    // 毎回pazeSize返してるが、コスト的にどうなのか？
-    // 削除時、位置かえないようにする
+    /* TODO:
+     * 毎回pazeSize返してるが、コスト的にどうなのか？
+     * 削除時、位置かえないようにする
+     */
 
     private final FavoriteMapper favoriteMapper;
     

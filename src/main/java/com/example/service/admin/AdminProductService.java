@@ -36,13 +36,15 @@ import net.coobird.thumbnailator.Thumbnails;
 @Service
 @RequiredArgsConstructor
 public class AdminProductService {
-    // TODO:
-    // 毎回countsメソッド呼ぶのか？
-    // throwsで画像エラー回避してるが、フロントに500で返り何のエラーかわからん。ここどうするか検討
-    // 拡張子チェックは、軽量チェックにしている。バイナリまで見た方がよりよい
-    // 同時編集時、後から更新しようとした内容がすでに変更されていたら、通知するほうがよいかも
-    // 商品詳細画面で、レビューも出す？
-    // 税抜きで価格表示
+    /* TODO:
+     * 毎回countsメソッド呼ぶのか？
+     * throwsで画像エラー回避してるが、フロントに500で返り何のエラーかわからん。ここどうするか検討
+     * 拡張子チェックは、軽量チェックにしている。バイナリまで見た方がよりよい
+     * 同時編集時、後から更新しようとした内容がすでに変更されていたら、通知するほうがよいかも
+     * 商品詳細画面で、レビューも出す？
+     * IMAGE_DIRは仮値
+     * createメソッド→画像削除の場合に対応してない
+     */
     
 
     private final AdminProductMapper adminProductMapper;
@@ -57,8 +59,6 @@ public class AdminProductService {
 
     private final Set<String> ALLOWED_MIME = Set.of("image/jpeg", "image/png");
 
-    // TODO:
-    // 仮の保存先
     private final Path IMAGE_DIR = Paths
             .get("C:/pleiades/2024-06/ecommerce/ecommerce_rest/src/main/resources/static/images");
 
@@ -107,8 +107,6 @@ public class AdminProductService {
         
         adminProductMapper.insert(entity);
 
-        // TODO:
-        // 画像削除の場合に対応してない
         if (data != null) {
             saveImage(productId, data);
         }

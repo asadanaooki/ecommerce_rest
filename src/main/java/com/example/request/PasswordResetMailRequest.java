@@ -13,8 +13,9 @@ import lombok.Data;
 
 @Data
 public class PasswordResetMailRequest {
-    // TODO:
-    // userテーブルで生年月日必須にしてるが、任意にして別の追加情報も選択できるようにする？
+    /* TODO:
+     * userテーブルで生年月日必須にしてるが、任意にして別の追加情報も選択できるようにする？
+     */
 
     @NormalizeEmail
     @EmailFormat

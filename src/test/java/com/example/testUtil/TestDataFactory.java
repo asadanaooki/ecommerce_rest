@@ -20,7 +20,7 @@ import com.example.enums.review.ReviewStatus;
 
 @Component
 public class TestDataFactory {
-    /*    TODO:
+    /* TODO:
     ・各mapperに汎用CRUD作成する(MybatisGeneratorのようなメソッド)
     */
 

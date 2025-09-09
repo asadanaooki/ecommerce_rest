@@ -17,10 +17,11 @@ import lombok.Data;
 
 @Data
 public class OrderSearchRequest {
-    // TODO:
-    // 複数検索ワード対応、現状１語検索
-    // 検索ワードの長さ制限検討
-    // 多重ソート検討
+    /* TODO:
+     * 複数検索ワード対応、現状１語検索
+     * 検索ワードの長さ制限検討
+     * 多重ソート検討
+    */
 
     private String q;
     

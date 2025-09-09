@@ -11,8 +11,9 @@ import com.example.dto.admin.AdminHourlyAggRow;
 
 @Mapper
 public interface AdminDashboardMapper {
-    // TODO:
-   // payment_statusにindex貼る？
+    /* TODO:
+     * payment_statusにindex貼る？
+    */
 
     List<AdminHourlyAggRow> aggTodayHourly(LocalDateTime startInclusive, LocalDateTime endExclusive);
     

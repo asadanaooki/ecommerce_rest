@@ -11,11 +11,10 @@ import com.example.feature.order.OrderState;
 
 @Mapper
 public interface OrderMapper {
-    /*
-     * TODO:
+    /*TODO:
      * deleteRemovedItemsは購入不可商品判定を確認画面に入れるときに必要かも
      * 小規模やから、注文関連はすべてこのmapperに定義
-     */
+    */
 
     // SELECT
     List<CheckoutItemDto> selectCheckoutItems(String cartId);

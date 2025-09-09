@@ -8,8 +8,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AdminDashboardDto {
-    // TODO:
-    // 将来的にダッシュボードを複数画面にする場合はリネームする
+    /* TODO:
+     * 将来的にダッシュボードを複数画面にする場合はリネームする
+    */
     
    private List<String> labels;
     

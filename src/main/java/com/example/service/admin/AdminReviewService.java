@@ -15,9 +15,10 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AdminReviewService {
-    // TODO:
-    // フィルター、ソート未実装
-    // サジェスト検索(商品名、SKU)
+    /* TODO:
+     * フィルター、ソート未実装
+     * サジェスト検索(商品名、SKU)
+     */
     
 
     private final AdminReviewMapper adminReviewMapper;

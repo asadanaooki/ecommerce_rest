@@ -24,8 +24,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/admin/product")
 public class AdminProductController {
-    // TODO:
-    // パスパラメータを小文字のスネークケースにすることを検討
+    /* TODO:
+     * パスパラメータを小文字のスネークケースにすることを検討
+    */
+    
 
     private final AdminProductService adminProductService;
 

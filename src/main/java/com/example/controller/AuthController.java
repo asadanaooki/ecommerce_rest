@@ -46,13 +46,21 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AuthController {
     /* TODO:
-       ログアウトは一旦フロント破棄で行う。
-       いずれはリフレッシュトークン＋短命アクセストークンにする
-       ログイン方法が増えたら、SuccessHandler 使う方が良いかも
-       Rest視点でパス名どうするか？現状、動詞を含めてる
-       プロフィール表示(GET)のAPIがない
-       GODクラスだから、分割する
+     * ログアウトは一旦フロント破棄で行う。
+         いずれはリフレッシュトークン＋短命アクセストークンにする
+     * ログイン方法が増えたら、SuccessHandler 使う方が良いかも
+     * Rest視点でパス名どうするか？現状、動詞を含めて
+     * プロフィール表示(GET)のAPIがない
+     * GODクラスだから、分割する
+     * loginメソッド
+         将来的にJSONで返す方がよいかも
+         Postmanで毎リクエストで自動でJWTが付与されるようにする
+         必要な属性後で足す
+     * verifyメソッド
+         tokenのバリデーションチェックする
+         Entity→Responseの詰め替えをコントローラで行ってよいものか？
     */
+    
     private final AuthService authService;
 
     private final CartService cartService;
@@ -63,9 +71,6 @@ public class AuthController {
     public ResponseEntity login(@RequestBody @Valid LoginRequest req,
             HttpServletRequest httpReq,
             HttpServletResponse response) {
-        // TODO:
-        // 将来的にJSONで返す方がよいかも
-        // Postmanで毎リクエストで自動でJWTが付与されるようにする
         AuthResult res = authService.authenticate(req.getUsername(), req.getPassword());
 
         Optional<String> guestCartId = cookieUtil.extractCartId(httpReq);
@@ -75,8 +80,6 @@ public class AuthController {
             cookieUtil.clearCartId(response);
         }
 
-        // TODO:
-        // 必要な属性後で足す
         ResponseCookie cookie = ResponseCookie.from("accessToken", res.jwt())
                 .path("/")
                 //                .maxAge(Duration.ofHours(1))
@@ -94,9 +97,6 @@ public class AuthController {
 
     @GetMapping("/register/verify")
     public VerifyTokenResponse verify(@RequestParam String token) {
-        // TODO:
-        // tokenのバリデーションチェックする
-        // Entity→Responseの詰め替えをコントローラで行ってよいものか？
         PreRegistration pr = authService.verify(token);
         return new VerifyTokenResponse(token, pr.getEmail());
     }

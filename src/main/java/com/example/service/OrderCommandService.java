@@ -26,19 +26,20 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderCommandService {
-    // TODO:
-    // 管理者アドレスは仮値
-    // orderNumberのフォーマット処理共通化する？
-    // 不在や、受け取り拒否、返送、代引き失敗といった例外ケースは保留
-    // 在庫戻しの二重処理を防ぐための楽観ロック未実装
-    // キャンセル理由、時刻など持つべきか検討
-    // 配達や決済ステータスは外部APIで取得？
-    // 冪等性対策
-    //    →回線不安定で「もう一度送信」したときに、2回目がエラー（409）で返ると「失敗した？」 にどう対応するか？
-    // キャンセル拒否機能追加検討
-    // 現状orderIdは妥当なモノである前提でNPE対策してない
-    // ユーザーのEmail取得する際、毎回汎用クエリで取得してる。Orderと同時に取得するカスタムクエリ作るべきか？
-    // NPE対策
+    /* TODO:
+     * 管理者アドレスは仮値
+     * 不在や、受け取り拒否、返送、代引き失敗といった例外ケースは保留
+     * 在庫戻しの二重処理を防ぐための対策
+     * キャンセル理由、時刻など持つべきか検討
+     * 配達や決済ステータスは外部APIで取得？
+     * 冪等性対策
+        回線不安定で「もう一度送信」したときに、2回目がエラー（409）で返ると「失敗した？」 にどう対応するか？
+     * キャンセル拒否機能追加検討
+     * requestCancel→ユーザーに受付メール送るか検討
+     * 現状orderIdは妥当なモノである前提でNPE対策してない
+     * ユーザーのEmail取得する際、毎回汎用クエリで取得してる。Orderと同時に取得するカスタムクエリ作るべきか？
+     * NPE対策
+     */
 
     // private final String ADMIN_EMAIL = "admin@example.com";
 
@@ -52,9 +53,6 @@ public class OrderCommandService {
 
     @Transactional
     public void requestCancel(String orderId) {
-        // TODO:
-        // ユーザーに受付メール送るか検討
-
         apply(orderId, OrderEvent.REQUEST_CANCEL);
     }
 

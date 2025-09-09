@@ -12,8 +12,9 @@ import com.example.request.ProfileUpdateRequest;
 
 @Mapper
 public interface UserMapper {
-    // TODO:
-    // Mapper分けた方がよいかも、可読性的に
+    /* TODO:
+     * Mapper分けた方がよいかも、可読性的に
+    */
     
     User selectUserByPrimaryKey(String userId);
 

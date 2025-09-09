@@ -9,10 +9,11 @@ import com.example.enums.order.ShippingStatus;
 
 @Component
 public class OrderTransitionGuard {
-    // TODO:
-    // 単調増加のテスト検討
-    // 冪等性考慮→現状、エラー
-    // 許可ホワイトリスト＋全列挙ループのデータ駆動テスト検討
+    /* TODO:
+     * 単調増加のテスト検討
+     * 冪等性考慮→現状、エラー
+     * 許可ホワイトリスト＋全列挙ループのデータ駆動テスト検討
+    */
 
     public OrderState next(OrderState cur, OrderEvent ev) {
         if (cur.getOrder() == OrderStatus.CANCELED

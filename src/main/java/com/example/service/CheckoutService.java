@@ -36,15 +36,14 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CheckoutService {
     /* TODO:
-    ・販売ステータス定数を共通化したほうが良いかも。
-    ・将来的に手動削除も検討。
-    ・メールを Tx 内で送る長時間ロック。メールの誤送信など、購入とメール送信の整合性とるには？
-    ・メールに商品画像ものせる。
-    ・sendCheckoutCompleteMailの引数多い、今後どうする？
-    ・支払方法増やす。希望日時や送り先変更も。
-    ・diffリストを別に返す方が良いかも
-    ・送料・手数料導入
-    ・カートのバージョン一致導入する？カートの内容が変わってないことを保証する
+     *将来的に手動削除も検討。
+     *メールを Tx 内で送る長時間ロック。メールの誤送信など、購入とメール送信の整合性とるには？
+     *メールに商品画像ものせる。
+     *sendCheckoutCompleteMailの引数多い、今後どうする？
+     *支払方法増やす。希望日時や送り先変更も。
+     *diffリストを別に返す方が良いかも
+     *送料*手数料導入
+     *カートのバージョン一致導入する？カートの内容が変わってないことを保証する
     */
 
     private final UserMapper userMapper;
@@ -142,8 +141,6 @@ public class CheckoutService {
         // 注文確定処理
         int orderNumber = finalizeOrder(orderId, user, ck);
 
-        // TODO:メール送信 仮実装
-        // 管理者にも通知する
         mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(
                 new OrderConfirmationContext(
                         user.getEmail(),

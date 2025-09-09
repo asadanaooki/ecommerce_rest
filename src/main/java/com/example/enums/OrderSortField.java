@@ -4,8 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum OrderSortField {
-    // TODO:
-    // ステータスのソート必要な場合は、順序を定義する。Enum文字列で保存しているため。
+    /* TODO:
+     * ステータスのソート必要な場合は、順序を定義する。Enum文字列で保存しているため。
+    */
     
     ORDER_NUMBER("order_number"),
     NAME("name"),

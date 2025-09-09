@@ -10,11 +10,12 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class ReviewCleanupJob {
-    // TODO:
-    //  否認時刻を追加するべきか？
-    //  インデックス
-    //  分割削除
-    //  監視
+    /* TODO:
+     * 否認時刻を追加するべきか？
+     * インデックス
+     * 分割削除
+     * 監視 
+    */
 
     private final ReviewMapper reviewMapper;
     

@@ -13,10 +13,10 @@ import lombok.Data;
 @Data
 public class LoginRequest {
     /* TODO:
-    アカウントロック
-        一定回数連続失敗でロック → 管理画面 or メール解除
-    監査ログ
-        「失敗→成功」の連続など不審パターンを可視化
+     * アカウントロック
+         一定回数連続失敗でロック → 管理画面 or メール解除
+     * 監査ログ
+         「失敗→成功」の連続など不審パターンを可視化
     */
     
     @NormalizeEmail

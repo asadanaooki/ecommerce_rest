@@ -23,9 +23,11 @@ import lombok.AllArgsConstructor;
 @RestControllerAdvice
 @AllArgsConstructor
 public class RestExceptionHandler {
-    // TODO:
-    // 文言のパラメータ返すことを検討
-    // 同一グループ内の@AssertTrueに優先度を持たせる
+    /* TODO:
+     * 文言のパラメータ返すことを検討
+     * 同一グループ内の@AssertTrueに優先度を持たせる
+     * errは現状FieldError型の前提
+    */
 
     private static final Map<String, Integer> PRIORITY = Map.ofEntries(
             // 必須系
@@ -94,8 +96,6 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiResponse> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
-        // TODO:
-        // errは現状FieldError型の前提
         Stream<ValidationErrorRaw> stream = e.getAllErrors().stream().map(err -> {
             FieldError fe = (FieldError) err;
             String ann = fe.getCode();

@@ -11,11 +11,12 @@ import com.example.request.admin.OrderSearchRequest;
 
 @Mapper
 public interface AdminOrderMapper {
-    // TODO:
-    // 検索で、注文番号は完全一致、名前は部分一致と動的にする
-    // 部分一致のフルスキャンの性能確認
-    // selectOrderDetailで、タイムスタンプが同一のため商品ID昇順で並び変えている。タイムスタンプでソートしたい
-    // updateTotals→JOINとサブクエリ２回性能差比較
+    /* TODO:
+     * 検索で、注文番号は完全一致、名前は部分一致と動的にする
+     * 部分一致のフルスキャンの性能確認
+     * selectOrderDetailで、タイムスタンプが同一のため商品ID昇順で並び変えている。タイムスタンプでソートしたい
+     * updateTotals→JOINとサブクエリ２回性能差比較
+     */
     
     
     int count(OrderSearchRequest req);

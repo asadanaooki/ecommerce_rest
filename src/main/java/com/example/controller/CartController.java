@@ -35,15 +35,14 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/cart")
 public class CartController {
-    /*
-     * TODO:
+    /* TODO:
      * userIdで毎回expression書いてるが、anonyを無効にしたほうがよいのか？
      * HttpServletRequestをサービスに渡さないほうが良いかも
      * @validatedで発生した例外を400ステータスに変換して返す
      * カート内商品はすべて表示。件数多くなったら考える
      * ページング
      * reqをMapperまで渡しても現状問題ないが、将来的に詰め替えた方がいい？
-     */
+    */
 
     private final CartService cartService;
 

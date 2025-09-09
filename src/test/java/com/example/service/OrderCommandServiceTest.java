@@ -31,9 +31,10 @@ import com.example.support.MailGateway;
 
 @ExtendWith(MockitoExtension.class)
 class OrderCommandServiceTest {
-    // TODO:
-    // handleのテストでverifyは最小限。統合テストでDBの状態が正しいことを検証
-    // MailTemplateのbuildに渡してる引数の中身の検証どうするか？
+    /* TODO:
+     * handleのテストでverifyは最小限。統合テストでDBの状態が正しいことを検証
+     * MailTemplateのbuildに渡してる引数の中身の検証どうするか？
+     */
 
     @Mock
     OrderMapper orderMapper;

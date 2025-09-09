@@ -10,8 +10,9 @@ import com.example.request.admin.InventorySearchRequest;
 
 @Mapper
 public interface AdminInventoryMapper {
-    // TODO:
-    // 引数まとめる？
+    /* TODO:
+     * 引数まとめる？
+     */
 
     List<AdminInventoryRowDto> search(InventorySearchRequest req, int threshold, int limit, int offset);
     

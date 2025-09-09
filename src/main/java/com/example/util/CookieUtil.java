@@ -10,6 +10,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CookieUtil {
+    /* TODO:
+     * issueCartId
+         現状、クッキー無期限
+         後で属性追加
+     */
 
     private static final String CART_COOKIE = "cartId";
     private static final int MAX_AGE_SEC = 60 * 60 * 24 * 14; // 14日
@@ -31,9 +36,6 @@ public class CookieUtil {
         Cookie ck = new Cookie(CART_COOKIE, cartId);
         ck.setPath("/");
 
-        // TODO:
-        // 現状、クッキー無期限
-        //  後で追加
         //            ck.setHttpOnly(true);
         //            ck.setSecure(true);            // HTTPS 運用時
         ck.setMaxAge(MAX_AGE_SEC);

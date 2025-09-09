@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -41,9 +40,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
     /* TODO:
-    ・Emailのバリデーションテスト増やす(全角NGなど)
-    ・@Patternで同値分析すると、NGは１ケースで良いとなるが、実際いくつか試すべきか？
-    ・電話番号の正規表現テストケースの考え方
+     *Emailのバリデーションテスト増やす(全角NGなど)
+     *@Patternで同値分析すると、NGは１ケースで良いとなるが、実際いくつか試すべきか？
+     *電話番号の正規表現テストケースの考え方
     */
 
     @Autowired

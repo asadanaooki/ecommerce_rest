@@ -38,9 +38,6 @@ import com.example.request.admin.ProductUpsertRequest;
 
 @ExtendWith(MockitoExtension.class)
 class AdminProductServiceTest {
-    // TODO:
-    // converterを本物にするとテストできない、現状モック
-
     @InjectMocks
     AdminProductService adminProductService;
 

@@ -12,11 +12,12 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class InquiryService {
-    // TODO:
-    // ダッシュボードでリアルタイムで問い合わせ検知する
-    // 返品、交換
-    // メール送信の整合性
-    // 管理者アドレスは仮値
+    /* TODO:
+     * ダッシュボードでリアルタイムで問い合わせ検知する
+     * 返品、交換
+     * メール送信の整合性
+     * 管理者アドレスは仮値
+     */
 
     private final MailGateway mailGateway;
 
