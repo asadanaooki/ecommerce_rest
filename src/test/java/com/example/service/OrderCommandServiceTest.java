@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.entity.Order;
@@ -25,8 +26,10 @@ import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 import com.example.feature.order.OrderState;
 import com.example.feature.order.OrderTransitionGuard;
+import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.UserMapper;
+import com.example.support.IdempotentExecutor;
 import com.example.support.MailGateway;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,9 +60,13 @@ class OrderCommandServiceTest {
 
     final String ORDER_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeffffffff";
     final String USER_ID = "userId";
+    final String key = "key";
 
     @BeforeEach
     void setup() {
+        IdempotentExecutor executor = new IdempotentExecutor(mock(IdempotencyMapper.class));
+        ReflectionTestUtils.setField(sut, "executor", executor);
+
         before = new Order() {
             {
                 setOrderId(ORDER_ID);
@@ -118,7 +125,7 @@ class OrderCommandServiceTest {
 
     @Test
     void approveCancel() {
-        sut.approveCancel(ORDER_ID);
+        sut.approveCancel(ORDER_ID,key);
 
         verify(orderMapper).applyTransition(
                 anyString(),
@@ -135,7 +142,7 @@ class OrderCommandServiceTest {
         @Test
         void ship_fromOpen_sendsShippingMail() {
             // before は OPEN のまま
-            sut.ship(ORDER_ID);
+            sut.ship(ORDER_ID, key);
 
             verify(orderMapper).applyTransition(
                     anyString(),
@@ -151,7 +158,7 @@ class OrderCommandServiceTest {
         void ship_fromCancelRequested_sendsRejectMail() {
             before.setOrderStatus(OrderStatus.CANCEL_REQUESTED);
 
-            sut.ship(ORDER_ID);
+            sut.ship(ORDER_ID, key);
 
             verify(orderMapper).applyTransition(
                     anyString(),
@@ -167,7 +174,7 @@ class OrderCommandServiceTest {
         void ship_transitionNotAllowed_returns409WithReason() {
             doThrow(new IllegalStateException("error")).when(guard).next(any(), any());
 
-            assertThatThrownBy(() -> sut.ship(ORDER_ID))
+            assertThatThrownBy(() -> sut.ship(ORDER_ID, key))
                     .isInstanceOf(ResponseStatusException.class)
                     .satisfies(ex -> {
                         ResponseStatusException e = (ResponseStatusException) ex;
@@ -180,7 +187,7 @@ class OrderCommandServiceTest {
         void ship_updateConflict_returns409_ORDER_STATE_CONFLICT() {
             doReturn(0).when(orderMapper).applyTransition(anyString(), any(), any());
 
-            assertThatThrownBy(() -> sut.ship(ORDER_ID))
+            assertThatThrownBy(() -> sut.ship(ORDER_ID, key))
                     .isInstanceOf(ResponseStatusException.class)
                     .satisfies(ex -> {
                         ResponseStatusException e = (ResponseStatusException) ex;
@@ -195,7 +202,7 @@ class OrderCommandServiceTest {
         // 配達完了は事前に出荷済み状態から想定
         before.setShippingStatus(ShippingStatus.SHIPPED);
 
-        sut.markAsDelivered(ORDER_ID);
+        sut.markAsDelivered(ORDER_ID, key);
 
         verify(orderMapper).applyTransition(
                 anyString(),

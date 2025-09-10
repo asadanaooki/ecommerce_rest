@@ -15,6 +15,7 @@ import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminInventoryMapper;
 import com.example.request.admin.InventoryMovementRequest;
 import com.example.request.admin.InventorySearchRequest;
+import com.example.support.IdempotentExecutor;
 import com.example.util.PaginationUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,10 @@ public class AdminInventoryService {
      */
 
     private final AdminInventoryMapper adminInventoryMapper;
-    
+
     private final ProductMapper productMapper;
+
+    private final IdempotentExecutor executor;
 
     @Value("${settings.admin.inventory.size}")
     private int pageSize;
@@ -63,20 +66,24 @@ public class AdminInventoryService {
         dto.setStockStatus(resolveStockStatus(dto.getAvailable()));
         return dto;
     }
-    
-    public void receiveStock(String productId, InventoryMovementRequest req) {
-       int rows = productMapper.increaseStock(productId, req.getQty(), req.getVersion());
-       if (rows == 0) {
-           throw new ResponseStatusException(HttpStatus.CONFLICT);
-       }
+
+    public void receiveStock(String productId, InventoryMovementRequest req, String idempotencyKey) {
+        executor.run(idempotencyKey, () -> {
+            int rows = productMapper.increaseStock(productId, req.getQty(), req.getVersion());
+            if (rows <= 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
+            }
+        });
     }
-    
-    public void issueStock(String productId, InventoryMovementRequest req) {
-        int rows = productMapper.decreaseStock(productId, req.getQty(), req.getVersion());
-        if (rows == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-     }
+
+    public void issueStock(String productId, InventoryMovementRequest req, String idempotencyKey) {
+        executor.run(idempotencyKey, () -> {
+            int rows = productMapper.decreaseStock(productId, req.getQty(), req.getVersion());
+            if (rows <= 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
+            }
+        });
+    }
 
     private StockStatus resolveStockStatus(int available) {
         // 防御的に<=0としている

@@ -16,7 +16,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.dto.CartItemDto;
 import com.example.dto.CheckoutConfirmDto;
@@ -29,9 +31,11 @@ import com.example.enums.MailTemplate;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
+import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
+import com.example.support.IdempotentExecutor;
 import com.example.support.MailGateway;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,11 +53,21 @@ class CheckoutServiceTest {
     @Mock
     OrderMapper orderMapper;
 
+    @Mock
+    IdempotencyMapper idempotencyMapper;
+
     @InjectMocks
     CheckoutService checkoutService;
 
     @Mock
     MailGateway gateway;
+    
+    
+    @BeforeEach
+    void init() {
+        IdempotentExecutor executor = spy(new IdempotentExecutor(idempotencyMapper));
+        ReflectionTestUtils.setField(checkoutService, "executor", executor);
+    }
 
     @Nested
     class LoadCheckout {
@@ -139,14 +153,14 @@ class CheckoutServiceTest {
             item1.setQty(2);
             item1.setUnitPriceIncl(220);
             item1.setSubtotalIncl(440);
-            
+
             CartItemDto item2 = new CartItemDto();
             item2.setProductId("N-006");
             item2.setProductName("通常品2");
             item2.setQty(1);
             item2.setUnitPriceIncl(110);
             item2.setSubtotalIncl(110);
-            
+
             List<CartItemDto> items = List.of(item1, item2);
             cart.setCartId("cartId");
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
@@ -272,6 +286,7 @@ class CheckoutServiceTest {
     class Checkout {
         String userId = "user";
         String cartId = "cartId";
+        String idempotency = "key";
 
         //        @Test
         //        void checkout_cartVersionMismatch() {
@@ -291,6 +306,15 @@ class CheckoutServiceTest {
         //                    .isInstanceOf(BusinessException.class)
         //                    .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.CONFLICT);
         //        }
+        @Test
+        void checkout_calledTwice() throws MessagingException {
+            doThrow(new DuplicateKeyException(""))
+            .when(idempotencyMapper).insert(anyString());
+
+            checkoutService.checkout(userId, idempotency);
+
+            verify(cartMapper, never()).selectCartByUser(anyString());
+        }
 
         @Test
         void checkout_diffItemsAllKinds() {
@@ -328,7 +352,7 @@ class CheckoutServiceTest {
             }).when(cartMapper).selectCartByUser(userId);
             doReturn(diffItems).when(orderMapper).selectCheckoutItems(cartId);
 
-            assertThatThrownBy(() -> checkoutService.checkout(userId))
+            assertThatThrownBy(() -> checkoutService.checkout(userId, idempotency))
                     .isInstanceOf(BusinessException.class)
                     .satisfies(t -> {
                         BusinessException e = (BusinessException) t;
@@ -362,7 +386,7 @@ class CheckoutServiceTest {
             item1.setCurrentUnitPriceExcl(100);
             item1.setUnitPriceExclAtAddToCart(100);
             item1.setSubtotalIncl(200);
-            
+
             CheckoutItemDto item2 = new CheckoutItemDto();
             item2.setProductId("P2");
             item2.setProductName("Product 2");
@@ -373,7 +397,7 @@ class CheckoutServiceTest {
             item2.setCurrentUnitPriceExcl(150);
             item2.setSubtotalIncl(3000);
             item2.setUnitPriceExclAtAddToCart(150);
-            
+
             List<CheckoutItemDto> items = List.of(item1, item2);
             User user = new User() {
                 {
@@ -391,7 +415,7 @@ class CheckoutServiceTest {
             doReturn(items).when(orderMapper).selectCheckoutItems(cartId);
             doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
 
-            checkoutService.checkout(userId);
+            checkoutService.checkout(userId, idempotency);
 
             ArgumentCaptor<Order> headerCap = ArgumentCaptor.forClass(Order.class);
             verify(orderMapper).insertOrderHeader(headerCap.capture());
@@ -433,7 +457,7 @@ class CheckoutServiceTest {
                             2,
                             100);
 
-            verify(productMapper, times(2)).decreaseStock(anyString(), anyInt(),isNull());
+            verify(productMapper, times(2)).decreaseStock(anyString(), anyInt(), isNull());
             verify(cartMapper).deleteCart(cartId);
             verify(gateway).send(argThat(msg -> msg.getSubject().equals(MailTemplate.ORDER_CONFIRMATION.getSubject())));
 

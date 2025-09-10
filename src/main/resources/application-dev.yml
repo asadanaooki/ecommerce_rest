@@ -56,7 +56,4 @@ settings:
 
   # バッチ系
   batch:
-    cart:
-      cron: "0 0 3 * * *"
-    review:
-      cron: "0 0 3 * * *"
+    cron-common: "0 0 3 * * *"

@@ -23,9 +23,11 @@ import com.example.enums.MailTemplate.OrderConfirmationContext;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
 import com.example.mapper.CartMapper;
+import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
+import com.example.support.IdempotentExecutor;
 import com.example.support.MailGateway;
 import com.example.util.OrderUtil;
 import com.example.util.UserUtil;
@@ -53,8 +55,12 @@ public class CheckoutService {
     private final OrderMapper orderMapper;
 
     private final ProductMapper productMapper;
+    
+    private final IdempotencyMapper idempotencyMapper;
 
     private final MailGateway mailGateway;
+    
+    private final IdempotentExecutor executor;
 
     public CheckoutConfirmDto loadCheckout(String userId) {
         String cartId = cartMapper.selectCartByUser(userId).getCartId();
@@ -116,43 +122,45 @@ public class CheckoutService {
     }
 
     @Transactional
-    public void checkout(String userId) throws MessagingException {
-        Cart c = cartMapper.selectCartByUser(userId);
-        //        // カートが更新されてる場合
-        //        if (c.getVersion() != version) {
-        //            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
-        //        }
-        String orderId = c.getCartId();
-        List<CheckoutItemDto> items = orderMapper.selectCheckoutItems(orderId);
+    public void checkout(String userId, String idempotencyKey) throws MessagingException {
+        executor.run(idempotencyKey, () ->{
+            Cart c = cartMapper.selectCartByUser(userId);
+            //        // カートが更新されてる場合
+            //        if (c.getVersion() != version) {
+            //            throw new BusinessException(HttpStatus.CONFLICT, "cartVersion");
+            //        }
+            String orderId = c.getCartId();
+            List<CheckoutItemDto> items = orderMapper.selectCheckoutItems(orderId);
 
-        // 要確認商品がある場合
-        if (hasDiff(items)) {
-            throw new BusinessException(HttpStatus.CONFLICT, "diff", items);
-        }
+            // 要確認商品がある場合
+            if (hasDiff(items)) {
+                throw new BusinessException(HttpStatus.CONFLICT, "diff", items);
+            }
 
-        User user = userMapper.selectUserByPrimaryKey(userId);
+            User user = userMapper.selectUserByPrimaryKey(userId);
 
-        CheckoutProcessDto ck = new CheckoutProcessDto(
-                UserUtil.buildFullName(user),
-                user.getPostalCode(),
-                UserUtil.buildFullAddress(user),
-                items);
+            CheckoutProcessDto ck = new CheckoutProcessDto(
+                    UserUtil.buildFullName(user),
+                    user.getPostalCode(),
+                    UserUtil.buildFullAddress(user),
+                    items);
 
-        // 注文確定処理
-        int orderNumber = finalizeOrder(orderId, user, ck);
+            // 注文確定処理
+            int orderNumber = finalizeOrder(orderId, user, ck);
 
-        mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(
-                new OrderConfirmationContext(
-                        user.getEmail(),
-                        UserUtil.buildFullName(user),
-                        UserUtil.buildFullAddress(user),
-                        OrderUtil.formatOrderNumber(orderNumber),
-                        items,
-                        ck.getItemsSubtotalIncl(),
-                        ck.getShippingFeeIncl(),
-                        ck.getCodFeeIncl(),
-                        ck.getGrandTotalIncl()
-                        )));
+            mailGateway.send(MailTemplate.ORDER_CONFIRMATION.build(
+                    new OrderConfirmationContext(
+                            user.getEmail(),
+                            UserUtil.buildFullName(user),
+                            UserUtil.buildFullAddress(user),
+                            OrderUtil.formatOrderNumber(orderNumber),
+                            items,
+                            ck.getItemsSubtotalIncl(),
+                            ck.getShippingFeeIncl(),
+                            ck.getCodFeeIncl(),
+                            ck.getGrandTotalIncl()
+                            )));
+        });
     }
 
     /**

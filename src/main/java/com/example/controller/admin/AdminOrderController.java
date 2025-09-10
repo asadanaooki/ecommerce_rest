@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,6 @@ import com.example.service.admin.AdminOrderService;
 import com.example.validation.constraint.HexUuid;
 
 import lombok.AllArgsConstructor;
-
 
 @Validated
 @RestController
@@ -69,18 +69,21 @@ public class AdminOrderController {
     }
 
     @PostMapping("/{orderId}/approve-cancel")
-    public void approveCancel(@PathVariable @HexUuid @NotBlank String orderId) {
-        orderCommandService.approveCancel(orderId);
+    public void approveCancel(@PathVariable @HexUuid @NotBlank String orderId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        orderCommandService.approveCancel(orderId, idempotencyKey);
     }
 
     @PostMapping("/{orderId}/ship")
-    public void ship(@PathVariable @HexUuid @NotBlank String orderId) {
-        orderCommandService.ship(orderId);
+    public void ship(@PathVariable @HexUuid @NotBlank String orderId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        orderCommandService.ship(orderId, idempotencyKey);
     }
 
     @PostMapping("/{orderId}/delivered")
-    public void markAsDelivered(@PathVariable @HexUuid @NotBlank String orderId) {
-        orderCommandService.markAsDelivered(orderId);
+    public void markAsDelivered(@PathVariable @HexUuid @NotBlank String orderId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        orderCommandService.markAsDelivered(orderId, idempotencyKey);
     }
 
     @GetMapping("/{orderId}/delivery-note")
@@ -106,20 +109,18 @@ public class AdminOrderController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encoded)
                 .body(new ByteArrayResource(dto.getBytes()));
     }
-    
+
     @GetMapping("/monthly-sales")
     public ResponseEntity<ByteArrayResource> downloadMonthlySales(
-            @RequestParam
-            @Pattern(regexp = "^[0-9]{4}-(0[1-9]|1[0-2])$") String period) {
+            @RequestParam @Pattern(regexp = "^[0-9]{4}-(0[1-9]|1[0-2])$") String period) {
         AdminFileDto dto = adminOrderService.generateMonthlySales(period);
         String encoded = URLEncoder.encode(dto.getFileName(), StandardCharsets.UTF_8);
         MediaType csv = MediaType.parseMediaType("text/csv; charset=utf-8");
-        
+
         return ResponseEntity.ok()
                 .contentType(csv)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encoded)
                 .body(new ByteArrayResource(dto.getBytes()));
     }
-    
 
 }

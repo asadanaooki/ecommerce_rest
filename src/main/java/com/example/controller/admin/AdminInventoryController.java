@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +31,7 @@ public class AdminInventoryController {
     */
 
     private final AdminInventoryService adminInventoryService;
+    
 
     @GetMapping
     public ResponseEntity<AdminInventoryListDto> search(@Valid InventorySearchRequest req) {
@@ -47,16 +49,18 @@ public class AdminInventoryController {
     
     @PostMapping("/{productId}/receipt")
     public ResponseEntity<Void> receive(@PathVariable @HexUuid @NotBlank String productId,
-            @Valid @RequestBody InventoryMovementRequest req) {
-        adminInventoryService.receiveStock(productId, req);
+            @Valid @RequestBody InventoryMovementRequest req,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        adminInventoryService.receiveStock(productId, req, idempotencyKey);
         
         return ResponseEntity.ok().build();
     }
     
     @PostMapping("/{productId}/issue")
     public ResponseEntity<Void> issue(@PathVariable @HexUuid @NotBlank String productId,
-            @Valid @RequestBody InventoryMovementRequest req) {
-        adminInventoryService.issueStock(productId, req);
+            @Valid @RequestBody InventoryMovementRequest req,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        adminInventoryService.issueStock(productId, req, idempotencyKey);
         
         return ResponseEntity.ok().build();
     }

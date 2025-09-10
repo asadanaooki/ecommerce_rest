@@ -19,7 +19,7 @@ public class ReviewCleanupJob {
 
     private final ReviewMapper reviewMapper;
     
-    @Scheduled(cron = "${settings.batch.review.cron}")
+    @Scheduled(cron = "${settings.batch.cron-common}")
     public void purgeRejectedReviews() {
         reviewMapper.deleteRejected();
     }

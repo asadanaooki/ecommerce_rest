@@ -17,6 +17,7 @@ import com.example.feature.order.OrderState;
 import com.example.feature.order.OrderTransitionGuard;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.UserMapper;
+import com.example.support.IdempotentExecutor;
 import com.example.support.MailGateway;
 import com.example.util.OrderUtil;
 import com.example.util.UserUtil;
@@ -51,71 +52,79 @@ public class OrderCommandService {
 
     private final MailGateway gateway;
 
+    private final IdempotentExecutor executor;
+
     @Transactional
     public void requestCancel(String orderId) {
         apply(orderId, OrderEvent.REQUEST_CANCEL);
     }
 
     @Transactional
-    public void approveCancel(String orderId) {
-        apply(orderId, OrderEvent.APPROVE_CANCEL);
+    public void approveCancel(String orderId, String idempotencyKey) {
+        executor.run(idempotencyKey, () -> {
+            apply(orderId, OrderEvent.APPROVE_CANCEL);
 
-        orderMapper.restoreInventory(orderId);
+            orderMapper.restoreInventory(orderId);
 
-        Order o = orderMapper.selectOrderByPrimaryKey(orderId);
-        List<OrderItem> items = orderMapper.selectOrderItems(orderId);
-        User u = userMapper.selectUserByPrimaryKey(o.getUserId());
+            Order o = orderMapper.selectOrderByPrimaryKey(orderId);
+            List<OrderItem> items = orderMapper.selectOrderItems(orderId);
+            User u = userMapper.selectUserByPrimaryKey(o.getUserId());
 
-        gateway.send(MailTemplate.CANCEL_APPROVED
-                .build(new MailTemplate.CancelApprovedContext(
-                        u.getEmail(),
-                        UserUtil.buildFullName(u),
-                        OrderUtil.formatOrderNumber(o.getOrderNumber()),
-                        items,
-                        o.getItemsSubtotalIncl(),
-                        o.getShippingFeeIncl(),
-                        o.getCodFeeIncl(),
-                        o.getGrandTotalIncl())));
-    }
-
-    @Transactional
-    public void ship(String orderId) {
-        OrderState cur = apply(orderId, OrderEvent.SHIP);
-        orderMapper.updateShippedAt(orderId);
-
-        Order o = orderMapper.selectOrderByPrimaryKey(orderId);
-        List<OrderItem> items = orderMapper.selectOrderItems(orderId);
-        User u = userMapper.selectUserByPrimaryKey(o.getUserId());
-
-        if (cur.getOrder() == OrderStatus.OPEN) {
-            gateway.send(MailTemplate.SHIPPING_NOTIFICATION.build(
-                    new MailTemplate.ShipmentContext(
+            gateway.send(MailTemplate.CANCEL_APPROVED
+                    .build(new MailTemplate.CancelApprovedContext(
                             u.getEmail(),
-                            o.getName(),
-                            o.getAddress(),
+                            UserUtil.buildFullName(u),
                             OrderUtil.formatOrderNumber(o.getOrderNumber()),
                             items,
                             o.getItemsSubtotalIncl(),
                             o.getShippingFeeIncl(),
                             o.getCodFeeIncl(),
                             o.getGrandTotalIncl())));
-        } else if (cur.getOrder() == OrderStatus.CANCEL_REQUESTED) {
-            gateway.send(MailTemplate.SHIPPED_AND_CANCEL_REJECTED.build(
-                    new MailTemplate.CancelRejectedContext(
-                            u.getEmail(),
-                            o.getName(),
-                            OrderUtil.formatOrderNumber(o.getOrderNumber()),
-                            items,
-                            o.getItemsSubtotalIncl(),
-                            o.getShippingFeeIncl(),
-                            o.getCodFeeIncl(),
-                            o.getGrandTotalIncl())));
-        }
+        });
     }
 
     @Transactional
-    public void markAsDelivered(String orderId) {
-        apply(orderId, OrderEvent.DELIVERED);
+    public void ship(String orderId, String idempotencyKey) {
+        executor.run(idempotencyKey, () -> {
+            OrderState cur = apply(orderId, OrderEvent.SHIP);
+            orderMapper.updateShippedAt(orderId);
+
+            Order o = orderMapper.selectOrderByPrimaryKey(orderId);
+            List<OrderItem> items = orderMapper.selectOrderItems(orderId);
+            User u = userMapper.selectUserByPrimaryKey(o.getUserId());
+
+            if (cur.getOrder() == OrderStatus.OPEN) {
+                gateway.send(MailTemplate.SHIPPING_NOTIFICATION.build(
+                        new MailTemplate.ShipmentContext(
+                                u.getEmail(),
+                                o.getName(),
+                                o.getAddress(),
+                                OrderUtil.formatOrderNumber(o.getOrderNumber()),
+                                items,
+                                o.getItemsSubtotalIncl(),
+                                o.getShippingFeeIncl(),
+                                o.getCodFeeIncl(),
+                                o.getGrandTotalIncl())));
+            } else if (cur.getOrder() == OrderStatus.CANCEL_REQUESTED) {
+                gateway.send(MailTemplate.SHIPPED_AND_CANCEL_REJECTED.build(
+                        new MailTemplate.CancelRejectedContext(
+                                u.getEmail(),
+                                o.getName(),
+                                OrderUtil.formatOrderNumber(o.getOrderNumber()),
+                                items,
+                                o.getItemsSubtotalIncl(),
+                                o.getShippingFeeIncl(),
+                                o.getCodFeeIncl(),
+                                o.getGrandTotalIncl())));
+            }
+        });
+    }
+
+    @Transactional
+    public void markAsDelivered(String orderId, String idempotencyKey) {
+        executor.run(idempotencyKey, () -> {
+            apply(orderId, OrderEvent.DELIVERED);
+        });
     }
 
     private OrderState apply(String orderId, OrderEvent ev) {

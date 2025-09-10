@@ -75,7 +75,6 @@ public class CartController {
             @Valid @RequestBody AddCartRequest req,
             HttpServletRequest httpReq,
             HttpServletResponse httpRes) {
-        // 必ずcartIdを確保（ゲストはCookie発行、会員はDB作成）
         String candidate = (userId == null)
                 ? cookieUtil.extractCartId(httpReq).orElse(null)
                 : cartService.getOrCreateCartId(userId);

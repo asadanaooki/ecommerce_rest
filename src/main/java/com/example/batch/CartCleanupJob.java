@@ -19,7 +19,7 @@ public class CartCleanupJob {
 
     private final CartMapper cartMapper;
     
-    @Scheduled(cron = "${settings.batch.cart.cron}")
+    @Scheduled(cron = "${settings.batch.cron-common}")
     public void purgeExpiredCarts() {
         cartMapper.deleteExpiredCarts();
     }

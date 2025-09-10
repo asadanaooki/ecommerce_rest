@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +33,9 @@ public class CheckoutController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> checkout(@AuthenticationPrincipal String userId) throws MessagingException {
-        checkoutService.checkout(userId);
+    public ResponseEntity<Void> checkout(@AuthenticationPrincipal String userId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) throws MessagingException {
+        checkoutService.checkout(userId, idempotencyKey);
         return ResponseEntity.ok().build();
     }
 
