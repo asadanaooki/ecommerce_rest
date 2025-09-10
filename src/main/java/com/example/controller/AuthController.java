@@ -79,12 +79,8 @@ public class AuthController {
             cartService.mergeGuestToUser(guestCartId.get(), userCartId);
             cookieUtil.clearCartId(response);
         }
+        addJwtCookie(response, res.jwt());
 
-        ResponseCookie cookie = ResponseCookie.from("accessToken", res.jwt())
-                .path("/")
-                //                .maxAge(Duration.ofHours(1))
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.ok().build();
     }
 
@@ -102,8 +98,11 @@ public class AuthController {
     }
 
     @PostMapping("/register/complete")
-    public ResponseEntity<List<FieldErrorInfo>> register(@RequestBody @Valid RegisterUserRequest req) {
-        authService.register(req);
+    public ResponseEntity<Void> register(@RequestBody @Valid RegisterUserRequest req,
+            HttpServletResponse res) {
+       String jwt = authService.register(req);
+       addJwtCookie(res, jwt);
+       
         return ResponseEntity.ok().build();
     }
 
@@ -115,7 +114,7 @@ public class AuthController {
     }
 
     @PostMapping("/password-reset/update")
-    public ResponseEntity<List<FieldErrorInfo>> resetPassword(
+    public ResponseEntity<Void> resetPassword(
             @RequestBody @Valid PasswordResetUpdateRequest req) {
         authService.resetPassword(req);
 
@@ -151,6 +150,15 @@ public class AuthController {
         authService.updateProfile(userId, req);
         
         return ResponseEntity.ok().build();
+    }
+    
+    
+    private void addJwtCookie(HttpServletResponse res, String jwt) {
+        ResponseCookie cookie = ResponseCookie.from("accessToken", jwt)
+                .path("/")
+                //                .maxAge(Duration.ofHours(1))
+                .build();
+        res.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
 }

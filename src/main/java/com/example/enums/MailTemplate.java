@@ -36,6 +36,31 @@ public enum MailTemplate {
             return new EmailMessage(c.getTo(), getSubject(), body);
         }
     },
+    
+    WELCOME(
+            "会員登録ありがとうございます",
+            """
+                    %s 様
+
+                    このたびは会員登録いただき、誠にありがとうございます。
+                    下記URLより当ショップのトップページへお進みください。
+
+                    ホームページ：
+                    %s
+
+
+                    今後ともよろしくお願いいたします。
+                    ※本メールは自動送信です。心当たりがない場合は破棄してください。
+                    """) {
+        @Override
+        public EmailMessage build(MailContext ctx) {
+            WelcomeContext c = (WelcomeContext) ctx; // 対応 Context にキャスト
+            String body = getBody().formatted(
+                    c.getFullName(),
+                    c.getHomeUrl());
+            return new EmailMessage(c.getTo(), getSubject(), body);
+        }
+    },
 
     ORDER_CONFIRMATION(
             "ご注文ありがとうございます",
@@ -446,6 +471,14 @@ public enum MailTemplate {
         private final String to;
         private final String link;
         private final long ttlMinutes;
+    }
+    
+    @Getter
+    @AllArgsConstructor
+    public static class WelcomeContext implements MailContext {
+        private final String to;
+        private final String fullName;
+        private final String homeUrl;
     }
 
     @Getter

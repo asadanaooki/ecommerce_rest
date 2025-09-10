@@ -7,7 +7,6 @@ import java.util.UUID;
 import jakarta.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +25,7 @@ import com.example.enums.MailTemplate.EmailChangeCompleteNewContext;
 import com.example.enums.MailTemplate.PasswordResetContext;
 import com.example.enums.MailTemplate.ProfileChangedContext;
 import com.example.enums.MailTemplate.RegistrationContext;
+import com.example.enums.MailTemplate.WelcomeContext;
 import com.example.error.BusinessException;
 import com.example.mapper.UserMapper;
 import com.example.request.EmailChangeRequest;
@@ -38,6 +38,7 @@ import com.example.security.CustomUserDetails;
 import com.example.support.MailGateway;
 import com.example.util.JwtUtil;
 import com.example.util.RandomTokenUtil;
+import com.example.util.UserUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -58,7 +59,7 @@ public class AuthService {
         Transactional Outbox 方式（DB に mail_queue 行を insert → 非同期ジョブで送信＋リトライ）を推奨
         メール送信中のエラー再現してみる
      */
-    
+
     private final AuthenticationManager manager;
 
     private final JwtUtil jwtUtil;
@@ -109,7 +110,8 @@ public class AuthService {
     }
 
     public PreRegistration verify(String token) {
-        PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(token);
+        PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(
+                RandomTokenUtil.hash(token));
         if (pr == null || pr.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BusinessException(HttpStatus.NOT_FOUND);
         }
@@ -117,21 +119,25 @@ public class AuthService {
     }
 
     @Transactional
-    public void register(RegisterUserRequest req) {
-        PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(req.getToken());
+    public String register(RegisterUserRequest req) {
+        PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(
+                RandomTokenUtil.hash(req.getToken()));
 
-        if (pr == null || !pr.getToken().equals(req.getToken())) {
+        if (pr == null || !pr.getEmail().equals(req.getEmail())) {
             throw new BusinessException(HttpStatus.NOT_FOUND);
         }
 
-        try {
-            User user = toUserEntity(req, UUID.randomUUID().toString());
+        User user = toUserEntity(req, UUID.randomUUID().toString());
 
-            userMapper.insertUser(user);
-            userMapper.deletePreRegistrationByPrimaryKey(req.getToken());
-        } catch (DuplicateKeyException e) {
-            throw new BusinessException(HttpStatus.NOT_FOUND);
-        }
+        userMapper.insertUser(user);
+        userMapper.deletePreRegistrationByPrimaryKey( RandomTokenUtil.hash(req.getToken()));
+
+        mailGateway.send(MailTemplate.WELCOME.build(
+                new WelcomeContext(user.getEmail(),
+                        UserUtil.buildFullName(user),
+                        "http://localhost:8080/product")));
+
+        return jwtUtil.issue(user.getUserId(), "USER");
     }
 
     @Transactional
@@ -152,7 +158,8 @@ public class AuthService {
         });
 
         String link = "http://localhost:8080/password-reset/form?token=" + rawToken;
-        mailGateway.send(MailTemplate.PASSWORD_RESET.build(new PasswordResetContext(req.getEmail(), link, expireMin)));
+        mailGateway.send(MailTemplate.PASSWORD_RESET.build(
+                new PasswordResetContext(req.getEmail(), link, expireMin)));
     }
 
     @Transactional
@@ -186,9 +193,11 @@ public class AuthService {
 
         String link = "http://localhost:8080/profile/email-change/complete?token=" + token;
         mailGateway.send(
-                MailTemplate.EMAIL_CHANGE_COMPLETE_NEW.build(new EmailChangeCompleteNewContext(req.getNewEmail(), link, emailExpireMin)));
+                MailTemplate.EMAIL_CHANGE_COMPLETE_NEW
+                        .build(new EmailChangeCompleteNewContext(req.getNewEmail(), link, emailExpireMin)));
         mailGateway.send(
-                MailTemplate.EMAIL_CHANGE_ALERT_OLD.build(new EmailChangeAlertOldContext(u.getEmail(), LocalDateTime.now())));
+                MailTemplate.EMAIL_CHANGE_ALERT_OLD
+                        .build(new EmailChangeAlertOldContext(u.getEmail(), LocalDateTime.now())));
     }
 
     public void completeEmailChange(String token) {
@@ -206,13 +215,15 @@ public class AuthService {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "INVALID_CURRENT_PASSWORD");
         }
         userMapper.updatePasswordByPrimaryKey(userId, encoder.encode(req.getNewPassword()));
-        mailGateway.send(MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
+        mailGateway.send(
+                MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
     }
 
     public void updateProfile(String userId, ProfileUpdateRequest req) {
         User user = userMapper.selectUserByPrimaryKey(userId);
         userMapper.updateProfile(userId, req);
-        mailGateway.send(MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
+        mailGateway.send(
+                MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
     }
 
     private User toUserEntity(RegisterUserRequest r, String userId) {

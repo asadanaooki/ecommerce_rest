@@ -76,6 +76,7 @@ public class AdminOrderService {
          顧客データ
          配送システム連携用 
          会計ソフト連携
+         受注明細CSV→ピッキング用
      */
 
     private final AdminOrderMapper adminOrderMapper;
@@ -189,7 +190,7 @@ public class AdminOrderService {
         YearMonth ym = YearMonth.parse(period);
 
         LocalDateTime start = ym.atDay(1).atStartOfDay();
-        LocalDateTime endExclusive = ym.atDay(1).atStartOfDay();
+        LocalDateTime endExclusive = ym.plusMonths(1).atDay(1).atStartOfDay();
         LocalDate monthEnd = ym.atEndOfMonth();
 
         int total = adminOrderMapper.selectMonthlySalesTotal(start, endExclusive);

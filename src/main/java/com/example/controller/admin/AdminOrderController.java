@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -107,8 +108,17 @@ public class AdminOrderController {
     }
     
     @GetMapping("/monthly-sales")
-    public ResponseEntity<ByteArrayResource> downloadMonthlySales(@RequestParam String period) {
-        return new ResponseEntity<ByteArrayResource>();
+    public ResponseEntity<ByteArrayResource> downloadMonthlySales(
+            @RequestParam
+            @Pattern(regexp = "^[0-9]{4}-(0[1-9]|1[0-2])$") String period) {
+        AdminFileDto dto = adminOrderService.generateMonthlySales(period);
+        String encoded = URLEncoder.encode(dto.getFileName(), StandardCharsets.UTF_8);
+        MediaType csv = MediaType.parseMediaType("text/csv; charset=utf-8");
+        
+        return ResponseEntity.ok()
+                .contentType(csv)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encoded)
+                .body(new ByteArrayResource(dto.getBytes()));
     }
     
 

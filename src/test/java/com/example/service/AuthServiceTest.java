@@ -105,8 +105,8 @@ class AuthServiceTest {
                 assertThat(pr.getEmail()).isEqualTo(email);
                 assertThat(pr.getExpiresAt()).isAfter(LocalDateTime.now());
 
-                verify(gateway).send(argThat(msg -> msg.getSubject().equals(MailTemplate.REGISTRATION.getSubject())));
-                ;
+                verify(gateway).send(argThat(
+                        msg -> msg.getSubject().equals(MailTemplate.REGISTRATION.getSubject())));
             }
         }
 
@@ -170,7 +170,7 @@ class AuthServiceTest {
             token = RandomTokenUtil.generate();
             LocalDateTime exp = LocalDateTime.now().plusMinutes(20);
             pr = new PreRegistration();
-            pr.setToken(token);
+            pr.setToken(RandomTokenUtil.hash(token));
             pr.setEmail(email);
             pr.setExpiresAt(exp);
 
@@ -195,9 +195,9 @@ class AuthServiceTest {
         @Test
         void register_success() {
 
-            doReturn(pr).when(userMapper).selectPreRegistrationByPrimaryKey(token);
+            doReturn(pr).when(userMapper).selectPreRegistrationByPrimaryKey(anyString());
             doReturn(1).when(userMapper).insertUser(any(User.class));
-            doReturn(1).when(userMapper).deletePreRegistrationByPrimaryKey(token);
+            doReturn(1).when(userMapper).deletePreRegistrationByPrimaryKey(anyString());
 
             UUID uuid = UUID.randomUUID();
 
@@ -246,63 +246,29 @@ class AuthServiceTest {
                                 /* gender           */ "M");
             }
 
-            verify(userMapper).deletePreRegistrationByPrimaryKey(token);
+            verify(userMapper).deletePreRegistrationByPrimaryKey(anyString());
+            
+            verify(gateway).send(argThat(
+                    msg -> msg.getSubject().equals(MailTemplate.WELCOME.getSubject())));
         }
 
         @Test
         void register_tokenNotFound() {
-            String token = RandomTokenUtil.generate();
-            doReturn(null).when(userMapper).selectPreRegistrationByPrimaryKey(token);
+            doReturn(null).when(userMapper).selectPreRegistrationByPrimaryKey(anyString());
 
             assertThatThrownBy(() -> authService.register(req))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
         }
-
+        
         @Test
-        void register_emailNotMatch() {
-            String token = RandomTokenUtil.generate();
-            pr.setEmail("test@gmail.com");
-            doReturn(pr).when(userMapper).selectPreRegistrationByPrimaryKey(token);
+        void register_emailMismatch() {
+            pr.setEmail("invalid");
+            doReturn(pr).when(userMapper).selectPreRegistrationByPrimaryKey(anyString());
 
             assertThatThrownBy(() -> authService.register(req))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
-        }
-
-        @Test
-        void register_alreadyRegistered() {
-            String token = RandomTokenUtil.generate();
-            UUID uuid = UUID.randomUUID();
-            User user = new User(); // Lombok の @Data がデフォルトコンストラクタを生成
-            user.setUserId(uuid.toString());
-            user.setEmail("taro.yamada@example.com");
-            user.setPasswordHash("$2a$10$abcxyz...hash...");
-            user.setLastName("山田");
-            user.setFirstName("太郎");
-            user.setLastNameKana("ヤマダ");
-            user.setFirstNameKana("タロウ");
-            user.setPostalCode("1500001");
-            user.setAddressPrefCity("東京都渋谷区");
-            user.setAddressArea("神南一丁目");
-            user.setAddressBlock("1-19-11");
-            user.setAddressBuilding("マンション101");
-            user.setPhoneNumber("0312345678");
-            user.setBirthday(LocalDate.of(1990, 1, 1));
-            user.setGender("M");
-            user.setCreatedAt(LocalDateTime.now());
-            user.setUpdatedAt(LocalDateTime.now());
-
-            userMapper.insertUser(user);
-            doReturn(pr).when(userMapper).selectPreRegistrationByPrimaryKey(token);
-
-            try (MockedStatic<UUID> rnd = Mockito.mockStatic(UUID.class)) {
-                rnd.when(UUID::randomUUID).thenReturn(uuid);
-
-                assertThatThrownBy(() -> authService.register(req))
-                        .isInstanceOf(BusinessException.class)
-                        .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.NOT_FOUND);
-            }
         }
     }
 
@@ -344,7 +310,8 @@ class AuthServiceTest {
                                 "sample@example.com",
                                 fixed.plusMinutes(expireMin));
 
-                verify(gateway).send(assertArg(msg -> msg.getSubject().equals(MailTemplate.PASSWORD_RESET.getSubject())));
+                verify(gateway)
+                        .send(assertArg(msg -> msg.getSubject().equals(MailTemplate.PASSWORD_RESET.getSubject())));
             }
         }
 
