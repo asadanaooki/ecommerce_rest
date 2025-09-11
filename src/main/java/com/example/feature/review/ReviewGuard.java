@@ -2,11 +2,17 @@ package com.example.feature.review;
 
 import org.springframework.stereotype.Component;
 
+import com.example.entity.Review;
 import com.example.enums.review.ReviewEvent;
 import com.example.enums.review.ReviewStatus;
+import com.example.mapper.ReviewMapper;
+import com.example.util.GuardUtil;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
-public class ReviewTransitionGuard {
+@RequiredArgsConstructor
+public class ReviewGuard {
     /* TODO:
      * 冪等性考慮→現状、エラー
      * nextメソッド
@@ -14,6 +20,7 @@ public class ReviewTransitionGuard {
          Reject:承認後の否認ケース検討
     */
 
+    private final ReviewMapper reviewMapper;
     
     public ReviewState next(ReviewState cur, ReviewEvent ev) {
         if (cur.getStatus() == ReviewStatus.APPROVED) {
@@ -44,5 +51,10 @@ public class ReviewTransitionGuard {
             throw new IllegalStateException("Reject not allowed");
         }
         };
+    }
+    
+    public Review require(String productId, String userId) {
+        return GuardUtil.ensureFound(reviewMapper.selectByPrimaryKey(productId, userId),
+                "REVIEW_NOT_FOUND");
     }
 }

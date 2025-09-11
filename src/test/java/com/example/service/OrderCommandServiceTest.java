@@ -25,7 +25,7 @@ import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 import com.example.feature.order.OrderState;
-import com.example.feature.order.OrderTransitionGuard;
+import com.example.feature.order.OrderGuard;
 import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.UserMapper;
@@ -46,7 +46,7 @@ class OrderCommandServiceTest {
     UserMapper userMapper;
 
     @Mock
-    OrderTransitionGuard guard;
+    OrderGuard guard;
 
     @Mock
     MailGateway gateway;

@@ -19,10 +19,12 @@ public class EcommerceRestApplication {
      * 設定値のDIは@Valueを使うものなのか？
      * Dtoの役割でないものもDtoクラスにしてる→Dtoの定義を明確に
      * 任意項目の入力欄は受け取る際、トリミング入れる→Review関連には入れてる
-     * DuplicateKeyは409に変換すべきなのか？実装コストと頻度のトレードオフ
      * MybatisでDtoへのマップはSetterがない場合、リフレクションだがどれくらいパフォーマンス悪くなるか
      * FakeSMTP毎回クリック起動面倒→自動化
      * dev前提でhttp://localhost:8080を使用している
+     * 履歴テーブルの実装
+     * 冪等性→決済、在庫など必須のものにしか入れてない
+     * NPE対策→selectPK系のみ実装
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

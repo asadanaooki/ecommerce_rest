@@ -15,6 +15,7 @@ import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
 import com.example.entity.CartItem;
+import com.example.feature.product.ProductGuard;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
@@ -29,18 +30,13 @@ public class CartService {
      *トランザクションのテストは結合テストにする
      *フロントに持たせないほうが良いということで、カートIDを毎回バックで解決してる。パフォーマンス要検証
      *削除のたびにpage=1を取得してる。毎回ジャンプするため同じ位置にした方が良いかも？
-     *productIdが不正値の場合を考慮するか？addやupdateなどで
      *addToCart→引数おおい。リファクタリングする？
-     * changeQty
-         show→updateしてる想定なので、カートIDがあり、期限内の想定
-         いきなりAPI叩くケースなどのガード検討
-     * removeItem
-         show→Deleteしてる想定なので、カートIDがあり、期限内の想定
-         いきなりAPI叩くケースなどのガード検討
      */
     private final CartMapper cartMapper;
 
     private final ProductMapper productMapper;
+    
+    private final ProductGuard productGuard;
 
     public Optional<String> findUserCartId(String userId) {
         return Optional.ofNullable(cartMapper.selectCartByUser(userId))
@@ -78,7 +74,7 @@ public class CartService {
 
         cartMapper.insertCartIfAbsent(cid, userId);
 
-        int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
+        int unitPriceExcl = productGuard.require(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
                 setCartId(cid);
@@ -98,7 +94,7 @@ public class CartService {
             String userId,
             String productId,
             int qty) {
-        int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
+        int unitPriceExcl = productGuard.require(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
                 setCartId(cartId);
