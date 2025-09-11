@@ -19,11 +19,13 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.entity.CartItem;
 import com.example.entity.Product;
+import com.example.feature.product.ProductGuard;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
@@ -37,10 +39,12 @@ class CartServiceTest {
     @Mock
     ProductMapper productMapper;
 
-    @Spy
+    @Mock
+    ProductGuard productGuard;
 
     @InjectMocks
     CartService cartService;
+
 
     @Nested
     class ShowCart {
@@ -129,7 +133,7 @@ class CartServiceTest {
 
             p = new Product();
             p.setPriceExcl(1000);
-            doReturn(p).when(productMapper).selectByPrimaryKey(productId);
+            doReturn(p).when(productGuard).require(productId);
         }
 
         @Test
@@ -197,7 +201,7 @@ class CartServiceTest {
         void setup() {
             p = new Product();
             p.setPriceExcl(1500);
-            doReturn(p).when(productMapper).selectByPrimaryKey(productId);
+            doReturn(p).when(productGuard).require(productId);
         }
 
         @Test
@@ -206,7 +210,7 @@ class CartServiceTest {
 
             ArgumentCaptor<CartItem> cap = ArgumentCaptor.forClass(CartItem.class);
             verify(cartMapper).upsertCartItem(cap.capture());
-            verify(productMapper).selectByPrimaryKey(productId);
+            verify(productGuard).require(productId);
 
             CartItem ci = cap.getValue();
             assertThat(ci).extracting(
