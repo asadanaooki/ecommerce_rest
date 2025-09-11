@@ -6,18 +6,28 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.enums.order.OrderEvent;
 import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
+import com.example.mapper.OrderMapper;
 
-class OrderTransitionGuardTest {
+@ExtendWith(MockitoExtension.class)
+class OrderGuardTest {
 
-    OrderTransitionGuard sut = new OrderTransitionGuard();
+    @Mock
+    OrderMapper orderMapper;
+    
+    @InjectMocks
+    OrderGuard sut;
 
     @Nested
     class RequestCancel {

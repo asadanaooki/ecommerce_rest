@@ -2,18 +2,26 @@ package com.example.feature.order;
 
 import org.springframework.stereotype.Component;
 
+import com.example.entity.Order;
 import com.example.enums.order.OrderEvent;
 import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
+import com.example.mapper.OrderMapper;
+import com.example.util.GuardUtil;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
-public class OrderTransitionGuard {
+@RequiredArgsConstructor
+public class OrderGuard {
     /* TODO:
      * 単調増加のテスト検討
      * 冪等性考慮→現状、エラー
      * 許可ホワイトリスト＋全列挙ループのデータ駆動テスト検討
     */
+
+    private final OrderMapper orderMapper;
 
     public OrderState next(OrderState cur, OrderEvent ev) {
         if (cur.getOrder() == OrderStatus.CANCELED
@@ -63,5 +71,9 @@ public class OrderTransitionGuard {
             throw new IllegalStateException("Delivered not allowed");
         }
         };
+    }
+
+    public Order require(String orderId) {
+        return GuardUtil.ensureFound(orderMapper.selectOrderByPrimaryKey(orderId), "ORDER_NOT_FOUND");
     }
 }

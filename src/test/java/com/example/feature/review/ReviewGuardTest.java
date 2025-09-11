@@ -6,15 +6,25 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.enums.review.ReviewEvent;
 import com.example.enums.review.ReviewStatus;
+import com.example.mapper.ReviewMapper;
 
-class ReviewTransitionGuardTest {
+@ExtendWith(MockitoExtension.class)
+class ReviewGuardTest {
 
-    ReviewTransitionGuard sut = new ReviewTransitionGuard();
+    @Mock
+    ReviewMapper reviewMapper;
+    
+    @InjectMocks
+    ReviewGuard sut ;
 
     // --- ホワイトリスト（許可される from 状態） ---
     static final EnumSet<ReviewStatus> SUBMIT_ALLOWED = EnumSet.of(

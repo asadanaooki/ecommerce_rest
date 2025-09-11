@@ -15,6 +15,7 @@ import com.example.dto.CartDto;
 import com.example.dto.CartItemDto;
 import com.example.entity.Cart;
 import com.example.entity.CartItem;
+import com.example.feature.product.ProductGuard;
 import com.example.mapper.CartMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.AddCartRequest;
@@ -41,6 +42,8 @@ public class CartService {
     private final CartMapper cartMapper;
 
     private final ProductMapper productMapper;
+    
+    private final ProductGuard productGuard;
 
     public Optional<String> findUserCartId(String userId) {
         return Optional.ofNullable(cartMapper.selectCartByUser(userId))
@@ -78,7 +81,7 @@ public class CartService {
 
         cartMapper.insertCartIfAbsent(cid, userId);
 
-        int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
+        int unitPriceExcl = productGuard.require(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
                 setCartId(cid);
@@ -98,7 +101,7 @@ public class CartService {
             String userId,
             String productId,
             int qty) {
-        int unitPriceExcl = productMapper.selectByPrimaryKey(productId).getPriceExcl();
+        int unitPriceExcl = productGuard.require(productId).getPriceExcl();
         cartMapper.upsertCartItem(new CartItem() {
             {
                 setCartId(cartId);

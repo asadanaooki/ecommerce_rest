@@ -12,8 +12,9 @@ import com.example.entity.User;
 import com.example.enums.MailTemplate;
 import com.example.enums.MailTemplate.ReviewRejectedContext;
 import com.example.enums.review.ReviewEvent;
+import com.example.feature.review.ReviewGuard;
 import com.example.feature.review.ReviewState;
-import com.example.feature.review.ReviewTransitionGuard;
+import com.example.feature.user.UserGuard;
 import com.example.mapper.ReviewMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.param.ReviewUpdateParam;
@@ -41,13 +42,15 @@ public class ReviewCommandService {
 
     private final UserMapper userMapper;
 
-    private final ReviewTransitionGuard guard;
+    private final ReviewGuard reviewGuard;
+    
+    private final UserGuard userGuard;
 
     private final MailGateway gateway;
 
     @Transactional
     public void submit(String productId, String userId, SubmitReviewRequest req) {
-        if (userMapper.selectUserByPrimaryKey(userId).getNickname() == null) {
+        if (userGuard.require(userId).getNickname() == null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "NICKNAME_REQUIRED");
         }
         if (!reviewMapper.hasPurchased(userId, productId)) {
@@ -98,11 +101,11 @@ public class ReviewCommandService {
 
     private void apply(String productId, String userId, ReviewEvent ev,
             Consumer<ReviewUpdateParamBuilder> consumer) {
-        Review before = reviewMapper.selectByPrimaryKey(productId, userId);
+        Review before = reviewGuard.require(productId, userId);
         final ReviewState next;
 
         try {
-            next = guard.next(new ReviewState(before.getStatus()), ev);
+            next = reviewGuard.next(new ReviewState(before.getStatus()), ev);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "REVIEW_STATE_INVALID");
         }

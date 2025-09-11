@@ -13,8 +13,8 @@ import com.example.entity.User;
 import com.example.enums.MailTemplate;
 import com.example.enums.order.OrderEvent;
 import com.example.enums.order.OrderStatus;
+import com.example.feature.order.OrderGuard;
 import com.example.feature.order.OrderState;
-import com.example.feature.order.OrderTransitionGuard;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.UserMapper;
 import com.example.support.IdempotentExecutor;
@@ -48,11 +48,13 @@ public class OrderCommandService {
 
     private final UserMapper userMapper;
 
-    private final OrderTransitionGuard guard;
+    private final OrderGuard guard;
 
     private final MailGateway gateway;
 
     private final IdempotentExecutor executor;
+    
+    private final OrderGuard orderGuard;
 
     @Transactional
     public void requestCancel(String orderId) {
@@ -128,7 +130,7 @@ public class OrderCommandService {
     }
 
     private OrderState apply(String orderId, OrderEvent ev) {
-        Order before = orderMapper.selectOrderByPrimaryKey(orderId);
+        Order before = orderGuard.require(orderId);
         OrderState cur = new OrderState(
                 before.getOrderStatus(),
                 before.getShippingStatus(),

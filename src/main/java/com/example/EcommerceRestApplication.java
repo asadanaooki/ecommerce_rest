@@ -23,6 +23,7 @@ public class EcommerceRestApplication {
      * MybatisでDtoへのマップはSetterがない場合、リフレクションだがどれくらいパフォーマンス悪くなるか
      * FakeSMTP毎回クリック起動面倒→自動化
      * dev前提でhttp://localhost:8080を使用している
+     * 履歴テーブルの実装
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

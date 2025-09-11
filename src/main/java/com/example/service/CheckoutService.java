@@ -22,6 +22,7 @@ import com.example.enums.MailTemplate;
 import com.example.enums.MailTemplate.OrderConfirmationContext;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
+import com.example.feature.cart.CartGuard;
 import com.example.mapper.CartMapper;
 import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
@@ -61,14 +62,12 @@ public class CheckoutService {
     private final MailGateway mailGateway;
     
     private final IdempotentExecutor executor;
+    
+    private final CartGuard cartGuard;
 
     public CheckoutConfirmDto loadCheckout(String userId) {
         String cartId = cartMapper.selectCartByUser(userId).getCartId();
-        Cart c = cartMapper.selectCartByPrimaryKey(cartId);
-        if (c == null) {
-            throw new BusinessException(HttpStatus.NOT_FOUND);
-        }
-        // ユーザー情報
+        Cart c = cartGuard.require(cartId);
         User user = userMapper.selectUserByPrimaryKey(userId);
 
         List<CartItemDto> items = cartMapper.selectCartItems(cartId);

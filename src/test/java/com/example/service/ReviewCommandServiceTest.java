@@ -24,7 +24,7 @@ import com.example.entity.User;
 import com.example.enums.order.RejectReason;
 import com.example.enums.review.ReviewEvent;
 import com.example.enums.review.ReviewStatus;
-import com.example.feature.review.ReviewTransitionGuard;
+import com.example.feature.review.ReviewGuard;
 import com.example.mapper.ReviewMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.param.ReviewUpdateParam;
@@ -42,7 +42,7 @@ class ReviewCommandServiceTest {
     UserMapper userMapper;
     
     @Spy
-    ReviewTransitionGuard guard;
+    ReviewGuard guard;
     
     @Mock
     MailGateway gateway;
