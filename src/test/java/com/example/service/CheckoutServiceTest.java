@@ -30,6 +30,7 @@ import com.example.entity.User;
 import com.example.enums.MailTemplate;
 import com.example.enums.SaleStatus;
 import com.example.error.BusinessException;
+import com.example.feature.cart.CartGuard;
 import com.example.mapper.CartMapper;
 import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
@@ -55,6 +56,9 @@ class CheckoutServiceTest {
 
     @Mock
     IdempotencyMapper idempotencyMapper;
+
+    @Mock
+    CartGuard cartGuard;
 
     @InjectMocks
     CheckoutService checkoutService;
@@ -138,7 +142,7 @@ class CheckoutServiceTest {
         @Test
         void loadCheckout_cartNotFound() {
             cart.setCartId("cartId");
-            doReturn(null).when(cartMapper).selectCartByPrimaryKey("cartId");
+            doThrow(new BusinessException(HttpStatus.NOT_FOUND, "CART_NOT_FOUND")).when(cartGuard).require("cartId");
 
             assertThatThrownBy(() -> checkoutService.loadCheckout(userId))
                     .isInstanceOf(BusinessException.class)
@@ -164,7 +168,7 @@ class CheckoutServiceTest {
             List<CartItemDto> items = List.of(item1, item2);
             cart.setCartId("cartId");
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
-            doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
+            doReturn(cart).when(cartGuard).require("cartId");
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);

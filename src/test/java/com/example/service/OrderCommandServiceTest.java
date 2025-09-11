@@ -49,6 +49,9 @@ class OrderCommandServiceTest {
     OrderGuard guard;
 
     @Mock
+    OrderGuard orderGuard;
+
+    @Mock
     MailGateway gateway;
 
     @InjectMocks
@@ -66,6 +69,9 @@ class OrderCommandServiceTest {
     void setup() {
         IdempotentExecutor executor = new IdempotentExecutor(mock(IdempotencyMapper.class));
         ReflectionTestUtils.setField(sut, "executor", executor);
+        
+        ReflectionTestUtils.setField(sut, "guard", guard);
+        ReflectionTestUtils.setField(sut, "orderGuard", orderGuard);
 
         before = new Order() {
             {
@@ -99,6 +105,7 @@ class OrderCommandServiceTest {
 
         // 1回目（apply前の参照）: before, 2回目（メール作成等で再取得）: after
         lenient().doReturn(before, after).when(orderMapper).selectOrderByPrimaryKey(anyString());
+        doReturn(before).when(orderGuard).require(anyString());
         lenient().doReturn(next).when(guard).next(any(), any(OrderEvent.class));
         lenient().doReturn(1).when(orderMapper).applyTransition(anyString(), any(), any());
         lenient().doReturn(Collections.<OrderItem> emptyList()).when(orderMapper).selectOrderItems(anyString());
