@@ -168,8 +168,7 @@ class CheckoutServiceTest {
             List<CartItemDto> items = List.of(item1, item2);
             cart.setCartId("cartId");
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
-            lenient().doReturn(cart).when(cartMapper).selectCartByPrimaryKey("cartId");
-            lenient().doReturn(cart).when(cartGuard).require("cartId");
+            doReturn(cart).when(cartGuard).require("cartId");
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
@@ -355,11 +354,6 @@ class CheckoutServiceTest {
                     //    setVersion(2);
                 }
             }).when(cartMapper).selectCartByUser(userId);
-            lenient().doReturn(new Cart() {
-                {
-                    setCartId(cartId);
-                }
-            }).when(cartGuard).require(cartId);
             doReturn(diffItems).when(orderMapper).selectCheckoutItems(cartId);
 
             assertThatThrownBy(() -> checkoutService.checkout(userId, idempotency))
@@ -422,7 +416,6 @@ class CheckoutServiceTest {
                 }
             };
             doReturn(cart).when(cartMapper).selectCartByUser(userId);
-            lenient().doReturn(cart).when(cartGuard).require(cartId);
             doReturn(items).when(orderMapper).selectCheckoutItems(cartId);
             doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
 
