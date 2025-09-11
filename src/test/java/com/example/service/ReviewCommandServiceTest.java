@@ -25,6 +25,7 @@ import com.example.enums.order.RejectReason;
 import com.example.enums.review.ReviewEvent;
 import com.example.enums.review.ReviewStatus;
 import com.example.feature.review.ReviewGuard;
+import com.example.feature.user.UserGuard;
 import com.example.mapper.ReviewMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.param.ReviewUpdateParam;
@@ -41,8 +42,11 @@ class ReviewCommandServiceTest {
     @Mock
     UserMapper userMapper;
     
-    @Spy
-    ReviewGuard guard;
+    @Mock
+    ReviewGuard reviewGuard;
+    
+    @Mock
+    UserGuard userGuard;
     
     @Mock
     MailGateway gateway;
@@ -73,6 +77,11 @@ class ReviewCommandServiceTest {
         review.setReviewText("text");
         
        lenient().doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
+       lenient().doReturn(user).when(userGuard).require(userId);
+       lenient().doReturn(review).when(reviewGuard).require(productId, userId);
+       lenient().doReturn(new com.example.feature.review.ReviewState(com.example.enums.review.ReviewStatus.APPROVED)).when(reviewGuard).next(any(), eq(com.example.enums.review.ReviewEvent.APPROVE));
+       lenient().doReturn(new com.example.feature.review.ReviewState(com.example.enums.review.ReviewStatus.REJECTED)).when(reviewGuard).next(any(), eq(com.example.enums.review.ReviewEvent.REJECT));
+       lenient().doReturn(new com.example.feature.review.ReviewState(com.example.enums.review.ReviewStatus.PENDING)).when(reviewGuard).next(any(), eq(com.example.enums.review.ReviewEvent.SUBMIT));
        lenient().doReturn(true).when(reviewMapper).hasPurchased(userId, productId);
        lenient().doReturn(review).when(reviewMapper).selectByPrimaryKey(productId, userId);
        lenient().doReturn(1).when(reviewMapper).updateByEvent(any());
@@ -199,6 +208,7 @@ class ReviewCommandServiceTest {
         @Test
         void approve_stateInvalid() {
             review.setStatus(ReviewStatus.APPROVED);
+            doThrow(new IllegalStateException("Invalid state transition")).when(reviewGuard).next(any(), eq(ReviewEvent.APPROVE));
             
             assertThatThrownBy(() -> reviewCommandService.approve(productId, userId))
             .isInstanceOf(ResponseStatusException.class)
