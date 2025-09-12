@@ -2,7 +2,6 @@ package com.example.request.admin;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 import jakarta.validation.constraints.AssertTrue;
@@ -93,27 +92,19 @@ public class AdminProductSearchRequest {
     }
 
     public void setCreatedFrom(LocalDate date) {
-        if (date != null) {
-            this.createdFrom = date.atStartOfDay();
-        }
+        this.createdFrom = (date == null) ? null : date.atStartOfDay();
     }
 
     public void setCreatedTo(LocalDate date) {
-        if (date != null) {
-            this.createdTo = date.plusDays(1).atStartOfDay();
-        }
+        this.createdTo = (date == null) ? null : date.plusDays(1).atStartOfDay();
     }
 
     public void setUpdatedFrom(LocalDate date) {
-        if (date != null) {
-            updatedFrom = date.atStartOfDay();
-        }
+        this.updatedFrom = (date == null) ? null : date.atStartOfDay();
     }
 
     public void setUpdatedTo(LocalDate date) {
-        if (date != null) {
-            updatedTo = date.atTime(LocalTime.MAX);
-        }
+        this.updatedTo = (date == null) ? null : date.plusDays(1).atStartOfDay();
     }
 
     public List<String> getKeywords() {

@@ -25,11 +25,8 @@ public class GetQueryParamBinder {
 
     @InitBinder
     public void init(WebDataBinder binder) {
-        if (!"GET".equalsIgnoreCase(request.getMethod())) {
-            return;
-        }
-        Class<?> target = binder.getTargetType().getRawClass();
-        if (target == null) {
+        if (!"GET".equalsIgnoreCase(request.getMethod()) ||
+                binder.getTargetType() == null) {
             return;
         }
         
@@ -53,7 +50,7 @@ public class GetQueryParamBinder {
         binder.registerCustomEditor(LocalDate.class, new DateSanitizingEditor());
 
         // Enum
-        ReflectionUtils.doWithFields(target, f -> {
+        ReflectionUtils.doWithFields(binder.getTargetType().getRawClass(), f -> {
             EnumFallback anno = f.getAnnotation(EnumFallback.class);
             if (!f.getType().isEnum() || anno == null) {
                 return;

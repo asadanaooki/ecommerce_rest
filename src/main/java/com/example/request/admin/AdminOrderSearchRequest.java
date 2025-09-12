@@ -23,10 +23,10 @@ public class AdminOrderSearchRequest {
     */
 
     private String q;
-    
+
     @EnumFallback
     private OrderStatus orderStatus;
-    
+
     @EnumFallback
     private PaymentStatus paymentStatus;
 
@@ -53,15 +53,11 @@ public class AdminOrderSearchRequest {
     }
 
     public void setCreatedFrom(LocalDate date) {
-        if (date != null) {
-            this.createdFrom = date.atStartOfDay();
-        }
+        this.createdFrom = (date == null) ? null : date.atStartOfDay();
     }
 
     public void setCreatedTo(LocalDate date) {
-        if (date != null) {
-            this.createdTo = date.plusDays(1).atStartOfDay();
-        }
+        this.createdTo = (date == null) ? null : date.plusDays(1).atStartOfDay();
     }
 
     public String getKeyword() {

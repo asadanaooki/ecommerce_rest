@@ -54,7 +54,8 @@ public class AdminOrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<AdminOrderDetailDto> getDetail(@PathVariable @HexUuid @NotBlank String orderId) {
+    public ResponseEntity<AdminOrderDetailDto> getDetail(
+            @PathVariable @HexUuid @NotBlank String orderId) {
         AdminOrderDetailDto dto = adminOrderService.findDetail(orderId);
 
         return ResponseEntity.ok(dto);

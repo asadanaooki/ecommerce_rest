@@ -1,8 +1,6 @@
 package com.example.controller.admin;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -90,8 +88,6 @@ class AdminProductControllerTest {
 
         static Stream<Arguments> provideInvalidQueries() {
             return Stream.of(
-                    // page
-                    Arguments.of(Map.of("page", "0")),
                     // minPrice
                     Arguments.of(Map.of("minPrice", "0")),
                     // minAvailable

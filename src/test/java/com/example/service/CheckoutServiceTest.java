@@ -142,7 +142,8 @@ class CheckoutServiceTest {
         @Test
         void loadCheckout_cartNotFound() {
             cart.setCartId("cartId");
-            doThrow(new BusinessException(HttpStatus.NOT_FOUND, "CART_NOT_FOUND")).when(cartGuard).require("cartId");
+            doThrow(new BusinessException(HttpStatus.NOT_FOUND, "CART_NOT_FOUND"))
+            .when(cartGuard).requireByUserId(userId);
 
             assertThatThrownBy(() -> checkoutService.loadCheckout(userId))
                     .isInstanceOf(BusinessException.class)
@@ -167,8 +168,7 @@ class CheckoutServiceTest {
 
             List<CartItemDto> items = List.of(item1, item2);
             cart.setCartId("cartId");
-            doReturn(cart).when(cartMapper).selectCartByUser(userId);
-            doReturn(cart).when(cartGuard).require("cartId");
+            doReturn(cart).when(cartGuard).requireByUserId(userId);
             doReturn(items).when(cartMapper).selectCartItems("cartId");
 
             CheckoutConfirmDto dto = checkoutService.loadCheckout(userId);
