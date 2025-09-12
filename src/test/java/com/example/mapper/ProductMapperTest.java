@@ -25,7 +25,7 @@ import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
 import com.example.enums.ProductSortOption;
 import com.example.enums.SaleStatus;
-import com.example.mapper.ProductMapper.SearchCondition;
+import com.example.request.ProductSearchRequest;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
@@ -156,10 +156,10 @@ class ProductMapperTest {
 
     @Test
     void searchProducts_withoutKeywords() {
-        List<String> emptyKeywords = Arrays.asList();
+        ProductSearchRequest req = new ProductSearchRequest();
+        req.setSort(ProductSortOption.NEW);
 
-        SearchCondition sc = new SearchCondition(null, emptyKeywords, ProductSortOption.NEW, 5, 0);
-        List<ProductCardDto> results = productMapper.searchProducts(sc);
+        List<ProductCardDto> results = productMapper.searchProducts(null, req, 5, 0);
 
         assertThat(results).hasSize(5);
         assertThat(results.get(0).getProductName()).isNotNull();
@@ -168,10 +168,11 @@ class ProductMapperTest {
 
     @Test
     void searchProducts_withKeywords() {
-        List<String> keywords = Arrays.asList("Item1");
+        ProductSearchRequest req = new ProductSearchRequest();
+        req.setQ("Item1");
+        req.setSort(ProductSortOption.LOW);
 
-        SearchCondition sc = new SearchCondition(null, keywords, ProductSortOption.LOW, 10, 0);
-        List<ProductCardDto> results = productMapper.searchProducts(sc);
+        List<ProductCardDto> results = productMapper.searchProducts(null, req, 10, 0);
 
         assertThat(results).isNotEmpty();
         assertThat(results).allSatisfy(dto -> {
@@ -182,12 +183,12 @@ class ProductMapperTest {
     @Test
     void searchProducts_withUserFavorites() {
         String userId = "550e8400-e29b-41d4-a716-446655440000";
-        List<String> emptyKeywords = Arrays.asList();
+        ProductSearchRequest req = new ProductSearchRequest();
+        req.setSort(ProductSortOption.NEW);
 
         // This test assumes some favorites may exist in test data
 
-        SearchCondition sc = new SearchCondition(userId, emptyKeywords, ProductSortOption.NEW, 10, 0);
-        List<ProductCardDto> results = productMapper.searchProducts(sc);
+        List<ProductCardDto> results = productMapper.searchProducts(userId, req, 10, 0);
 
         assertThat(results).isNotEmpty();
 
@@ -204,10 +205,10 @@ class ProductMapperTest {
 
     @Test
     void searchProducts_sortByPriceHigh() {
-        List<String> emptyKeywords = Arrays.asList();
+        ProductSearchRequest req = new ProductSearchRequest();
+        req.setSort(ProductSortOption.HIGH);
 
-        SearchCondition sc = new SearchCondition(null, emptyKeywords, ProductSortOption.HIGH, 5, 0);
-        List<ProductCardDto> results = productMapper.searchProducts(sc);
+        List<ProductCardDto> results = productMapper.searchProducts(null, req, 5, 0);
 
         assertThat(results).hasSize(5);
 
@@ -220,10 +221,10 @@ class ProductMapperTest {
 
     @Test
     void searchProducts_sortByPriceLow() {
-        List<String> emptyKeywords = Arrays.asList();
+        ProductSearchRequest req = new ProductSearchRequest();
+        req.setSort(ProductSortOption.LOW);
 
-        SearchCondition sc = new SearchCondition(null, emptyKeywords, ProductSortOption.LOW, 5, 0);
-        List<ProductCardDto> results = productMapper.searchProducts(sc);
+        List<ProductCardDto> results = productMapper.searchProducts(null, req, 5, 0);
 
         assertThat(results).hasSize(5);
 
