@@ -1,10 +1,5 @@
 package com.example.controller;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
@@ -15,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
-import com.example.enums.ProductSortOption;
 import com.example.request.ProductSearchRequest;
 import com.example.service.ProductService;
 import com.example.validation.constraint.HexUuid;
@@ -43,7 +37,7 @@ public class ProductController {
     public ProductListDto searchProducts(
             @AuthenticationPrincipal String userId,
             @Valid ProductSearchRequest req) {
-        return productService.searchProducts(param.page, param.sort, param.keywords, userId);
+        return productService.searchProducts(userId, req);
     }
 
     @GetMapping("/product/{productId}")
@@ -52,33 +46,33 @@ public class ProductController {
         return productService.getProductDetail(productId, userId);
     }
 
-    private SearchParam adjustSearchParam(String page, String sort, String q) {
-        int pageNum;
-        try {
-            pageNum = Integer.parseInt(page);
-            if (pageNum < 1) {
-                pageNum = 1;
-            }
-        } catch (NumberFormatException e) {
-            pageNum = 1;
-        }
-
-        ProductSortOption sortType;
-        try {
-            sortType = ProductSortOption.valueOf(sort.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            sortType = ProductSortOption.NEW; // フォールバック
-        }
-
-        String raw = Optional.ofNullable(q).orElse("").trim();
-        List<String> keywords = raw.isEmpty()
-                ? Collections.emptyList()
-                : Arrays.stream(raw.split("[\\s　]+"))
-                        .toList();
-
-        return new SearchParam(pageNum, sortType, keywords);
-    }
-
-    record SearchParam(int page, ProductSortOption sort, List<String> keywords) {
-    }
+//    private SearchParam adjustSearchParam(String page, String sort, String q) {
+//        int pageNum;
+//        try {
+//            pageNum = Integer.parseInt(page);
+//            if (pageNum < 1) {
+//                pageNum = 1;
+//            }
+//        } catch (NumberFormatException e) {
+//            pageNum = 1;
+//        }
+//
+//        ProductSortOption sortType;
+//        try {
+//            sortType = ProductSortOption.valueOf(sort.toUpperCase());
+//        } catch (IllegalArgumentException e) {
+//            sortType = ProductSortOption.NEW; // フォールバック
+//        }
+//
+//        String raw = Optional.ofNullable(q).orElse("").trim();
+//        List<String> keywords = raw.isEmpty()
+//                ? Collections.emptyList()
+//                : Arrays.stream(raw.split("[\\s　]+"))
+//                        .toList();
+//
+//        return new SearchParam(pageNum, sortType, keywords);
+//    }
+//
+//    record SearchParam(int page, ProductSortOption sort, List<String> keywords) {
+//    }
 }

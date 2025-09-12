@@ -14,9 +14,9 @@ public class ProductSearchRequest {
     private String q;
 
     @EnumFallback("NEW")
-    private ProductSortOption sort;
+    private ProductSortOption sort = ProductSortOption.NEW;
 
-    private int page;
+    private int page = 1;
     
     
     public List<String> getKeywords() {

@@ -35,7 +35,7 @@
     WHERE v.<include refid="common.OnlyPublished"/>
     <if test="req.keywords.size() > 0">
       AND (
-      <foreach collection="req.keywords" item="kw" separator="OR ">
+      <foreach collection="req.keywords" item="kw" separator="AND ">
         v.product_name LIKE CONCAT('%', #{kw}, '%')
       </foreach>
       )
@@ -53,16 +53,16 @@
       </when>
     </choose>
     , v.product_id DESC
-    LIMIT #{offset}, #{size}
+    LIMIT #{offset}, #{limit}
   </select>
   
   <select id="countProducts" resultType="int">
     SELECT COUNT(*)
     FROM product
     WHERE <include refid="common.OnlyPublished"/>
-    <if test="req.keywords.size() > 0">
+    <if test="keywords.size() > 0">
       AND (
-      <foreach collection="req.keywords" item="kw" separator="AND ">
+      <foreach collection="keywords" item="kw" separator="AND ">
         product_name LIKE CONCAT('%', #{kw}, '%')
       </foreach>
       )

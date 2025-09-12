@@ -11,7 +11,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
-import com.example.mapper.FavoriteMapper;
 import com.example.mapper.ProductMapper;
 import com.example.request.ProductSearchRequest;
 import com.example.util.PaginationUtil;
@@ -29,8 +28,6 @@ public class ProductService {
      */
 
     private final ProductMapper productMapper;
-
-    private final FavoriteMapper favoriteMapper;
 
     @Value("${settings.product.size}")
     private int pageSize;
