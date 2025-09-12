@@ -33,8 +33,8 @@ import com.example.dto.admin.AdminProductListDto;
 import com.example.entity.Product;
 import com.example.enums.SaleStatus;
 import com.example.mapper.admin.AdminProductMapper;
-import com.example.request.admin.ProductSearchRequest;
-import com.example.request.admin.ProductUpsertRequest;
+import com.example.request.admin.AdminProductSearchRequest;
+import com.example.request.admin.AdminProductUpsertRequest;
 
 @ExtendWith(MockitoExtension.class)
 class AdminProductServiceTest {
@@ -54,7 +54,7 @@ class AdminProductServiceTest {
 //        ReflectionTestUtils.setField(tc, "taxCalculator", new TaxCalculator(10));
 //        ReflectionTestUtils.setField(adminProductConverter, "taxConverter",tc);
         ReflectionTestUtils.setField(adminProductService, "pageSize", 10);
-        ProductSearchRequest req = new ProductSearchRequest();
+        AdminProductSearchRequest req = new AdminProductSearchRequest();
 
         AdminProductDto p1 = new AdminProductDto();
         p1.setProductId("id-1");
@@ -96,14 +96,14 @@ class AdminProductServiceTest {
 
     @Nested
     class Create {
-        ProductUpsertRequest req;
+        AdminProductUpsertRequest req;
 
         @BeforeEach
         void setup() throws IOException {
             ReflectionTestUtils.setField(adminProductService, "maxSize", DataSize.ofKilobytes(128));
             ReflectionTestUtils.setField(adminProductService, "IMAGE_DIR", imageDir);
 
-            req = new ProductUpsertRequest();
+            req = new AdminProductUpsertRequest();
             req.setProductName("test");
             req.setProductDescription("testDesc");
             req.setPriceExcl(100);

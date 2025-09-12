@@ -23,8 +23,8 @@ import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
+import com.example.enums.ProductSortOption;
 import com.example.enums.SaleStatus;
-import com.example.enums.SortType;
 import com.example.mapper.ProductMapper.SearchCondition;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
@@ -158,7 +158,7 @@ class ProductMapperTest {
     void searchProducts_withoutKeywords() {
         List<String> emptyKeywords = Arrays.asList();
 
-        SearchCondition sc = new SearchCondition(null, emptyKeywords, SortType.NEW, 5, 0);
+        SearchCondition sc = new SearchCondition(null, emptyKeywords, ProductSortOption.NEW, 5, 0);
         List<ProductCardDto> results = productMapper.searchProducts(sc);
 
         assertThat(results).hasSize(5);
@@ -170,7 +170,7 @@ class ProductMapperTest {
     void searchProducts_withKeywords() {
         List<String> keywords = Arrays.asList("Item1");
 
-        SearchCondition sc = new SearchCondition(null, keywords, SortType.LOW, 10, 0);
+        SearchCondition sc = new SearchCondition(null, keywords, ProductSortOption.LOW, 10, 0);
         List<ProductCardDto> results = productMapper.searchProducts(sc);
 
         assertThat(results).isNotEmpty();
@@ -186,7 +186,7 @@ class ProductMapperTest {
 
         // This test assumes some favorites may exist in test data
 
-        SearchCondition sc = new SearchCondition(userId, emptyKeywords, SortType.NEW, 10, 0);
+        SearchCondition sc = new SearchCondition(userId, emptyKeywords, ProductSortOption.NEW, 10, 0);
         List<ProductCardDto> results = productMapper.searchProducts(sc);
 
         assertThat(results).isNotEmpty();
@@ -206,7 +206,7 @@ class ProductMapperTest {
     void searchProducts_sortByPriceHigh() {
         List<String> emptyKeywords = Arrays.asList();
 
-        SearchCondition sc = new SearchCondition(null, emptyKeywords, SortType.HIGH, 5, 0);
+        SearchCondition sc = new SearchCondition(null, emptyKeywords, ProductSortOption.HIGH, 5, 0);
         List<ProductCardDto> results = productMapper.searchProducts(sc);
 
         assertThat(results).hasSize(5);
@@ -222,7 +222,7 @@ class ProductMapperTest {
     void searchProducts_sortByPriceLow() {
         List<String> emptyKeywords = Arrays.asList();
 
-        SearchCondition sc = new SearchCondition(null, emptyKeywords, SortType.LOW, 5, 0);
+        SearchCondition sc = new SearchCondition(null, emptyKeywords, ProductSortOption.LOW, 5, 0);
         List<ProductCardDto> results = productMapper.searchProducts(sc);
 
         assertThat(results).hasSize(5);

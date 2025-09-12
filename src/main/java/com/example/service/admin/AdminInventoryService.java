@@ -13,8 +13,8 @@ import com.example.dto.admin.AdminInventoryRowDto;
 import com.example.enums.StockStatus;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminInventoryMapper;
-import com.example.request.admin.InventoryMovementRequest;
-import com.example.request.admin.InventorySearchRequest;
+import com.example.request.admin.AdminInventoryMovementRequest;
+import com.example.request.admin.AdminInventorySearchRequest;
 import com.example.support.IdempotentExecutor;
 import com.example.util.PaginationUtil;
 
@@ -45,7 +45,7 @@ public class AdminInventoryService {
     @Value("${settings.admin.inventory.low-stock-threshold}")
     private int threshold;
 
-    public AdminInventoryListDto search(InventorySearchRequest req) {
+    public AdminInventoryListDto search(AdminInventorySearchRequest req) {
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
         List<AdminInventoryRowDto> list = adminInventoryMapper.search(req, threshold, pageSize, offset);
         for (AdminInventoryRowDto dto : list) {
@@ -67,7 +67,7 @@ public class AdminInventoryService {
         return dto;
     }
 
-    public void receiveStock(String productId, InventoryMovementRequest req, String idempotencyKey) {
+    public void receiveStock(String productId, AdminInventoryMovementRequest req, String idempotencyKey) {
         executor.run(idempotencyKey, () -> {
             int rows = productMapper.increaseStock(productId, req.getQty(), req.getVersion());
             if (rows <= 0) {
@@ -76,7 +76,7 @@ public class AdminInventoryService {
         });
     }
 
-    public void issueStock(String productId, InventoryMovementRequest req, String idempotencyKey) {
+    public void issueStock(String productId, AdminInventoryMovementRequest req, String idempotencyKey) {
         executor.run(idempotencyKey, () -> {
             int rows = productMapper.decreaseStock(productId, req.getQty(), req.getVersion());
             if (rows <= 0) {

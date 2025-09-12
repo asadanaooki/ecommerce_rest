@@ -7,7 +7,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 @Data
-public class InventoryMovementRequest {
+public class AdminInventoryMovementRequest {
 
     @NotNull
     @Positive

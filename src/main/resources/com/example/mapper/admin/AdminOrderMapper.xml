@@ -28,7 +28,7 @@
         AND created_at &gt;= #{req.createdFrom} 
       </if>
       <if test="req.createdTo != null">
-        AND created_at &lt;= #{req.createdTo} 
+        AND created_at &lt; #{req.createdTo} 
       </if>
     </where>
     order by ${req.sortField.field} ${req.sortDirection}
@@ -55,7 +55,7 @@
         AND created_at &gt;= #{createdFrom} 
       </if>
       <if test="createdTo != null">
-        AND created_at &lt;= #{createdTo} 
+        AND created_at &lt; #{createdTo} 
       </if>
     </where>
   </select>

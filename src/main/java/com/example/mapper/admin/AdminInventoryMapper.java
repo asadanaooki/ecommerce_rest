@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.example.dto.admin.AdminInventoryDetailDto;
 import com.example.dto.admin.AdminInventoryRowDto;
-import com.example.request.admin.InventorySearchRequest;
+import com.example.request.admin.AdminInventorySearchRequest;
 
 @Mapper
 public interface AdminInventoryMapper {
@@ -14,9 +14,9 @@ public interface AdminInventoryMapper {
      * 引数まとめる？
      */
 
-    List<AdminInventoryRowDto> search(InventorySearchRequest req, int threshold, int limit, int offset);
+    List<AdminInventoryRowDto> search(AdminInventorySearchRequest req, int threshold, int limit, int offset);
     
-    int count(InventorySearchRequest req, int threshold);
+    int count(AdminInventorySearchRequest req, int threshold);
     
     AdminInventoryDetailDto find(String productId);
     

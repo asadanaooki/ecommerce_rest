@@ -2,8 +2,6 @@ package com.example.request.admin;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
@@ -17,7 +15,7 @@ import com.example.enums.order.PaymentStatus;
 import lombok.Data;
 
 @Data
-public class OrderSearchRequest {
+public class AdminOrderSearchRequest {
     /* TODO:
      * 複数検索ワード対応、現状１語検索
      * 検索ワードの長さ制限検討
@@ -26,8 +24,10 @@ public class OrderSearchRequest {
 
     private String q;
     
+    @EnumFallback
     private OrderStatus orderStatus;
     
+    @EnumFallback
     private PaymentStatus paymentStatus;
 
     private LocalDateTime createdFrom;
@@ -53,11 +53,15 @@ public class OrderSearchRequest {
     }
 
     public void setCreatedFrom(LocalDate date) {
-        createdFrom = date.atStartOfDay();
+        if (date != null) {
+            this.createdFrom = date.atStartOfDay();
+        }
     }
 
     public void setCreatedTo(LocalDate date) {
-        createdTo = date.atTime(LocalTime.MAX).truncatedTo(ChronoUnit.SECONDS);
+        if (date != null) {
+            this.createdTo = date.plusDays(1).atStartOfDay();
+        }
     }
 
     public String getKeyword() {

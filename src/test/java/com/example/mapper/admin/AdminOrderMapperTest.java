@@ -19,7 +19,6 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
 import com.example.dto.admin.AdminOrderDetailDto;
@@ -30,7 +29,7 @@ import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
 import com.example.mapper.OrderMapper;
-import com.example.request.admin.OrderSearchRequest;
+import com.example.request.admin.AdminOrderSearchRequest;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.OrderTestFactory;
 import com.example.testUtil.TestDataFactory;
@@ -53,8 +52,6 @@ class AdminOrderMapperTest {
     @Autowired
     TestDataFactory factory;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Nested
     class Count {
@@ -70,10 +67,10 @@ class AdminOrderMapperTest {
         @ParameterizedTest
         @MethodSource("provideSingleFilterAndBoundaryCases")
         void count_singleFilterAndBoundary(Consumer<TestDataFactory> insertMismatch,
-                Consumer<OrderSearchRequest> customizeReq, int expected) {
+                Consumer<AdminOrderSearchRequest> customizeReq, int expected) {
             insertMismatch.accept(factory);
 
-            OrderSearchRequest req = new OrderSearchRequest();
+            AdminOrderSearchRequest req = new AdminOrderSearchRequest();
             customizeReq.accept(req);
             int a = adminOrderMapper.count(req);
 
@@ -81,13 +78,12 @@ class AdminOrderMapperTest {
         }
 
         static Stream<Arguments> provideSingleFilterAndBoundaryCases() {
-            String userId = "111e8400-e29b-41d4-a716-446655440111";
             return Stream.of(
                     // フィルタなし
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                             })),
-                            (Consumer<OrderSearchRequest>) o -> {
+                            (Consumer<AdminOrderSearchRequest>) o -> {
                             },
                             2),
                     // keyword
@@ -95,7 +91,7 @@ class AdminOrderMapperTest {
                             (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                                 o.setName("笠谷 花子");
                             })),
-                            (Consumer<OrderSearchRequest>) o -> {
+                            (Consumer<AdminOrderSearchRequest>) o -> {
                                 o.setQ("笠谷");
                             },
                             1),
@@ -104,7 +100,7 @@ class AdminOrderMapperTest {
                             (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                                 o.setOrderStatus(OrderStatus.COMPLETED);
                             })),
-                            (Consumer<OrderSearchRequest>) o -> {
+                            (Consumer<AdminOrderSearchRequest>) o -> {
                                 o.setOrderStatus(OrderStatus.COMPLETED);
                             },
                             1),
@@ -113,7 +109,7 @@ class AdminOrderMapperTest {
                             (Consumer<TestDataFactory>) f -> f.createOrder(OrderTestFactory.buildOrder(o -> {
                                 o.setPaymentStatus(PaymentStatus.PAID);
                             })),
-                            (Consumer<OrderSearchRequest>) o -> {
+                            (Consumer<AdminOrderSearchRequest>) o -> {
                                 o.setPaymentStatus(PaymentStatus.PAID);
                             },
                             1),
@@ -122,14 +118,14 @@ class AdminOrderMapperTest {
                             (Consumer<TestDataFactory>) f -> f.createOrder(
                                     OrderTestFactory
                                             .buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2018, 1, 1, 10, 3, 4)))),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2019, 3, 3)),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createOrder(
                                     OrderTestFactory
                                             .buildOrder(o -> o.setCreatedAt(LocalDateTime.of(2022, 4, 2, 10, 3, 4)))),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2022, 4, 1)),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
 
                     // 境界値
@@ -139,14 +135,14 @@ class AdminOrderMapperTest {
                                     .createOrder(
                                             OrderTestFactory.buildOrder(
                                                     o -> o.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59, 59)))),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
                                             OrderTestFactory.buildOrder(
                                                     o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0)))),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             2),
                     // createdTo
                     Arguments.of(
@@ -154,14 +150,14 @@ class AdminOrderMapperTest {
                                     .createOrder(
                                             OrderTestFactory.buildOrder(
                                                     o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0, 0)))),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(
                                             OrderTestFactory.buildOrder(
                                                     o -> o.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
-                            (Consumer<OrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             2));
         }
 
@@ -169,11 +165,11 @@ class AdminOrderMapperTest {
         @MethodSource("provideKeywordCases")
         void countProducts_keywordFilter(
                 Consumer<TestDataFactory> insertMatching,
-                Consumer<OrderSearchRequest> customizeReq,
+                Consumer<AdminOrderSearchRequest> customizeReq,
                 int expected) {
             insertMatching.accept(factory);
 
-            OrderSearchRequest req = new OrderSearchRequest();
+            AdminOrderSearchRequest req = new AdminOrderSearchRequest();
             customizeReq.accept(req);
 
             assertThat(adminOrderMapper.count(req)).isEqualTo(expected);
@@ -185,19 +181,19 @@ class AdminOrderMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(OrderTestFactory.buildOrder(o -> o.setName("笠谷 花子"))),
-                            (Consumer<OrderSearchRequest>) o -> o.setQ("笠谷花"),
+                            (Consumer<AdminOrderSearchRequest>) o -> o.setQ("笠谷花"),
                             1),
                     // orderNumber
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(OrderTestFactory.buildOrder(o -> o.setOrderNumber(2000))),
-                            (Consumer<OrderSearchRequest>) r -> r.setQ("200"),
+                            (Consumer<AdminOrderSearchRequest>) r -> r.setQ("200"),
                             1),
                     // 不一致
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(OrderTestFactory.buildOrder(o -> o.setName("NMH"))),
-                            (Consumer<OrderSearchRequest>) r -> r.setQ("nbs"),
+                            (Consumer<AdminOrderSearchRequest>) r -> r.setQ("nbs"),
                             0));
         }
     }

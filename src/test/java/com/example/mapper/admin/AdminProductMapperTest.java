@@ -24,11 +24,10 @@ import org.springframework.test.context.jdbc.Sql;
 
 import com.example.dto.admin.AdminProductDto;
 import com.example.entity.Product;
-import com.example.entity.view.ProductCoreView;
 import com.example.enums.ProductSortField;
 import com.example.enums.SaleStatus;
 import com.example.enums.SortDirection;
-import com.example.request.admin.ProductSearchRequest;
+import com.example.request.admin.AdminProductSearchRequest;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
@@ -58,10 +57,10 @@ class AdminProductMapperTest {
         @ParameterizedTest
         @MethodSource("provideSingleFilterAndBoundaryCases")
         void countProducts_singleFilterAndBoundary(Consumer<TestDataFactory> insertMismatch,
-                Consumer<ProductSearchRequest> customizeReq, int expected) {
+                Consumer<AdminProductSearchRequest> customizeReq, int expected) {
             insertMismatch.accept(factory);
 
-            ProductSearchRequest req = new ProductSearchRequest() {
+            AdminProductSearchRequest req = new AdminProductSearchRequest() {
                 {
                     setSortFIeld(ProductSortField.UPDATED_AT);
                     setSortDirection(SortDirection.DESC);
@@ -80,124 +79,148 @@ class AdminProductMapperTest {
                                 p.setProductName("DifferentProduct");
                                 p.setStatus(SaleStatus.PUBLISHED);
                             })),
-                            (Consumer<ProductSearchRequest>) r -> {
+                            (Consumer<AdminProductSearchRequest>) r -> {
                             },
                             2),
                     // keyword
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(buildProduct(p -> p.setProductName("apple"))),
-                            (Consumer<ProductSearchRequest>) r -> r.setQ("tem"),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setQ("tem"),
                             1),
                     // minPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(200))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinPrice(300),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMinPrice(300),
                             1),
                     // maxPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(3000))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(2000),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMaxPrice(2000),
                             1),
                     // minStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(50))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(70),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMinAvailable(70),
                             1),
                     // maxStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(200))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(150),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMaxAvailable(150),
                             1),
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2018, 1, 1, 0, 0)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2019, 3, 3)),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2023, 1, 1, 0, 0)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2022, 4, 1)),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2018, 1, 1, 0, 0)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2019, 12, 26)),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2019, 12, 26)),
                             1),
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2022, 1, 1, 0, 0)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 7, 1)),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 7, 1)),
                             1),
                     // status
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(buildProduct(p -> p.setStatus(SaleStatus.UNPUBLISHED))),
-                            (Consumer<ProductSearchRequest>) r -> r.setStatus(SaleStatus.PUBLISHED),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setStatus(SaleStatus.PUBLISHED),
                             1),
 
                     // 境界値
                     // minPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(999))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinPrice(1000),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMinPrice(1000),
                             1),
                     // maxPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(1001))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxPrice(1000),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMaxPrice(1000),
                             1),
                     // minStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(99))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMinAvailable(100),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMinAvailable(100),
                             1),
                     // maxStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(101))),
-                            (Consumer<ProductSearchRequest>) r -> r.setMaxAvailable(100),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setMaxAvailable(100),
                             1),
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
+                                            buildProduct(
+                                                    p -> p.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59, 59)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
+                    Arguments.of(
+                            (Consumer<TestDataFactory>) f -> f
+                                    .createProduct(
+                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
+                            2),
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(
-                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 1)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
+                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
+                    Arguments.of(
+                            (Consumer<TestDataFactory>) f -> f
+                                    .createProduct(
+                                            buildProduct(
+                                                    p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
+                            2),
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2019, 1, 1, 0, 0)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 2, 23, 59, 59)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
                             1),
+                    Arguments.of(
+                            (Consumer<TestDataFactory>) f -> f.createProduct(
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 0, 0)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
+                            2),
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
-                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2022, 1, 1, 0, 0)))),
-                            (Consumer<ProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
-                            1));
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 4, 0, 0)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
+                            1),
+                    Arguments.of(
+                            (Consumer<TestDataFactory>) f -> f.createProduct(
+                                    buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 23, 59, 59)))),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
+                            2));
         }
 
         @ParameterizedTest
         @MethodSource("provideKeywordCases")
         void countProducts_keywordFilter(
                 Consumer<TestDataFactory> insertMatching,
-                Consumer<ProductSearchRequest> customizeReq,
+                Consumer<AdminProductSearchRequest> customizeReq,
                 int expected) {
             insertMatching.accept(factory);
 
-            ProductSearchRequest req = new ProductSearchRequest() {
+            AdminProductSearchRequest req = new AdminProductSearchRequest() {
                 {
                     setSortFIeld(ProductSortField.UPDATED_AT);
                     setSortDirection(SortDirection.DESC);
@@ -214,19 +237,19 @@ class AdminProductMapperTest {
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {
                             })),
-                            (Consumer<ProductSearchRequest>) r -> r.setQ("2"),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setQ("2"),
                             1),
                     // productName
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(buildProduct(p -> p.setProductName("apple"))),
-                            (Consumer<ProductSearchRequest>) r -> r.setQ("le"),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setQ("le"),
                             1),
                     // 複数ワード
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createProduct(buildProduct(p -> p.setProductName("NMH"))),
-                            (Consumer<ProductSearchRequest>) r -> r.setQ("1 N"),
+                            (Consumer<AdminProductSearchRequest>) r -> r.setQ("1 N"),
                             2));
         }
     }
@@ -244,7 +267,7 @@ class AdminProductMapperTest {
             }));
             factory.createProduct(buildProduct(p -> p.setProductName("えおい")));
 
-            ProductSearchRequest req = new ProductSearchRequest();
+            AdminProductSearchRequest req = new AdminProductSearchRequest();
             req.setStatus(SaleStatus.PUBLISHED);
             req.setSortFIeld(ProductSortField.NAME);
             req.setSortDirection(SortDirection.DESC);
@@ -271,7 +294,7 @@ class AdminProductMapperTest {
                 p.setStatus(SaleStatus.PUBLISHED);
             }));
 
-            ProductSearchRequest req = new ProductSearchRequest();
+            AdminProductSearchRequest req = new AdminProductSearchRequest();
             req.setSortFIeld(ProductSortField.PRICE);
             req.setSortDirection(SortDirection.ASC);
 

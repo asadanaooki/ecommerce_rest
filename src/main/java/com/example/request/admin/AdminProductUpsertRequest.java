@@ -13,7 +13,7 @@ import com.example.enums.SaleStatus;
 import lombok.Data;
 
 @Data
-public class ProductUpsertRequest {
+public class AdminProductUpsertRequest {
     /* TODO
      * image→NULLを削除マークにしない。そもそも、現状削除処理実装されてない
      * isValidForPublishメソッド

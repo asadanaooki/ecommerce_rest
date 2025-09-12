@@ -33,22 +33,22 @@
       AND f.user_id = #{userId}
     </if>
     WHERE v.<include refid="common.OnlyPublished"/>
-    <if test="keywords.size() > 0">
+    <if test="req.keywords.size() > 0">
       AND (
-      <foreach collection="keywords" item="kw" separator="OR ">
+      <foreach collection="req.keywords" item="kw" separator="OR ">
         v.product_name LIKE CONCAT('%', #{kw}, '%')
       </foreach>
       )
     </if>
     ORDER BY
     <choose>
-      <when test="sort.name() == 'NEW'">
+      <when test="req.sort.name().equals('NEW')">
         v.created_at DESC 
       </when>
-      <when test="sort.name() == 'HIGH'">
+      <when test="req.sort.name().equals('HIGH')">
         v.price_incl DESC 
       </when>
-      <when test="sort.name() == 'LOW'">
+      <when test="req.sort.name().equals('LOW')">
         v.price_incl ASC 
       </when>
     </choose>
@@ -60,9 +60,9 @@
     SELECT COUNT(*)
     FROM product
     WHERE <include refid="common.OnlyPublished"/>
-    <if test="keywords.size() > 0">
+    <if test="req.keywords.size() > 0">
       AND (
-      <foreach collection="keywords" item="kw" separator="AND ">
+      <foreach collection="req.keywords" item="kw" separator="AND ">
         product_name LIKE CONCAT('%', #{kw}, '%')
       </foreach>
       )

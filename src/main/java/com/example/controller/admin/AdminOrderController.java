@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.dto.admin.AdminFileDto;
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderListDto;
-import com.example.request.admin.OrderEditRequest;
-import com.example.request.admin.OrderSearchRequest;
+import com.example.request.admin.AdminOrderEditRequest;
+import com.example.request.admin.AdminOrderSearchRequest;
 import com.example.service.OrderCommandService;
 import com.example.service.admin.AdminOrderService;
 import com.example.validation.constraint.HexUuid;
@@ -47,7 +47,7 @@ public class AdminOrderController {
     private final OrderCommandService orderCommandService;
 
     @GetMapping
-    public ResponseEntity<AdminOrderListDto> search(@Valid OrderSearchRequest req) {
+    public ResponseEntity<AdminOrderListDto> search(@Valid AdminOrderSearchRequest req) {
         AdminOrderListDto dto = adminOrderService.search(req);
 
         return ResponseEntity.ok(dto);
@@ -62,7 +62,7 @@ public class AdminOrderController {
 
     @PatchMapping("/{orderId}/edit")
     public ResponseEntity<Void> edit(@PathVariable @HexUuid @NotBlank String orderId,
-            @Valid @RequestBody OrderEditRequest req) {
+            @Valid @RequestBody AdminOrderEditRequest req) {
         adminOrderService.editOrder(orderId, req);
 
         return ResponseEntity.ok().build();

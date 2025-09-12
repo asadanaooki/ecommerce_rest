@@ -49,7 +49,7 @@ import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
-import com.example.request.admin.OrderEditRequest;
+import com.example.request.admin.AdminOrderEditRequest;
 import com.example.service.admin.AdminOrderService.DeliveryNoteRow;
 import com.example.service.admin.AdminOrderService.DeliveryNoteView;
 import com.example.service.admin.AdminOrderService.ReceiptView;
@@ -122,7 +122,7 @@ class AdminOrderServiceTest {
             user.setEmail("user@example.com");
             when(userMapper.selectUserByPrimaryKey(userId)).thenReturn(user);
 
-            OrderEditRequest req = new OrderEditRequest() {
+            AdminOrderEditRequest req = new AdminOrderEditRequest() {
                 {
                     setItems(Map.of("p1", 3, "p2", 1)); // Only items with quantity changes
                     setDeleted(List.of("p4", "p5"));
@@ -191,7 +191,7 @@ class AdminOrderServiceTest {
             user.setEmail("user@example.com");
             when(userMapper.selectUserByPrimaryKey(userId)).thenReturn(user);
 
-            OrderEditRequest req = new OrderEditRequest() {
+            AdminOrderEditRequest req = new AdminOrderEditRequest() {
                 {
                     setItems(Map.of("p3", 1));
                 }
@@ -230,7 +230,7 @@ class AdminOrderServiceTest {
                 }
             };
             doReturn(order).when(orderMapper).selectOrderByPrimaryKey(orderId);
-            OrderEditRequest req = new OrderEditRequest();
+            AdminOrderEditRequest req = new AdminOrderEditRequest();
 
             assertThatThrownBy(() -> adminOrderService.editOrder(orderId, req))
                     .isInstanceOf(ResponseStatusException.class)
@@ -259,7 +259,7 @@ class AdminOrderServiceTest {
             doReturn(order).when(orderMapper).selectOrderByPrimaryKey(orderId);
             doReturn(List.of(oldItem)).when(orderMapper).selectOrderItems(orderId);
 
-            OrderEditRequest req = new OrderEditRequest() {
+            AdminOrderEditRequest req = new AdminOrderEditRequest() {
                 {
                     setItems(Map.of("p1", 6));
                 }

@@ -26,8 +26,8 @@ import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.admin.AdminProductMapper;
-import com.example.request.admin.ProductSearchRequest;
-import com.example.request.admin.ProductUpsertRequest;
+import com.example.request.admin.AdminProductSearchRequest;
+import com.example.request.admin.AdminProductUpsertRequest;
 import com.example.util.PaginationUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -62,7 +62,7 @@ public class AdminProductService {
     private final Path IMAGE_DIR = Paths
             .get("C:/pleiades/2024-06/ecommerce/ecommerce_rest/src/main/resources/static/images");
 
-    public AdminProductListDto searchProducts(ProductSearchRequest req) {
+    public AdminProductListDto searchProducts(AdminProductSearchRequest req) {
         int total = adminProductMapper.countProducts(req);
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
 
@@ -91,7 +91,7 @@ public class AdminProductService {
     }
 
     @Transactional
-    public void create(ProductUpsertRequest req) {
+    public void create(AdminProductUpsertRequest req) {
         IMageData data = preprocessImage(req.getImage());
         String productId = UUID.randomUUID().toString();
 
@@ -113,7 +113,7 @@ public class AdminProductService {
     }
 
     @Transactional
-    public void update(String productId, ProductUpsertRequest req) {
+    public void update(String productId, AdminProductUpsertRequest req) {
         IMageData data = preprocessImage(req.getImage());
         
         Product entity = new Product();

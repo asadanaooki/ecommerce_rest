@@ -11,9 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.dto.ProductListDto;
-import com.example.enums.SortType;
 import com.example.mapper.FavoriteMapper;
 import com.example.mapper.ProductMapper;
+import com.example.request.ProductSearchRequest;
 import com.example.util.PaginationUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -39,16 +39,16 @@ public class ProductService {
     private int radius;
 
 
-    public ProductListDto searchProducts(int page, SortType sort, List<String> keywords, String userId) {
-        int offset = PaginationUtil.calculateOffset(page, pageSize);
+    public ProductListDto searchProducts(String userId, ProductSearchRequest req) {
+        int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
 
         List<ProductCardDto> products = productMapper
-                .searchProducts(new ProductMapper.SearchCondition(userId, keywords, sort, pageSize, offset));
+                .searchProducts(userId, req, pageSize, offset);
 
-        int totalCount = productMapper.countProducts(keywords);
+        int totalCount = productMapper.countProducts(req.getKeywords());
 
         int totalPage = PaginationUtil.calculateTotalPage(totalCount, pageSize);
-        List<Integer> pageNumbers = PaginationUtil.createPageNumbers(page, totalPage, radius);
+        List<Integer> pageNumbers = PaginationUtil.createPageNumbers(req.getPage(), totalPage, radius);
 
         return new ProductListDto(products, totalPage, pageNumbers);
     }

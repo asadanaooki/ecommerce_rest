@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderRowDto;
-import com.example.request.admin.OrderSearchRequest;
+import com.example.request.admin.AdminOrderSearchRequest;
 
 @Mapper
 public interface AdminOrderMapper {
@@ -19,9 +19,9 @@ public interface AdminOrderMapper {
      */
     
     
-    int count(OrderSearchRequest req);
+    int count(AdminOrderSearchRequest req);
     
-    List<AdminOrderRowDto> selectPage(OrderSearchRequest req, int limit, int offset);
+    List<AdminOrderRowDto> selectPage(AdminOrderSearchRequest req, int limit, int offset);
     
     AdminOrderDetailDto selectOrderDetail(String orderId);
     

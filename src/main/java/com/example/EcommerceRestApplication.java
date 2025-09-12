@@ -25,6 +25,8 @@ public class EcommerceRestApplication {
      * 履歴テーブルの実装
      * 冪等性→決済、在庫など必須のものにしか入れてない
      * NPE対策→selectPK系のみ実装
+     * 検索でのフォールバックで、補正する方針検討(意味のない文字を除去など ex:1a00→100)
+     * Utilクラスのリファクタリング(ドメインや技術などクラス名が統一されてない)
     */
 	public static void main(String[] args) {
 	    System.out.println("=== JVM 情報 ===");

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dto.admin.AdminProductDetailDto;
 import com.example.dto.admin.AdminProductListDto;
-import com.example.request.admin.ProductSearchRequest;
-import com.example.request.admin.ProductUpsertRequest;
+import com.example.request.admin.AdminProductSearchRequest;
+import com.example.request.admin.AdminProductUpsertRequest;
 import com.example.service.admin.AdminProductService;
 import com.example.validation.constraint.HexUuid;
 
@@ -32,7 +32,7 @@ public class AdminProductController {
     private final AdminProductService adminProductService;
 
     @GetMapping
-    public ResponseEntity<AdminProductListDto> searchProducts(@Valid ProductSearchRequest req) {
+    public ResponseEntity<AdminProductListDto> searchProducts(@Valid AdminProductSearchRequest req) {
         AdminProductListDto dto = adminProductService.searchProducts(req);
 
         return ResponseEntity.ok(dto);
@@ -46,7 +46,7 @@ public class AdminProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> register(@Valid ProductUpsertRequest req) {
+    public ResponseEntity<Void> register(@Valid AdminProductUpsertRequest req) {
         adminProductService.create(req);
 
         return ResponseEntity.ok().build();
@@ -54,7 +54,7 @@ public class AdminProductController {
 
     @PutMapping("/{productId}")
     public ResponseEntity<Void> update(@PathVariable @HexUuid @NotBlank String productId,
-            @Valid ProductUpsertRequest req) {
+            @Valid AdminProductUpsertRequest req) {
         adminProductService.update(productId, req);
 
         return ResponseEntity.ok().build();

@@ -27,13 +27,13 @@
         AND created_at &gt;= #{createdFrom} 
       </if>
       <if test="createdTo != null">
-        AND created_at &lt;= #{createdTo} 
+        AND created_at &lt; #{createdTo} 
       </if>
       <if test="updatedFrom != null">
         AND updated_at &gt;= #{updatedFrom} 
       </if>
       <if test="updatedTo != null">
-        AND updated_at &lt;= #{updatedTo} 
+        AND updated_at &lt; #{updatedTo} 
       </if>
       <if test="status != null">
         AND status = #{status}
@@ -74,13 +74,13 @@
         AND created_at &gt;= #{req.createdFrom}
       </if>
       <if test="req.createdTo != null">
-        AND created_at &lt;= #{req.createdTo}
+        AND created_at &lt; #{req.createdTo}
       </if>
       <if test="req.updatedFrom != null">
         AND updated_at &gt;= #{req.updatedFrom}
       </if>
       <if test="req.updatedTo != null">
-        AND updated_at &lt;= #{req.updatedTo}
+        AND updated_at &lt; #{req.updatedTo}
       </if>
       <if test="req.status != null">
         AND status = #{req.status}

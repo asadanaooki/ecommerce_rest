@@ -22,7 +22,7 @@ import com.example.enums.InventorySortField;
 import com.example.enums.SaleStatus;
 import com.example.enums.SortDirection;
 import com.example.enums.StockStatus;
-import com.example.request.admin.InventorySearchRequest;
+import com.example.request.admin.AdminInventorySearchRequest;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.testUtil.TestDataFactory;
 
@@ -103,7 +103,7 @@ class AdminInventoryMapperTest {
 
     @ParameterizedTest
     @MethodSource("provideArguments")
-    void search(InventorySearchRequest req, List<String> expected) {
+    void search(AdminInventorySearchRequest req, List<String> expected) {
         List<AdminInventoryRowDto> list = adminInventoryMapper.search(req, THRESHOLD, 100, 0);
 
         assertThat(list).extracting(AdminInventoryRowDto::getProductId)
@@ -116,7 +116,7 @@ class AdminInventoryMapperTest {
                 // フィルター
                 // minAvailable
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setMinAvailable(12);
                             }
@@ -124,7 +124,7 @@ class AdminInventoryMapperTest {
                         List.of("p5")),
                 // maxAvailable
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setMaxAvailable(13);
                             }
@@ -132,7 +132,7 @@ class AdminInventoryMapperTest {
                         List.of("p1", "p2", "p3", "p4")),
                 // stockStatus OUT_OF_STOCK
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setStockStatus(StockStatus.OUT_OF_STOCK);
                             }
@@ -140,7 +140,7 @@ class AdminInventoryMapperTest {
                         List.of("p1")),
                 // stockStatus LOW_STOCK 閾値の境界も同時に検証
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setStockStatus(StockStatus.LOW_STOCK);
                             }
@@ -148,7 +148,7 @@ class AdminInventoryMapperTest {
                         List.of("p2", "p3")),
                 // stockStatus IN_STOCK 閾値の境界も同時に検証
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setStockStatus(StockStatus.IN_STOCK);
                             }
@@ -156,7 +156,7 @@ class AdminInventoryMapperTest {
                         List.of("p4", "p5")),
                 // 複合フィルタ
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setMinAvailable(13);
                                 setMaxAvailable(20);
@@ -167,7 +167,7 @@ class AdminInventoryMapperTest {
                 // 境界値
                 // minAvailable
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setMinAvailable(10);
                             }
@@ -175,7 +175,7 @@ class AdminInventoryMapperTest {
                         List.of("p3", "p4", "p5")),
                 // maxAvailable
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setMaxAvailable(10);
                             }
@@ -185,7 +185,7 @@ class AdminInventoryMapperTest {
                 // ソート
                 // stockStatus 二次ソートも同時検証
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setSortField(InventorySortField.STATUS);
                                 setSortDirection(SortDirection.ASC);
@@ -194,7 +194,7 @@ class AdminInventoryMapperTest {
                         List.of("p1", "p2", "p3", "p4", "p5")),
                 // stockStatus 二次ソートも同時検証
                 Arguments.of(
-                        new InventorySearchRequest() {
+                        new AdminInventorySearchRequest() {
                             {
                                 setSortField(InventorySortField.PRICE);
                                 setSortDirection(SortDirection.DESC);

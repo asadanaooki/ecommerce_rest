@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class OrderEditRequest {
+public class AdminOrderEditRequest {
 
     @NotEmpty
     private Map<@NotBlank String,@NotNull @Min(1) Integer> items = Collections.EMPTY_MAP;

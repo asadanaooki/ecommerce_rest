@@ -8,21 +8,21 @@ import com.example.dto.ProductCardDto;
 import com.example.dto.ProductDetailDto;
 import com.example.entity.Product;
 import com.example.entity.view.ProductCoreView;
-import com.example.enums.SortType;
+import com.example.request.ProductSearchRequest;
 
 @Mapper
 public interface ProductMapper {
     /* TODO:
      * searchProductsで外部結合とサブクエリの速度比較
-     * searchProductsをAND検索にする
-     * クエリでstatus = '1'を良い書き方にしたい
+     * searchProductsの引数まとめるか検討
     */
 
     Product selectByPrimaryKey(String productId);
     
     ProductCoreView selectViewByPrimaryKey(String productId);
 
-    List<ProductCardDto> searchProducts(SearchCondition sc);
+    List<ProductCardDto> searchProducts(String userId, ProductSearchRequest req,
+            int limit, int offset);
 
     int countProducts(List<String> keywords);
 
@@ -32,10 +32,4 @@ public interface ProductMapper {
     
     int decreaseStock(String productId, int qty, Integer version);
 
-    record SearchCondition(String userId,
-            List<String> keywords,
-            SortType sort,
-            int size,
-            int offset) {
-    }
 }

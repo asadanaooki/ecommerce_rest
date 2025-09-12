@@ -11,13 +11,14 @@ import com.example.enums.StockStatus;
 import lombok.Data;
 
 @Data
-public class InventorySearchRequest {
+public class AdminInventorySearchRequest {
 
     @Min(0)
     private Integer minAvailable;
     
     private Integer maxAvailable;
 
+    @EnumFallback
     private StockStatus stockStatus;
 
     @EnumFallback("UPDATED_AT")

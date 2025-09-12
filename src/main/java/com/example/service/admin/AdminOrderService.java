@@ -44,8 +44,8 @@ import com.example.mapper.OrderMapper;
 import com.example.mapper.ProductMapper;
 import com.example.mapper.UserMapper;
 import com.example.mapper.admin.AdminOrderMapper;
-import com.example.request.admin.OrderEditRequest;
-import com.example.request.admin.OrderSearchRequest;
+import com.example.request.admin.AdminOrderEditRequest;
+import com.example.request.admin.AdminOrderSearchRequest;
 import com.example.support.MailGateway;
 import com.example.util.OrderUtil;
 import com.example.util.PaginationUtil;
@@ -100,7 +100,7 @@ public class AdminOrderService {
     
     private static final String CSV_EXTENSION = ".csv";
 
-    public AdminOrderListDto search(OrderSearchRequest req) {
+    public AdminOrderListDto search(AdminOrderSearchRequest req) {
         int offset = PaginationUtil.calculateOffset(req.getPage(), pageSize);
 
         List<AdminOrderRowDto> content = adminOrderMapper.selectPage(req, pageSize, offset);
@@ -114,7 +114,7 @@ public class AdminOrderService {
     }
 
     @Transactional
-    public void editOrder(String orderId, OrderEditRequest req) {
+    public void editOrder(String orderId, AdminOrderEditRequest req) {
         // 準備
         Order o = orderMapper.selectOrderByPrimaryKey(orderId);
         EditContext ctx = prepareContext(o, req);
@@ -245,7 +245,7 @@ public class AdminOrderService {
         }
     }
 
-    private EditContext prepareContext(Order order, OrderEditRequest req) {
+    private EditContext prepareContext(Order order, AdminOrderEditRequest req) {
 
         if (!(order.getPaymentStatus() == PaymentStatus.UNPAID
                 && order.getShippingStatus() == ShippingStatus.UNSHIPPED)) {

@@ -1,4 +1,4 @@
-package com.example.bind;
+package com.example.bind.editor;
 
 import java.beans.PropertyEditorSupport;
 

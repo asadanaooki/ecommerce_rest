@@ -1,6 +1,6 @@
 package com.example.enums;
 
-public enum SortType {
+public enum ProductSortOption {
     NEW,
     HIGH,
     LOW
