@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
 
-import com.example.json.annotation.NormalizeEmail;
+import com.example.bind.annotation.NormalizeEmail;
 import com.example.validation.constraint.EmailFormat;
 
 import lombok.Data;

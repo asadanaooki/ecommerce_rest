@@ -1,11 +1,11 @@
-package com.example.json.annotation;
+package com.example.bind.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.example.json.deserializer.NormalizingEmailDeserializer;
+import com.example.bind.deserializer.NormalizingEmailDeserializer;
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -26,7 +25,6 @@ import com.example.enums.order.RejectReason;
 import com.example.enums.review.ReviewEvent;
 import com.example.enums.review.ReviewStatus;
 import com.example.feature.review.ReviewGuard;
-import com.example.feature.review.ReviewState;
 import com.example.feature.user.UserGuard;
 import com.example.mapper.ReviewMapper;
 import com.example.mapper.UserMapper;
@@ -45,12 +43,6 @@ class ReviewCommandServiceTest {
     UserMapper userMapper;
     
     @Mock
-    ReviewGuard reviewGuard;
-    
-    @Mock
-    UserGuard userGuard;
-    
-    @Mock
     MailGateway gateway;
     
     @InjectMocks
@@ -64,6 +56,11 @@ class ReviewCommandServiceTest {
     
     @BeforeEach
     void setup() {
+        ReviewGuard reviewGuard = spy(new ReviewGuard(reviewMapper));
+        UserGuard userGuard = spy(new UserGuard(userMapper));
+        ReflectionTestUtils.setField(reviewCommandService, "reviewGuard", reviewGuard);
+        ReflectionTestUtils.setField(reviewCommandService, "userGuard", userGuard);
+        
         user = new User();
         user.setUserId(userId);
         user.setNickname("yamada");
@@ -78,11 +75,9 @@ class ReviewCommandServiceTest {
         review.setTitle("title");
         review.setReviewText("text");
         
-       lenient().doReturn(user).when(userGuard).require(userId);
-       lenient().doReturn(review).when(reviewGuard).require(productId, userId);
        lenient().doReturn(user).when(userMapper).selectUserByPrimaryKey(userId);
-       lenient().doReturn(review).when(reviewMapper).selectByPrimaryKey(productId, userId);
        lenient().doReturn(true).when(reviewMapper).hasPurchased(userId, productId);
+       lenient().doReturn(review).when(reviewMapper).selectByPrimaryKey(productId, userId);
        lenient().doReturn(1).when(reviewMapper).updateByEvent(any());
     }
 
@@ -115,7 +110,7 @@ class ReviewCommandServiceTest {
         }
         
         @Test
-        void submit_noPurchaser() {
+        void submit_notPurchaser() {
             doReturn(false).when(reviewMapper).hasPurchased(userId, productId);
             assertThatThrownBy(() -> {
                 reviewCommandService.submit(productId, userId, req);
@@ -153,8 +148,6 @@ class ReviewCommandServiceTest {
         void submit_again() {
             review.setStatus(ReviewStatus.REJECTED);
             review.setRejectReason(RejectReason.SPAM);
-            doReturn(review).when(reviewMapper).selectByPrimaryKey(productId, userId);
-            doReturn(new ReviewState(ReviewStatus.PENDING)).when(reviewGuard).next(any(ReviewState.class), eq(ReviewEvent.SUBMIT));
             
             reviewCommandService.submit(productId, userId, req);
             
@@ -184,7 +177,6 @@ class ReviewCommandServiceTest {
         @Test
         void approve_success() {
             review.setStatus(ReviewStatus.PENDING);
-            doReturn(new ReviewState(ReviewStatus.APPROVED)).when(reviewGuard).next(any(ReviewState.class), eq(ReviewEvent.APPROVE));
             
             reviewCommandService.approve(productId, userId);
             
@@ -210,7 +202,6 @@ class ReviewCommandServiceTest {
         @Test
         void approve_stateInvalid() {
             review.setStatus(ReviewStatus.APPROVED);
-            doThrow(new IllegalStateException("Invalid state transition")).when(reviewGuard).next(any(), eq(ReviewEvent.APPROVE));
             
             assertThatThrownBy(() -> reviewCommandService.approve(productId, userId))
             .isInstanceOf(ResponseStatusException.class)
@@ -227,7 +218,6 @@ class ReviewCommandServiceTest {
         void approve_updateConflict() {
             doReturn(0).when(reviewMapper).updateByEvent(any());
             review.setStatus(ReviewStatus.PENDING);
-            doReturn(new ReviewState(ReviewStatus.APPROVED)).when(reviewGuard).next(any(ReviewState.class), eq(ReviewEvent.APPROVE));
             
             assertThatThrownBy(() -> reviewCommandService.approve(productId, userId))
             .isInstanceOf(ResponseStatusException.class)
@@ -245,7 +235,6 @@ class ReviewCommandServiceTest {
         @Test
         void reject() {
             review.setStatus(ReviewStatus.PENDING);
-            doReturn(new ReviewState(ReviewStatus.REJECTED)).when(reviewGuard).next(any(ReviewState.class), eq(ReviewEvent.REJECT));
             
             RejectReviewRequest req = new RejectReviewRequest();
             req.setReason(RejectReason.SPAM);

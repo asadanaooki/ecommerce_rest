@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 
-import com.example.json.annotation.NormalizeEmail;
+import com.example.bind.annotation.NormalizeEmail;
 import com.example.validation.constraint.EmailFormat;
 
 import lombok.Data;

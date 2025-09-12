@@ -1,22 +1,24 @@
-package com.example.json.deserializer;
+package com.example.bind.deserializer;
 
 import java.io.IOException;
+import java.text.Normalizer;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 
-public class TrimToNullDeserializer extends JsonDeserializer<String> {
+public class NormalizingEmailDeserializer extends JsonDeserializer<String> {
 
     @Override
     public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-        String v = p.getValueAsString();
-        if (v == null) {
+        String s = p.getValueAsString();
+        if (s == null) {
             return null;
         }
-        v = v.strip();
-        return v.isEmpty() ? null : v;
+        
+        return Normalizer.normalize(s.strip(), Normalizer.Form.NFKC)
+                .toLowerCase();
     }
 
 }

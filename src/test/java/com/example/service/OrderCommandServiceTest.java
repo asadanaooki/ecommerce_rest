@@ -24,8 +24,8 @@ import com.example.enums.order.OrderEvent;
 import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
-import com.example.feature.order.OrderState;
 import com.example.feature.order.OrderGuard;
+import com.example.feature.order.OrderState;
 import com.example.mapper.IdempotencyMapper;
 import com.example.mapper.OrderMapper;
 import com.example.mapper.UserMapper;
@@ -44,9 +44,6 @@ class OrderCommandServiceTest {
 
     @Mock
     UserMapper userMapper;
-
-    @Mock
-    OrderGuard guard;
 
     @Mock
     OrderGuard orderGuard;
@@ -70,7 +67,6 @@ class OrderCommandServiceTest {
         IdempotentExecutor executor = new IdempotentExecutor(mock(IdempotencyMapper.class));
         ReflectionTestUtils.setField(sut, "executor", executor);
         
-        ReflectionTestUtils.setField(sut, "guard", guard);
         ReflectionTestUtils.setField(sut, "orderGuard", orderGuard);
 
         before = new Order() {
@@ -106,7 +102,7 @@ class OrderCommandServiceTest {
         // 1回目（apply前の参照）: before, 2回目（メール作成等で再取得）: after
         lenient().doReturn(before, after).when(orderMapper).selectOrderByPrimaryKey(anyString());
         doReturn(before).when(orderGuard).require(anyString());
-        lenient().doReturn(next).when(guard).next(any(), any(OrderEvent.class));
+        lenient().doReturn(next).when(orderGuard).next(any(), any(OrderEvent.class));
         lenient().doReturn(1).when(orderMapper).applyTransition(anyString(), any(), any());
         lenient().doReturn(Collections.<OrderItem> emptyList()).when(orderMapper).selectOrderItems(anyString());
         lenient().doReturn(new User() {
@@ -179,7 +175,7 @@ class OrderCommandServiceTest {
 
         @Test
         void ship_transitionNotAllowed_returns409WithReason() {
-            doThrow(new IllegalStateException("error")).when(guard).next(any(), any());
+            doThrow(new IllegalStateException("error")).when(orderGuard).next(any(), any());
 
             assertThatThrownBy(() -> sut.ship(ORDER_ID, key))
                     .isInstanceOf(ResponseStatusException.class)

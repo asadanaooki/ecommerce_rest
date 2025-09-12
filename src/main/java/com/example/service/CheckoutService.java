@@ -64,13 +64,13 @@ public class CheckoutService {
     private final IdempotentExecutor executor;
     
     private final CartGuard cartGuard;
+    
 
     public CheckoutConfirmDto loadCheckout(String userId) {
-        String cartId = cartMapper.selectCartByUser(userId).getCartId();
-        Cart c = cartGuard.require(cartId);
+        Cart c = cartGuard.requireByUserId(userId);
         User user = userMapper.selectUserByPrimaryKey(userId);
 
-        List<CartItemDto> items = cartMapper.selectCartItems(cartId);
+        List<CartItemDto> items = cartMapper.selectCartItems(c.getCartId());
 
         return new CheckoutConfirmDto(
                 UserUtil.buildFullName(user),

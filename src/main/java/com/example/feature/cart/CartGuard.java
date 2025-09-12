@@ -19,4 +19,9 @@ public class CartGuard {
         return GuardUtil.ensureFound(cartMapper.selectCartByPrimaryKey(cartId),
                 "CART_NOT_FOUND");
     }
+    
+    public Cart requireByUserId(String userId) {
+        return GuardUtil.ensureFound(cartMapper.selectCartByPrimaryKey(userId),
+                "CART_NOT_FOUND");
+    }
 }

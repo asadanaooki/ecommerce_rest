@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import com.example.json.annotation.NormalizeEmail;
+import com.example.bind.annotation.NormalizeEmail;
 import com.example.validation.constraint.EmailFormat;
 
 import lombok.AllArgsConstructor;

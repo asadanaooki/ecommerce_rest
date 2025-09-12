@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 
+import com.example.bind.annotation.EnumFallback;
 import com.example.enums.OrderSortField;
 import com.example.enums.SortDirection;
 import com.example.enums.order.OrderStatus;
@@ -33,8 +34,10 @@ public class OrderSearchRequest {
 
     private LocalDateTime createdTo;
 
+    @EnumFallback("CREATED_AT")
     private OrderSortField sortField = OrderSortField.CREATED_AT;
 
+    @EnumFallback("DESC")
     private SortDirection sortDirection = SortDirection.DESC;
 
     @Min(1)

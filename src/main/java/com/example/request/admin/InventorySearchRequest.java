@@ -3,6 +3,7 @@ package com.example.request.admin;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 
+import com.example.bind.annotation.EnumFallback;
 import com.example.enums.InventorySortField;
 import com.example.enums.SortDirection;
 import com.example.enums.StockStatus;
@@ -19,8 +20,10 @@ public class InventorySearchRequest {
 
     private StockStatus stockStatus;
 
+    @EnumFallback("UPDATED_AT")
     private InventorySortField sortField = InventorySortField.UPDATED_AT;
 
+    @EnumFallback("DESC")
     private SortDirection sortDirection = SortDirection.DESC;
 
     @Min(1)
