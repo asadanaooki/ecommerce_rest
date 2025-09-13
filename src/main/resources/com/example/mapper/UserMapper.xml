@@ -15,18 +15,18 @@
     <select id="selectPreRegistrationByPrimaryKey" resultType="com.example.entity.PreRegistration">
     select *
     from pre_registration
-    where token = #{token}
+    where token = #{tokenHash}
   </select>
   
   <insert id="insertPreRegistration">
     insert into pre_registration
       (token, email, expires_at)
-    values (#{token}, #{email}, #{expiresAt})
+    values (#{tokenHash}, #{email}, #{expiresAt})
   </insert>
   
   <delete id="deletePreRegistrationByPrimaryKey">
     delete from pre_registration
-    where token = #{token}
+    where token = #{tokenHash}
   </delete>
   
   <insert id="insertUser" parameterType="com.example.entity.User">
@@ -94,7 +94,7 @@
   
   <delete id="deletePasswordResetToken">
     delete from password_reset_token
-    where token_hash = #{token}
+    where token_hash = #{tokenHash}
   </delete>
   
   <update id="updatePasswordByPrimaryKey">
@@ -112,15 +112,15 @@
   <update id="saveEmailChangeRequest">
     update `user`
     set pending_email = #{newEmail},
-        email_token = #{token},
+        email_token = #{tokenHash},
         pending_expires_at = #{expiresAt}
     where user_id = #{userId}
   </update>
   
-  <select id="selectUserByToken">
+  <select id="selectUserByTokenHash">
     select *
     from `user`
-    where email_token = #{token}
+    where email_token = #{tokenHash}
   </select>
   
   <update id="confirmEmailChange">
@@ -129,7 +129,7 @@
         pending_email = NULL,
         email_token = NULL,
         pending_expires_at = NULL
-    where email_token = #{token}
+    where email_token = #{tokenHash}
   </update>
   
   <update id="updateProfile">
