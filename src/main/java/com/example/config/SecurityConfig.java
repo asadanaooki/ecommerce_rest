@@ -43,8 +43,8 @@ public class SecurityConfig {
                                 "/checkout/**",
                                 "/order-history/**"
                                 ).authenticated()
-                        .requestMatchers(HttpMethod.GET, "/profile/**").permitAll()
-                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/account/email-change").permitAll()
+                        .requestMatchers("/account/**").authenticated()
                         .anyRequest().permitAll());
 
         return http.build();

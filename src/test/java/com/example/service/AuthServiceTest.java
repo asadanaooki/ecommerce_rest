@@ -98,7 +98,7 @@ class AuthServiceTest {
                     MockedStatic<RandomTokenUtil> rnd = Mockito.mockStatic(RandomTokenUtil.class)) {
                 rnd.when(RandomTokenUtil::generate).thenReturn(fixedToken);
                 rnd.when(() -> RandomTokenUtil.hash(fixedToken)).thenReturn(hashed);
-                authService.sendRegistrationUrl(email);
+                authService.requestRegistration(email);
 
                 PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(hashed);
                 assertThat(pr.getToken()).hasSize(64);
@@ -132,7 +132,7 @@ class AuthServiceTest {
             user.setUpdatedAt(LocalDateTime.now());
             userMapper.insertUser(user);
 
-            assertThatThrownBy(() -> authService.sendRegistrationUrl(email))
+            assertThatThrownBy(() -> authService.requestRegistration(email))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.CONFLICT);
         }

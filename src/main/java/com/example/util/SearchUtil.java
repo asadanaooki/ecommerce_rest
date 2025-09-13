@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class SearchUtil {
+    /* TODO
+     * 入力値の正規化→現状、前後空白のトリミングのみ
+     */
 
     public static List<String> extractKeywords(String q){
         if (q == null || q.strip().isEmpty()) {

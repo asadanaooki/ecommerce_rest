@@ -18,7 +18,6 @@ public class OrderGuard {
     /* TODO:
      * 単調増加のテスト検討
      * 冪等性考慮→現状、エラー
-     * 許可ホワイトリスト＋全列挙ループのデータ駆動テスト検討
     */
 
     private final OrderMapper orderMapper;

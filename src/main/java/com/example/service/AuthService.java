@@ -16,23 +16,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.dto.RegistrationVerificationDto;
 import com.example.entity.PasswordResetToken;
 import com.example.entity.PreRegistration;
 import com.example.entity.User;
 import com.example.enums.MailTemplate;
-import com.example.enums.MailTemplate.EmailChangeAlertOldContext;
-import com.example.enums.MailTemplate.EmailChangeCompleteNewContext;
 import com.example.enums.MailTemplate.PasswordResetContext;
-import com.example.enums.MailTemplate.ProfileChangedContext;
 import com.example.enums.MailTemplate.RegistrationContext;
 import com.example.enums.MailTemplate.WelcomeContext;
 import com.example.error.BusinessException;
 import com.example.mapper.UserMapper;
-import com.example.request.EmailChangeRequest;
-import com.example.request.PasswordChangeRequest;
 import com.example.request.PasswordResetMailRequest;
 import com.example.request.PasswordResetUpdateRequest;
-import com.example.request.ProfileUpdateRequest;
 import com.example.request.RegisterUserRequest;
 import com.example.security.CustomUserDetails;
 import com.example.support.MailGateway;
@@ -50,7 +45,6 @@ public class AuthService {
      * 未使用トークンをバッチで削除
      * パスワードリセットで、列挙攻撃対策としてパスワード送信時にトークンチェックする？
      * ユーザーが登録アドレス忘れた場合どうするか？
-     * プロフィール編集画面開くときは、ステップアップ認証/認証フレッシュネス／max_age検討する。無印やニトリと同じ仕様
      * authenticate→認証処理をfilterに閉じ込めたほうがよいかも。今は簡単さを優先
      * パスワード再設定、ユーザー登録案内メールの再送ポリシー
      * メール送信
@@ -75,9 +69,7 @@ public class AuthService {
     @Value("${settings.reset.expire-minutes}")
     private long expireMin;
 
-    @Value("${settings.email-change.expire-minutes}")
-    private long emailExpireMin;
-
+    
     public AuthResult authenticate(String username, String password) {
         Authentication auth = manager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password));
@@ -90,7 +82,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void sendRegistrationUrl(String email) throws MessagingException {
+    public void requestRegistration(String email) throws MessagingException {
         if (userMapper.selectUserByEmail(email).isPresent()) {
             throw new BusinessException(HttpStatus.CONFLICT);
         }
@@ -108,13 +100,13 @@ public class AuthService {
         mailGateway.send(MailTemplate.REGISTRATION.build(new RegistrationContext(email, link, ttlMinutes)));
     }
 
-    public PreRegistration verify(String token) {
+    public RegistrationVerificationDto verify(String rawToken) {
         PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(
-                RandomTokenUtil.hash(token));
+                RandomTokenUtil.hash(rawToken));
         if (pr == null || pr.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BusinessException(HttpStatus.NOT_FOUND);
         }
-        return pr;
+        return new RegistrationVerificationDto(rawToken, pr.getEmail());
     }
 
     @Transactional
@@ -176,54 +168,6 @@ public class AuthService {
         userMapper.deletePasswordResetToken(hashed);
     }
 
-    public void requestEmailChange(String userId, EmailChangeRequest req) {
-        User u = userMapper.selectUserByPrimaryKey(userId);
-        if (u.getEmail().equals(req.getNewEmail())) {
-            throw new BusinessException(HttpStatus.BAD_REQUEST, "EMAIL_SAME");
-        }
-
-        if (userMapper.selectUserByEmail(req.getNewEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-
-        String token = RandomTokenUtil.generate();
-        userMapper.saveEmailChangeRequest(userId, req.getNewEmail(), RandomTokenUtil.hash(token),
-                LocalDateTime.now().plusMinutes(emailExpireMin));
-
-        String link = "http://localhost:8080/profile/email-change/complete?token=" + token;
-        mailGateway.send(
-                MailTemplate.EMAIL_CHANGE_COMPLETE_NEW
-                        .build(new EmailChangeCompleteNewContext(req.getNewEmail(), link, emailExpireMin)));
-        mailGateway.send(
-                MailTemplate.EMAIL_CHANGE_ALERT_OLD
-                        .build(new EmailChangeAlertOldContext(u.getEmail(), LocalDateTime.now())));
-    }
-
-    public void completeEmailChange(String token) {
-        User user = userMapper.selectUserByToken(RandomTokenUtil.hash(token));
-        if (user == null || user.getPendingExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-        userMapper.confirmEmailChange(RandomTokenUtil.hash(token));
-    }
-
-    public void changePassword(String userId, PasswordChangeRequest req) {
-        User user = userMapper.selectUserByPrimaryKey(userId);
-        if (!encoder.matches(req.getCurrentPassword(), user.getPasswordHash())) {
-            throw new BusinessException(HttpStatus.BAD_REQUEST, "INVALID_CURRENT_PASSWORD");
-        }
-        userMapper.updatePasswordByPrimaryKey(userId, encoder.encode(req.getNewPassword()));
-        mailGateway.send(
-                MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
-    }
-
-    public void updateProfile(String userId, ProfileUpdateRequest req) {
-        User user = userMapper.selectUserByPrimaryKey(userId);
-        userMapper.updateProfile(userId, req);
-        mailGateway.send(
-                MailTemplate.PROFILE_CHANGED.build(new ProfileChangedContext(user.getEmail(), LocalDateTime.now())));
-    }
 
     private User toUserEntity(RegisterUserRequest r, String userId) {
         User u = new User();

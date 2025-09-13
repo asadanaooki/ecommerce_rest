@@ -15,7 +15,7 @@
       <if test="req.keyword != null">
         and (
          replace(name,' ','') like concat('%', #{req.keyword}, '%')
-         or order_number like concat('%', #{req.keyword}, '%')
+         or order_number = cast(#{req.keyword} as SIGNED)
         )
       </if>
       <if test="req.orderStatus != null">
@@ -51,7 +51,7 @@
       <if test="keyword != null">
         and (
          replace(name,' ','') like concat('%', #{keyword}, '%')
-         or order_number like concat('%', #{keyword}, '%')
+         or order_number = cast(#{keyword} as SIGNED)
         )
       </if>
       <if test="orderStatus != null">

@@ -1,13 +1,13 @@
-package com.example.response;
+package com.example.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class VerifyTokenResponse {
+public class RegistrationVerificationDto {
 
-    private final String token;
+    private final String rawToken;
 
     private final String email;
 }

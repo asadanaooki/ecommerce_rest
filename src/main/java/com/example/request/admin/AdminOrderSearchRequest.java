@@ -18,8 +18,13 @@ import lombok.Data;
 public class AdminOrderSearchRequest {
     /* TODO:
      * 複数検索ワード対応、現状１語検索
+        メールアドレス（部分一致 or 前方一致）
+        電話番号（ハイフン除去して部分一致）
+        郵便番号（ハイフン除去して前方一致：例 150→1500001 を拾える）
+        住所（スペース・全半角差を無視した部分一致）
      * 検索ワードの長さ制限検討
      * 多重ソート検討
+     * getKeywordはSearchUtiを使用する
     */
 
     private String q;
@@ -64,8 +69,6 @@ public class AdminOrderSearchRequest {
         if (q == null || q.strip().isEmpty()) {
             return null;
         }
-        String noSpaces = q.replaceAll("[\\s\\p{Zs}]+", "");
-        String norm = noSpaces.replaceFirst("^0+", "");
-        return norm.isEmpty() ? "0" : norm;
+        return q.replaceAll("[\\s\\p{Zs}]+", "");
     }
 }

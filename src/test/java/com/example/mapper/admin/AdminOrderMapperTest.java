@@ -185,10 +185,15 @@ class AdminOrderMapperTest {
                                     .createOrder(OrderTestFactory.buildOrder(o -> o.setName("笠谷 花子"))),
                             (Consumer<AdminOrderSearchRequest>) o -> o.setQ("笠谷花"),
                             1),
-                    // orderNumber
+                    // orderNumber(完全一致)
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f
                                     .createOrder(OrderTestFactory.buildOrder(o -> o.setOrderNumber(2000))),
+                            (Consumer<AdminOrderSearchRequest>) r -> r.setQ("200"),
+                            0),
+                    Arguments.of(
+                            (Consumer<TestDataFactory>) f -> f
+                                    .createOrder(OrderTestFactory.buildOrder(o -> o.setOrderNumber(200))),
                             (Consumer<AdminOrderSearchRequest>) r -> r.setQ("200"),
                             1),
                     // 不一致
