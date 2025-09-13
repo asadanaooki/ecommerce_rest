@@ -2,10 +2,10 @@ package com.example.feature.order;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.EnumSet;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,197 +25,340 @@ class OrderGuardTest {
 
     @Mock
     OrderMapper orderMapper;
-    
+
     @InjectMocks
     OrderGuard sut;
 
-    @Nested
-    class RequestCancel {
-        @Test
-        void allowed() {
-            OrderState cur = new OrderState(OrderStatus.OPEN,
-                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+    // ===== Terminal 判定 =====
+    static final EnumSet<OrderStatus> TERMINAL_ORDER_STATUS = EnumSet.of(OrderStatus.CANCELED, OrderStatus.COMPLETED);
 
+    static boolean isTerminal(OrderStatus o) {
+        return TERMINAL_ORDER_STATUS.contains(o);
+    }
+
+    // ===== イベント別: 許可ホワイトリスト（from 条件） =====
+    static boolean allowedRequestCancel(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        return o == OrderStatus.OPEN &&
+                s == ShippingStatus.UNSHIPPED &&
+                p == PaymentStatus.UNPAID;
+    }
+
+    static boolean allowedApproveCancel(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        return o == OrderStatus.CANCEL_REQUESTED &&
+                s == ShippingStatus.UNSHIPPED &&
+                p == PaymentStatus.UNPAID;
+    }
+
+    static boolean allowedShip(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        return (o == OrderStatus.OPEN || o == OrderStatus.CANCEL_REQUESTED) &&
+                s == ShippingStatus.UNSHIPPED &&
+                p == PaymentStatus.UNPAID;
+    }
+
+    static boolean allowedDelivered(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        return o == OrderStatus.OPEN &&
+                s == ShippingStatus.SHIPPED &&
+                p == PaymentStatus.UNPAID;
+    }
+
+    // ===== 非終端 NG メッセージ =====
+    static final Map<OrderEvent, String> NG_MESSAGE = Map.of(
+            OrderEvent.REQUEST_CANCEL, "Cancel request not allowed",
+            OrderEvent.APPROVE_CANCEL, "Approve not allowed",
+            OrderEvent.SHIP, "Ship not allowed",
+            OrderEvent.DELIVERED, "Delivered not allowed");
+
+    // ===== 全状態列挙 =====
+    static Stream<Arguments> allStates() {
+        return Stream.of(OrderStatus.values())
+                .flatMap(o -> Stream.of(ShippingStatus.values())
+                        .flatMap(s -> Stream.of(PaymentStatus.values())
+                                .map(p -> Arguments.of(o, s, p))));
+    }
+
+    @ParameterizedTest
+    @MethodSource("allStates")
+    void next_requestCancel(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        OrderState cur = new OrderState(o, s, p);
+
+        if (isTerminal(o)) {
+            assertThatThrownBy(() -> sut.next(cur, OrderEvent.REQUEST_CANCEL))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("Terminal state");
+            return;
+        }
+
+        if (allowedRequestCancel(o, s, p)) {
             OrderState next = sut.next(cur, OrderEvent.REQUEST_CANCEL);
-
             assertThat(next.getOrder()).isEqualTo(OrderStatus.CANCEL_REQUESTED);
             assertThat(next.getShipping()).isEqualTo(ShippingStatus.UNSHIPPED);
             assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
-        }
-
-        @ParameterizedTest(name = "[REQUEST_CANCEL] {0}")
-        @MethodSource("notAllowedCases")
-        void notAllowed(String label, OrderState cur, String expectedMsg) {
+        } else {
             assertThatThrownBy(() -> sut.next(cur, OrderEvent.REQUEST_CANCEL))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessage(expectedMsg);
-        }
-
-        static Stream<Arguments> notAllowedCases() {
-            return Stream.of(
-                    Arguments.of("already requested",
-                            new OrderState(OrderStatus.CANCEL_REQUESTED,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
-                            "Cancel request not allowed"),
-                    Arguments.of("shipped",
-                            new OrderState(OrderStatus.CANCEL_REQUESTED,
-                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
-                            "Cancel request not allowed"),
-                    Arguments.of("paid",
-                            new OrderState(OrderStatus.OPEN,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID),
-                            "Cancel request not allowed"));
+                    .hasMessage(NG_MESSAGE.get(OrderEvent.REQUEST_CANCEL));
         }
     }
 
-    @Nested
-    class ApproveCancel {
-        @Test
-        void allowed() {
-            OrderState cur = new OrderState(OrderStatus.CANCEL_REQUESTED,
-                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+    @ParameterizedTest
+    @MethodSource("allStates")
+    void next_approveCancel(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        OrderState cur = new OrderState(o, s, p);
 
+        if (isTerminal(o)) {
+            assertThatThrownBy(() -> sut.next(cur, OrderEvent.APPROVE_CANCEL))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("Terminal state");
+            return;
+        }
+
+        if (allowedApproveCancel(o, s, p)) {
             OrderState next = sut.next(cur, OrderEvent.APPROVE_CANCEL);
-
             assertThat(next.getOrder()).isEqualTo(OrderStatus.CANCELED);
             assertThat(next.getShipping()).isEqualTo(ShippingStatus.UNSHIPPED);
             assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
-        }
-
-        @ParameterizedTest(name = "{0}")
-        @MethodSource("notAllowedCases")
-        void notAllowed(String label, OrderState cur, String expectedMsg) {
+        } else {
             assertThatThrownBy(() -> sut.next(cur, OrderEvent.APPROVE_CANCEL))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessage(expectedMsg);
-        }
-
-        static Stream<Arguments> notAllowedCases() {
-            return Stream.of(
-                    Arguments.of("not requested",
-                            new OrderState(OrderStatus.OPEN,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
-                            "Approve not allowed"),
-                    Arguments.of("shipped",
-                            new OrderState(OrderStatus.CANCEL_REQUESTED,
-                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
-                            "Approve not allowed"),
-                    Arguments.of("paid",
-                            new OrderState(OrderStatus.CANCEL_REQUESTED,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID),
-                            "Approve not allowed"));
+                    .hasMessage(NG_MESSAGE.get(OrderEvent.APPROVE_CANCEL));
         }
     }
 
-    @Nested
-    class Ship {
-        @Test
-        void allowed_fromOpen() {
-            OrderState cur = new OrderState(OrderStatus.OPEN,
-                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+    @ParameterizedTest
+    @MethodSource("allStates")
+    void next_ship(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        OrderState cur = new OrderState(o, s, p);
 
-            OrderState next = sut.next(cur, OrderEvent.SHIP);
-
-            assertThat(next.getOrder()).isEqualTo(OrderStatus.OPEN);
-            assertThat(next.getShipping()).isEqualTo(ShippingStatus.SHIPPED);
-            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
-        }
-
-        @Test
-        void allowed_fromCancelRequested() {
-            OrderState cur = new OrderState(OrderStatus.CANCEL_REQUESTED,
-                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
-
-            OrderState next = sut.next(cur, OrderEvent.SHIP);
-
-            assertThat(next.getOrder()).isEqualTo(OrderStatus.OPEN);
-            assertThat(next.getShipping()).isEqualTo(ShippingStatus.SHIPPED);
-            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
-        }
-
-        @ParameterizedTest(name = "{0}")
-        @MethodSource("notAllowedCases")
-        void notAllowed(String label, OrderState cur, String expectedMsg) {
+        if (isTerminal(o)) {
             assertThatThrownBy(() -> sut.next(cur, OrderEvent.SHIP))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessage(expectedMsg);
+                    .hasMessage("Terminal state");
+            return;
         }
 
-        static Stream<Arguments> notAllowedCases() {
-            return Stream.of(
-                    Arguments.of("already shipped",
-                            new OrderState(OrderStatus.OPEN,
-                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
-                            "Ship not allowed"),
-                    Arguments.of("paid",
-                            new OrderState(OrderStatus.OPEN,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID),
-                            "Ship not allowed"));
+        if (allowedShip(o, s, p)) {
+            OrderState next = sut.next(cur, OrderEvent.SHIP);
+            assertThat(next.getOrder()).isEqualTo(OrderStatus.OPEN);
+            assertThat(next.getShipping()).isEqualTo(ShippingStatus.SHIPPED);
+            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
+        } else {
+            assertThatThrownBy(() -> sut.next(cur, OrderEvent.SHIP))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage(NG_MESSAGE.get(OrderEvent.SHIP));
         }
     }
 
-    @Nested
-    class Delivered {
-        @Test
-        void allowed() {
-            OrderState cur = new OrderState(OrderStatus.OPEN,
-                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID);
+    @ParameterizedTest
+    @MethodSource("allStates")
+    void next_delivered(OrderStatus o, ShippingStatus s, PaymentStatus p) {
+        OrderState cur = new OrderState(o, s, p);
 
+        if (isTerminal(o)) {
+            assertThatThrownBy(() -> sut.next(cur, OrderEvent.DELIVERED))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("Terminal state");
+            return;
+        }
+
+        if (allowedDelivered(o, s, p)) {
             OrderState next = sut.next(cur, OrderEvent.DELIVERED);
-
             assertThat(next.getOrder()).isEqualTo(OrderStatus.COMPLETED);
             assertThat(next.getShipping()).isEqualTo(ShippingStatus.DELIVERED);
             assertThat(next.getPayment()).isEqualTo(PaymentStatus.PAID);
-        }
-
-        @ParameterizedTest(name = "{0}")
-        @MethodSource("notAllowedCases")
-        void notAllowed(String label, OrderState cur, String expectedMsg) {
+        } else {
             assertThatThrownBy(() -> sut.next(cur, OrderEvent.DELIVERED))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessage(expectedMsg);
-        }
-
-        static Stream<Arguments> notAllowedCases() {
-            return Stream.of(
-                    Arguments.of("cancel requested",
-                            new OrderState(OrderStatus.CANCEL_REQUESTED,
-                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
-                            "Delivered not allowed"),
-                    Arguments.of("not shipped",
-                            new OrderState(OrderStatus.OPEN,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
-                            "Delivered not allowed"),
-                    Arguments.of("paid",
-                            new OrderState(OrderStatus.OPEN,
-                                    ShippingStatus.SHIPPED, PaymentStatus.PAID),
-                            "Delivered not allowed"));
+                    .hasMessage(NG_MESSAGE.get(OrderEvent.DELIVERED));
         }
     }
 
-    @Nested
-    class TerminalGuard {
-
-        @ParameterizedTest
-        @MethodSource("terminalCases")
-        void notAllowed(String label, OrderState cur, OrderEvent ev) {
-            assertThatThrownBy(() -> sut.next(cur, ev))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Terminal state");
-        }
-
-        static Stream<Arguments> terminalCases() {
-            return Stream.of(
-                    Arguments.of("canceled",
-                            new OrderState(OrderStatus.CANCELED,
-                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
-                            OrderEvent.REQUEST_CANCEL),
-                    Arguments.of("completed",
-                            new OrderState(OrderStatus.COMPLETED,
-                                    ShippingStatus.DELIVERED, PaymentStatus.PAID),
-                            OrderEvent.SHIP));
-
-        }
-    }
+//    @Nested
+//    class RequestCancel {
+//        @Test
+//        void allowed() {
+//            OrderState cur = new OrderState(OrderStatus.OPEN,
+//                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+//
+//            OrderState next = sut.next(cur, OrderEvent.REQUEST_CANCEL);
+//
+//            assertThat(next.getOrder()).isEqualTo(OrderStatus.CANCEL_REQUESTED);
+//            assertThat(next.getShipping()).isEqualTo(ShippingStatus.UNSHIPPED);
+//            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
+//        }
+//
+//        @ParameterizedTest(name = "[REQUEST_CANCEL] {0}")
+//        @MethodSource("notAllowedCases")
+//        void notAllowed(String label, OrderState cur, String expectedMsg) {
+//            assertThatThrownBy(() -> sut.next(cur, OrderEvent.REQUEST_CANCEL))
+//                    .isInstanceOf(IllegalStateException.class)
+//                    .hasMessage(expectedMsg);
+//        }
+//
+//        static Stream<Arguments> notAllowedCases() {
+//            return Stream.of(
+//                    Arguments.of("already requested",
+//                            new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
+//                            "Cancel request not allowed"),
+//                    Arguments.of("shipped",
+//                            new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
+//                            "Cancel request not allowed"),
+//                    Arguments.of("paid",
+//                            new OrderState(OrderStatus.OPEN,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID),
+//                            "Cancel request not allowed"));
+//        }
+//    }
+//
+//    @Nested
+//    class ApproveCancel {
+//        @Test
+//        void allowed() {
+//            OrderState cur = new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+//
+//            OrderState next = sut.next(cur, OrderEvent.APPROVE_CANCEL);
+//
+//            assertThat(next.getOrder()).isEqualTo(OrderStatus.CANCELED);
+//            assertThat(next.getShipping()).isEqualTo(ShippingStatus.UNSHIPPED);
+//            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
+//        }
+//
+//        @ParameterizedTest(name = "{0}")
+//        @MethodSource("notAllowedCases")
+//        void notAllowed(String label, OrderState cur, String expectedMsg) {
+//            assertThatThrownBy(() -> sut.next(cur, OrderEvent.APPROVE_CANCEL))
+//                    .isInstanceOf(IllegalStateException.class)
+//                    .hasMessage(expectedMsg);
+//        }
+//
+//        static Stream<Arguments> notAllowedCases() {
+//            return Stream.of(
+//                    Arguments.of("not requested",
+//                            new OrderState(OrderStatus.OPEN,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
+//                            "Approve not allowed"),
+//                    Arguments.of("shipped",
+//                            new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
+//                            "Approve not allowed"),
+//                    Arguments.of("paid",
+//                            new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID),
+//                            "Approve not allowed"));
+//        }
+//    }
+//
+//    @Nested
+//    class Ship {
+//        @Test
+//        void allowed_fromOpen() {
+//            OrderState cur = new OrderState(OrderStatus.OPEN,
+//                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+//
+//            OrderState next = sut.next(cur, OrderEvent.SHIP);
+//
+//            assertThat(next.getOrder()).isEqualTo(OrderStatus.OPEN);
+//            assertThat(next.getShipping()).isEqualTo(ShippingStatus.SHIPPED);
+//            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
+//        }
+//
+//        @Test
+//        void allowed_fromCancelRequested() {
+//            OrderState cur = new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID);
+//
+//            OrderState next = sut.next(cur, OrderEvent.SHIP);
+//
+//            assertThat(next.getOrder()).isEqualTo(OrderStatus.OPEN);
+//            assertThat(next.getShipping()).isEqualTo(ShippingStatus.SHIPPED);
+//            assertThat(next.getPayment()).isEqualTo(PaymentStatus.UNPAID);
+//        }
+//
+//        @ParameterizedTest(name = "{0}")
+//        @MethodSource("notAllowedCases")
+//        void notAllowed(String label, OrderState cur, String expectedMsg) {
+//            assertThatThrownBy(() -> sut.next(cur, OrderEvent.SHIP))
+//                    .isInstanceOf(IllegalStateException.class)
+//                    .hasMessage(expectedMsg);
+//        }
+//
+//        static Stream<Arguments> notAllowedCases() {
+//            return Stream.of(
+//                    Arguments.of("already shipped",
+//                            new OrderState(OrderStatus.OPEN,
+//                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
+//                            "Ship not allowed"),
+//                    Arguments.of("paid",
+//                            new OrderState(OrderStatus.OPEN,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.PAID),
+//                            "Ship not allowed"));
+//        }
+//    }
+//
+//    @Nested
+//    class Delivered {
+//        @Test
+//        void allowed() {
+//            OrderState cur = new OrderState(OrderStatus.OPEN,
+//                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID);
+//
+//            OrderState next = sut.next(cur, OrderEvent.DELIVERED);
+//
+//            assertThat(next.getOrder()).isEqualTo(OrderStatus.COMPLETED);
+//            assertThat(next.getShipping()).isEqualTo(ShippingStatus.DELIVERED);
+//            assertThat(next.getPayment()).isEqualTo(PaymentStatus.PAID);
+//        }
+//
+//        @ParameterizedTest(name = "{0}")
+//        @MethodSource("notAllowedCases")
+//        void notAllowed(String label, OrderState cur, String expectedMsg) {
+//            assertThatThrownBy(() -> sut.next(cur, OrderEvent.DELIVERED))
+//                    .isInstanceOf(IllegalStateException.class)
+//                    .hasMessage(expectedMsg);
+//        }
+//
+//        static Stream<Arguments> notAllowedCases() {
+//            return Stream.of(
+//                    Arguments.of("cancel requested",
+//                            new OrderState(OrderStatus.CANCEL_REQUESTED,
+//                                    ShippingStatus.SHIPPED, PaymentStatus.UNPAID),
+//                            "Delivered not allowed"),
+//                    Arguments.of("not shipped",
+//                            new OrderState(OrderStatus.OPEN,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
+//                            "Delivered not allowed"),
+//                    Arguments.of("paid",
+//                            new OrderState(OrderStatus.OPEN,
+//                                    ShippingStatus.SHIPPED, PaymentStatus.PAID),
+//                            "Delivered not allowed"));
+//        }
+//    }
+//
+//    @Nested
+//    class TerminalGuard {
+//
+//        @ParameterizedTest
+//        @MethodSource("terminalCases")
+//        void notAllowed(String label, OrderState cur, OrderEvent ev) {
+//            assertThatThrownBy(() -> sut.next(cur, ev))
+//                    .isInstanceOf(IllegalStateException.class)
+//                    .hasMessage("Terminal state");
+//        }
+//
+//        static Stream<Arguments> terminalCases() {
+//            return Stream.of(
+//                    Arguments.of("canceled",
+//                            new OrderState(OrderStatus.CANCELED,
+//                                    ShippingStatus.UNSHIPPED, PaymentStatus.UNPAID),
+//                            OrderEvent.REQUEST_CANCEL),
+//                    Arguments.of("completed",
+//                            new OrderState(OrderStatus.COMPLETED,
+//                                    ShippingStatus.DELIVERED, PaymentStatus.PAID),
+//                            OrderEvent.SHIP));
+//
+//        }
+//    }
 
 }
