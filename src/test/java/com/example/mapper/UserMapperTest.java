@@ -39,7 +39,7 @@ class UserMapperTest {
     void saveEmailChangeRequest() {
         User expected = userMapper.selectUserByPrimaryKey(userId);
         expected.setPendingEmail(pendEmail);
-        expected.setEmailToken(token);
+        expected.setEmailTokenHash(token);
         expected.setPendingExpiresAt(expire);
 
         int rows = userMapper.saveEmailChangeRequest(userId, pendEmail, token, expire);
@@ -59,7 +59,7 @@ class UserMapperTest {
         userMapper.saveEmailChangeRequest(userId, pendEmail, token, expire);
         User expected = userMapper.selectUserByPrimaryKey(userId);
         expected.setEmail(pendEmail);
-        expected.setEmailToken(null);
+        expected.setEmailTokenHash(null);
         expected.setPendingEmail(null);
         expected.setPendingExpiresAt(null);
 
@@ -194,10 +194,10 @@ class UserMapperTest {
         
         userMapper.saveEmailChangeRequest(userId, "newemail@example.com", emailToken, expiresAt);
         
-        User user = userMapper.selectUserByToken(emailToken);
+        User user = userMapper.selectUserByTokenHash(emailToken);
         assertThat(user).isNotNull();
         assertThat(user.getUserId()).isEqualTo(userId);
-        assertThat(user.getEmailToken()).isEqualTo(emailToken);
+        assertThat(user.getEmailTokenHash()).isEqualTo(emailToken);
     }
 
     @Test
@@ -207,7 +207,7 @@ class UserMapperTest {
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
         
         PreRegistration newPreReg = new PreRegistration();
-        newPreReg.setToken(preRegToken);
+        newPreReg.setTokenHash(preRegToken);
         newPreReg.setEmail(preRegEmail);
         newPreReg.setExpiresAt(expiresAt);
         int rows = userMapper.insertPreRegistration(newPreReg);
@@ -215,7 +215,7 @@ class UserMapperTest {
         
         PreRegistration preReg = userMapper.selectPreRegistrationByPrimaryKey(preRegToken);
         assertThat(preReg).isNotNull();
-        assertThat(preReg.getToken()).isEqualTo(preRegToken);
+        assertThat(preReg.getTokenHash()).isEqualTo(preRegToken);
         assertThat(preReg.getEmail()).isEqualTo(preRegEmail);
     }
 
@@ -226,7 +226,7 @@ class UserMapperTest {
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
         
         PreRegistration delPreReg = new PreRegistration();
-        delPreReg.setToken(preRegToken);
+        delPreReg.setTokenHash(preRegToken);
         delPreReg.setEmail(preRegEmail);
         delPreReg.setExpiresAt(expiresAt);
         userMapper.insertPreRegistration(delPreReg);

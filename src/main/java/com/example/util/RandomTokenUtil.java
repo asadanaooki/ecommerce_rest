@@ -18,10 +18,10 @@ public final class RandomTokenUtil {
         return BASE64_URL.encodeToString(bytes);
     }
 
-    public static String hash(String token) {
+    public static String hash(String rawToken) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(token.getBytes(StandardCharsets.US_ASCII));
+            byte[] digest = md.digest(rawToken.getBytes(StandardCharsets.US_ASCII));
 
             StringBuilder sb = new StringBuilder(64);
             for (byte b : digest) {

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class PreRegistration {
 
-    private String token;
+    private String tokenHash;
     
     private String email;
     

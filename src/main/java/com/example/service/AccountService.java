@@ -55,11 +55,11 @@ public class AccountService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        String token = RandomTokenUtil.generate();
-        userMapper.saveEmailChangeRequest(userId, req.getNewEmail(), RandomTokenUtil.hash(token),
+        String rawToken = RandomTokenUtil.generate();
+        userMapper.saveEmailChangeRequest(userId, req.getNewEmail(), RandomTokenUtil.hash(rawToken),
                 LocalDateTime.now().plusMinutes(emailExpireMin));
 
-        String link = "http://localhost:8080/profile/email-change/complete?token=" + token;
+        String link = "http://localhost:8080/profile/email-change/complete?token=" + rawToken;
         mailGateway.send(
                 MailTemplate.EMAIL_CHANGE_COMPLETE_NEW
                         .build(new EmailChangeCompleteNewContext(req.getNewEmail(), link, emailExpireMin)));
@@ -68,13 +68,13 @@ public class AccountService {
                         .build(new EmailChangeAlertOldContext(u.getEmail(), LocalDateTime.now())));
     }
 
-    public void completeEmailChange(String token) {
-        User user = userMapper.selectUserByToken(RandomTokenUtil.hash(token));
+    public void completeEmailChange(String rawToken) {
+        User user = userMapper.selectUserByTokenHash(RandomTokenUtil.hash(rawToken));
         if (user == null || user.getPendingExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        userMapper.confirmEmailChange(RandomTokenUtil.hash(token));
+        userMapper.confirmEmailChange(RandomTokenUtil.hash(rawToken));
     }
 
     public void changePassword(String userId, PasswordChangeRequest req) {

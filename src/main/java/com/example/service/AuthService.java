@@ -87,16 +87,16 @@ public class AuthService {
             throw new BusinessException(HttpStatus.CONFLICT);
         }
 
-        String token = RandomTokenUtil.generate();
+        String rawToken = RandomTokenUtil.generate();
         LocalDateTime exp = LocalDateTime.now().plusMinutes(ttlMinutes);
         PreRegistration pr = new PreRegistration();
-        pr.setToken(RandomTokenUtil.hash(token));
+        pr.setTokenHash(RandomTokenUtil.hash(rawToken));
         pr.setEmail(email);
         pr.setExpiresAt(exp);
 
         userMapper.insertPreRegistration(pr);
 
-        String link = "http://localhost:8080/register/verify?token=" + token;
+        String link = "http://localhost:8080/register/verify?token=" + rawToken;
         mailGateway.send(MailTemplate.REGISTRATION.build(new RegistrationContext(email, link, ttlMinutes)));
     }
 
@@ -112,7 +112,7 @@ public class AuthService {
     @Transactional
     public String register(RegisterUserRequest req) {
         PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(
-                RandomTokenUtil.hash(req.getToken()));
+                RandomTokenUtil.hash(req.getRawToken()));
 
         if (pr == null || !pr.getEmail().equals(req.getEmail())) {
             throw new BusinessException(HttpStatus.NOT_FOUND);
@@ -121,7 +121,7 @@ public class AuthService {
         User user = toUserEntity(req, UUID.randomUUID().toString());
 
         userMapper.insertUser(user);
-        userMapper.deletePreRegistrationByPrimaryKey( RandomTokenUtil.hash(req.getToken()));
+        userMapper.deletePreRegistrationByPrimaryKey( RandomTokenUtil.hash(req.getRawToken()));
 
         mailGateway.send(MailTemplate.WELCOME.build(
                 new WelcomeContext(user.getEmail(),
@@ -155,7 +155,7 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(PasswordResetUpdateRequest req) {
-        String hashed = RandomTokenUtil.hash(req.getToken());
+        String hashed = RandomTokenUtil.hash(req.getRawToken());
         PasswordResetToken tk = userMapper
                 .selectPasswordResetTokenByPrimaryKey(hashed);
         if (tk == null ||

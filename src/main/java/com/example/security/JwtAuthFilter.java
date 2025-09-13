@@ -29,10 +29,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String auth = request.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
-            String token = auth.substring(7);
-            if (jwtUtil.isValid(token)) {
-                String userId = jwtUtil.subject(token);
-                String role = jwtUtil.role(token);
+            String rawToken = auth.substring(7);
+            if (jwtUtil.isValid(rawToken)) {
+                String userId = jwtUtil.subject(rawToken);
+                String role = jwtUtil.role(rawToken);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId,
                         null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
 
