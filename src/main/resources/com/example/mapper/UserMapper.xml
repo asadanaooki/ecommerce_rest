@@ -15,18 +15,18 @@
     <select id="selectPreRegistrationByPrimaryKey" resultType="com.example.entity.PreRegistration">
     select *
     from pre_registration
-    where token = #{tokenHash}
+    where token_hash = #{tokenHash}
   </select>
   
   <insert id="insertPreRegistration">
     insert into pre_registration
-      (token, email, expires_at)
+      (token_hash, email, expires_at)
     values (#{tokenHash}, #{email}, #{expiresAt})
   </insert>
   
   <delete id="deletePreRegistrationByPrimaryKey">
     delete from pre_registration
-    where token = #{tokenHash}
+    where token_hash = #{tokenHash}
   </delete>
   
   <insert id="insertUser" parameterType="com.example.entity.User">
@@ -112,7 +112,7 @@
   <update id="saveEmailChangeRequest">
     update `user`
     set pending_email = #{newEmail},
-        email_token = #{tokenHash},
+        email_token_hash = #{tokenHash},
         pending_expires_at = #{expiresAt}
     where user_id = #{userId}
   </update>
@@ -120,16 +120,16 @@
   <select id="selectUserByTokenHash">
     select *
     from `user`
-    where email_token = #{tokenHash}
+    where email_token_hash = #{tokenHash}
   </select>
   
   <update id="confirmEmailChange">
     update `user`
     set email = pending_email,
         pending_email = NULL,
-        email_token = NULL,
+        email_token_hash = NULL,
         pending_expires_at = NULL
-    where email_token = #{tokenHash}
+    where email_token_hash = #{tokenHash}
   </update>
   
   <update id="updateProfile">
