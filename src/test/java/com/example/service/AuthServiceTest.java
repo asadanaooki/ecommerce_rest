@@ -45,6 +45,7 @@ import com.example.request.EmailChangeRequest;
 import com.example.request.PasswordResetMailRequest;
 import com.example.request.PasswordResetUpdateRequest;
 import com.example.request.RegisterUserRequest;
+import com.example.service.AccountService;
 import com.example.support.MailGateway;
 import com.example.testUtil.FlywayResetExtension;
 import com.example.util.JwtUtil;
@@ -68,6 +69,9 @@ class AuthServiceTest {
 
     @Autowired
     AuthService authService;
+
+    @Autowired
+    AccountService accountService;
 
     @MockitoSpyBean
     UserMapper userMapper;
@@ -101,7 +105,7 @@ class AuthServiceTest {
                 authService.requestRegistration(email);
 
                 PreRegistration pr = userMapper.selectPreRegistrationByPrimaryKey(hashed);
-                assertThat(pr.getToken()).hasSize(64);
+                assertThat(pr.getTokenHash()).hasSize(64);
                 assertThat(pr.getEmail()).isEqualTo(email);
                 assertThat(pr.getExpiresAt()).isAfter(LocalDateTime.now());
 
@@ -170,7 +174,7 @@ class AuthServiceTest {
             token = RandomTokenUtil.generate();
             LocalDateTime exp = LocalDateTime.now().plusMinutes(20);
             pr = new PreRegistration();
-            pr.setToken(RandomTokenUtil.hash(token));
+            pr.setTokenHash(RandomTokenUtil.hash(token));
             pr.setEmail(email);
             pr.setExpiresAt(exp);
 
@@ -349,11 +353,11 @@ class AuthServiceTest {
 
             req = new PasswordResetUpdateRequest() {
                 {
-                    setToken(raw);
+                    setRawToken(raw);
                     setEmail("test@sample.com");
                     setNewPassword("testpass");
                     setConfirmPassword("testpass");
-                    setToken(raw);
+                    setRawToken(raw);
                 }
             };
             tk = new PasswordResetToken() {
@@ -450,7 +454,7 @@ class AuthServiceTest {
             req.setNewEmail("sample@example.com");
             req.setConfirmEmail("sample@example.com");
 
-            assertThatThrownBy(() -> authService.requestEmailChange(userId, req))
+            assertThatThrownBy(() -> accountService.requestEmailChange(userId, req))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("httpStatus", HttpStatus.BAD_REQUEST)
                     .hasFieldOrPropertyWithValue("errorCode", "EMAIL_SAME");
@@ -461,7 +465,7 @@ class AuthServiceTest {
             req.setNewEmail("bob2@example.com");
             req.setConfirmEmail("bob2@example.com");
 
-            assertThatThrownBy(() -> authService.requestEmailChange(userId, req))
+            assertThatThrownBy(() -> accountService.requestEmailChange(userId, req))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasFieldOrPropertyWithValue("status", HttpStatus.CONFLICT);
         }
@@ -476,13 +480,13 @@ class AuthServiceTest {
                 rnd.when(RandomTokenUtil::generate).thenReturn(fixedToken);
                 time.when(LocalDateTime::now).thenReturn(ld);
 
-                authService.requestEmailChange(userId, req);
+                accountService.requestEmailChange(userId, req);
 
                 User user = userMapper.selectUserByPrimaryKey(userId);
                 assertThat(user)
                         .extracting(
                                 User::getPendingEmail,
-                                User::getEmailToken,
+                                User::getEmailTokenHash,
                                 User::getPendingExpiresAt)
                         .containsExactly(
                                 "test@example.com",

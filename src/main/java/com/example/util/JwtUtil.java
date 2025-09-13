@@ -37,22 +37,22 @@ public class JwtUtil {
                 .compact();
     }
 
-    public boolean isValid(String token) {
+    public boolean isValid(String rawToken) {
         try {
-            parser().parseSignedClaims(token);
+            parser().parseSignedClaims(rawToken);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
-    public String subject(String token) {
-        Jws<Claims> jws = parser().parseSignedClaims(token);
+    public String subject(String rawToken) {
+        Jws<Claims> jws = parser().parseSignedClaims(rawToken);
         return jws.getPayload().getSubject();
     }
     
-    public String role(String token) {
-        Jws<Claims> jws = parser().parseSignedClaims(token);
+    public String role(String rawToken) {
+        Jws<Claims> jws = parser().parseSignedClaims(rawToken);
         return jws.getPayload().get("role", String.class);
     }
 

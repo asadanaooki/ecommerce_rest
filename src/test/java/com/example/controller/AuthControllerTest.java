@@ -380,7 +380,7 @@ class AuthControllerTest {
             String expField, String expCode) throws JsonProcessingException, Exception {
         PasswordResetUpdateRequest req = new PasswordResetUpdateRequest() {
             {
-                setToken(token);
+                setRawToken(token);
                 setEmail(email);
                 setNewPassword(newPw);
                 setConfirmPassword(confirmPw);
@@ -406,12 +406,11 @@ class AuthControllerTest {
                 "d".repeat(62);
         String token22 = "a".repeat(22);
         return Stream.of(
-                // token
                 // @notBlank
-                Arguments.of("", email254, "testpass1", "testpass1", "token", "NotBlank"),
+                Arguments.of("", email254, "testpass1", "testpass1", "rawToken", "NotBlank"),
                 // @size
-                Arguments.of("a".repeat(21), email254, "testpass1", "testpass1", "token", "Size"),
-                Arguments.of(token22 + "b", email254, "testpass1", "testpass1", "token", "Size"),
+                Arguments.of("a".repeat(21), email254, "testpass1", "testpass1", "rawToken", "Size"),
+                Arguments.of(token22 + "b", email254, "testpass1", "testpass1", "rawToken", "Size"),
 
                 // email
                 // @notBlank

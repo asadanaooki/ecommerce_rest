@@ -23,7 +23,7 @@ public class RegisterUserRequest {
     // ① トークン（22 桁固定の想定）
     @NotBlank
     @Size(min = 22, max = 22)
-    private String token;
+    private String rawToken;
 
     // ② メールアドレス
     @NotBlank

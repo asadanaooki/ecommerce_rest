@@ -17,7 +17,7 @@ public class PasswordResetUpdateRequest {
 
     @NotBlank
     @Size(min = 22, max = 22)
-    private String token;
+    private String rawToken;
 
     @NormalizeEmail
     @EmailFormat

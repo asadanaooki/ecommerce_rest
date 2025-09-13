@@ -35,7 +35,7 @@ public class User {
     private Role role;
     
     private String pendingEmail;
-    private String emailToken;
+    private String emailTokenHash;
     private LocalDateTime pendingExpiresAt;
 
     private LocalDateTime createdAt;

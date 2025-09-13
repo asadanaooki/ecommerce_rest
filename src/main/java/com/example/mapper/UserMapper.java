@@ -20,29 +20,29 @@ public interface UserMapper {
 
     Optional<User> selectUserByEmail(String email);
     
-    PreRegistration selectPreRegistrationByPrimaryKey(String token);
+    PreRegistration selectPreRegistrationByPrimaryKey(String tokenHash);
     
     int insertPreRegistration(PreRegistration preg);
     
-    int deletePreRegistrationByPrimaryKey(String token);
+    int deletePreRegistrationByPrimaryKey(String tokenHash);
     
     int insertUser(User user);
     
-    int insertPasswordResetToken(PasswordResetToken token);
+    int insertPasswordResetToken(PasswordResetToken passwordResetToken);
     
     PasswordResetToken selectPasswordResetTokenByPrimaryKey(String hash);
     
-    int deletePasswordResetToken(String token);
+    int deletePasswordResetToken(String tokenHash);
     
     int updatePasswordByPrimaryKey(String userId, String pw);
     
     int updatePasswordByEmail(String email, String pw);
     
-    int saveEmailChangeRequest(String userId, String  newEmail, String token, LocalDateTime expiresAt);
+    int saveEmailChangeRequest(String userId, String  newEmail, String tokenHash, LocalDateTime expiresAt);
     
-    User selectUserByToken(String token);
+    User selectUserByTokenHash(String tokenHash);
     
-    int confirmEmailChange(String token);
+    int confirmEmailChange(String tokenHash);
 
     int updateProfile(String userId, ProfileUpdateRequest req);
 }
