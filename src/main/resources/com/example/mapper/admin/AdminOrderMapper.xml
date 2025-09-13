@@ -31,7 +31,16 @@
         AND created_at &lt; #{req.createdTo} 
       </if>
     </where>
-    order by ${req.sortField.field} ${req.sortDirection}
+    order by
+      <choose>
+        <when test="req.sortField.name().equals('STATUS')">
+          FIELD(order_status, 'OPEN', 'CANCEL_REQUESTED', 'CANCELED', 'COMPLETED') ${req.sortDirection}
+        </when>
+        <otherwise>
+          ${req.sortField.field} ${req.sortDirection}
+        </otherwise>
+      </choose>
+      , order_number asc
     limit #{limit} offset #{offset}
   </select>
 

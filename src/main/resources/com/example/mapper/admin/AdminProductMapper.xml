@@ -87,15 +87,22 @@
       </if>
     </where>
     order by
-      ${req.sortField.field} ${req.sortDirection},
-      product_id ASC
+      <choose>
+        <when test="req.sortField.name().equals('STATUS')">
+          FIELD(status, 'UNPUBLISHED', 'PUBLISHED') ${req.sortDirection}
+        </when>
+        <otherwise>
+          ${req.sortField.field} ${req.sortDirection}
+        </otherwise>
+      </choose>
+      ,sku ASC
     limit #{limit}
     offset #{offset}
   </select>
   
   <insert id="insert">
     INSERT INTO product
-      (product_id, product_name, price_excl, product_description,　status)
+      (product_id, product_name, price_excl, product_description, status)
     VALUES
       (#{productId},
        #{productName},

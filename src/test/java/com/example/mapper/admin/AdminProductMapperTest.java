@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,26 +45,24 @@ class AdminProductMapperTest {
     @Autowired
     TestDataFactory factory;
 
-    @BeforeEach
-    void setup() {
-        factory.createProduct(buildProduct(p -> {
-        }));
-    }
-
     @Nested
     class CountProducts {
+
         @ParameterizedTest
         @MethodSource("provideSingleFilterAndBoundaryCases")
         void countProducts_singleFilterAndBoundary(Consumer<TestDataFactory> insertMismatch,
-                Consumer<AdminProductSearchRequest> customizeReq, int expected) {
+                                                  Consumer<AdminProductSearchRequest> customizeReq,
+                                                  int expected) {
+            // ベース商品 1 件
+            factory.createProduct(buildProduct(p -> {}));
+
+            // フィルタと逆転するデータを追加
             insertMismatch.accept(factory);
 
-            AdminProductSearchRequest req = new AdminProductSearchRequest() {
-                {
-                    setSortFIeld(ProductSortField.UPDATED_AT);
-                    setSortDirection(SortDirection.DESC);
-                }
-            };
+            AdminProductSearchRequest req = new AdminProductSearchRequest() {{
+                setSortFIeld(ProductSortField.UPDATED_AT);
+                setSortDirection(SortDirection.DESC);
+            }};
             customizeReq.accept(req);
 
             assertThat(adminProductMapper.countProducts(req)).isEqualTo(expected);
@@ -79,153 +76,166 @@ class AdminProductMapperTest {
                                 p.setProductName("DifferentProduct");
                                 p.setStatus(SaleStatus.PUBLISHED);
                             })),
-                            (Consumer<AdminProductSearchRequest>) r -> {
-                            },
+                            (Consumer<AdminProductSearchRequest>) r -> {},
                             2),
+
                     // keyword
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setProductName("apple"))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setProductName("apple"))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setQ("tem"),
                             1),
+
                     // minPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(200))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMinPrice(300),
                             1),
+
                     // maxPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(3000))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMaxPrice(2000),
                             1),
+
                     // minStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(50))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMinAvailable(70),
                             1),
+
                     // maxStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(200))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMaxAvailable(150),
                             1),
+
                     // createdFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2018, 1, 1, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2019, 3, 3)),
                             1),
+
                     // createdTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2023, 1, 1, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2022, 4, 1)),
                             1),
+
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2018, 1, 1, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2019, 12, 26)),
                             1),
+
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2022, 1, 1, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 7, 1)),
                             1),
+
                     // status
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setStatus(SaleStatus.UNPUBLISHED))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStatus(SaleStatus.UNPUBLISHED))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setStatus(SaleStatus.PUBLISHED),
                             1),
 
-                    // 境界値
+                    // ---- 境界値 ----
                     // minPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(999))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMinPrice(1000),
                             1),
+
                     // maxPrice
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setPriceExcl(1001))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMaxPrice(1000),
                             1),
+
                     // minStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(99))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMinAvailable(100),
                             1),
+
                     // maxStock
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setStock(101))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setMaxAvailable(100),
                             1),
+
                     // createdFrom
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(
-                                            buildProduct(
-                                                    p -> p.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59, 59)))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(
+                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2019, 12, 31, 23, 59, 59)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             1),
+
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(
-                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0)))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(
+                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setCreatedFrom(LocalDate.of(2020, 1, 1)),
                             2),
+
                     // createdTo
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(
-                                            buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0)))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(
+                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 2, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             1),
+
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(
-                                            buildProduct(
-                                                    p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(
+                                    buildProduct(p -> p.setCreatedAt(LocalDateTime.of(2020, 1, 1, 23, 59, 59)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setCreatedTo(LocalDate.of(2020, 1, 1)),
                             2),
+
                     // updatedFrom
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 2, 23, 59, 59)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
                             1),
+
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedFrom(LocalDate.of(2021, 6, 3)),
                             2),
+
                     // updatedTo
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 4, 0, 0)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
                             1),
+
                     Arguments.of(
                             (Consumer<TestDataFactory>) f -> f.createProduct(
                                     buildProduct(p -> p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 23, 59, 59)))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setUpdatedTo(LocalDate.of(2021, 6, 3)),
-                            2));
+                            2)
+            );
         }
 
         @ParameterizedTest
         @MethodSource("provideKeywordCases")
-        void countProducts_keywordFilter(
-                Consumer<TestDataFactory> insertMatching,
-                Consumer<AdminProductSearchRequest> customizeReq,
-                int expected) {
+        void countProducts_keywordFilter(Consumer<TestDataFactory> insertMatching,
+                                         Consumer<AdminProductSearchRequest> customizeReq,
+                                         int expected) {
+            // ベース商品 1 件
+            factory.createProduct(buildProduct(p -> {}));
+
             insertMatching.accept(factory);
 
-            AdminProductSearchRequest req = new AdminProductSearchRequest() {
-                {
-                    setSortFIeld(ProductSortField.UPDATED_AT);
-                    setSortDirection(SortDirection.DESC);
-                }
-            };
+            AdminProductSearchRequest req = new AdminProductSearchRequest() {{
+                setSortFIeld(ProductSortField.UPDATED_AT);
+                setSortDirection(SortDirection.DESC);
+            }};
             customizeReq.accept(req);
 
             assertThat(adminProductMapper.countProducts(req)).isEqualTo(expected);
@@ -235,37 +245,45 @@ class AdminProductMapperTest {
             return Stream.of(
                     // sku
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {
-                            })),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> {})),
                             (Consumer<AdminProductSearchRequest>) r -> r.setQ("2"),
                             1),
+
                     // productName
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setProductName("apple"))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setProductName("apple"))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setQ("le"),
                             1),
+
                     // 複数ワード
                     Arguments.of(
-                            (Consumer<TestDataFactory>) f -> f
-                                    .createProduct(buildProduct(p -> p.setProductName("NMH"))),
+                            (Consumer<TestDataFactory>) f -> f.createProduct(buildProduct(p -> p.setProductName("NMH"))),
                             (Consumer<AdminProductSearchRequest>) r -> r.setQ("1 N"),
-                            2));
+                            2)
+            );
         }
     }
 
     @Nested
     class SearchProducts {
 
-        private int limit = 2;
+        private final int limit = 2;
 
         @Test
         void searchProducts_withFilter() {
+            // ベース商品 1 件
+            factory.createProduct(buildProduct(p -> {}));
+
             factory.createProduct(buildProduct(p -> {
+                p.setSku(10);
                 p.setProductName("aaa");
                 p.setStatus(SaleStatus.UNPUBLISHED);
             }));
-            factory.createProduct(buildProduct(p -> p.setProductName("えおい")));
+            factory.createProduct(buildProduct(p -> {
+                p.setSku(11);
+                p.setProductName("えおい");
+                p.setStatus(SaleStatus.PUBLISHED);
+            }));
 
             AdminProductSearchRequest req = new AdminProductSearchRequest();
             req.setStatus(SaleStatus.PUBLISHED);
@@ -281,14 +299,17 @@ class AdminProductMapperTest {
 
         @Test
         void searchProducts_noFilter() {
+            // ベース商品 1 件
+            factory.createProduct(buildProduct(p -> {}));
+
             factory.createProduct(buildProduct(p -> {
-                p.setProductId("5083a5da-4ab0-4000-a390-68c94fc58052");
+                p.setSku(10);
                 p.setProductName("test");
                 p.setPriceExcl(200);
                 p.setStatus(SaleStatus.UNPUBLISHED);
             }));
             factory.createProduct(buildProduct(p -> {
-                p.setProductId("c32d16ad-2e69-47bf-bc85-933169754fcd");
+                p.setSku(11);
                 p.setProductName("test2");
                 p.setPriceExcl(200);
                 p.setStatus(SaleStatus.PUBLISHED);
@@ -301,8 +322,41 @@ class AdminProductMapperTest {
             List<AdminProductDto> results = adminProductMapper.searchProducts(req, limit, 0);
 
             assertThat(results).hasSize(limit)
-                    .extracting(AdminProductDto::getProductId)
-                    .containsExactly("5083a5da-4ab0-4000-a390-68c94fc58052", "c32d16ad-2e69-47bf-bc85-933169754fcd");
+                    .extracting(AdminProductDto::getSku)
+                    .containsExactly(10, 11);
+        }
+
+        @Test
+        void searchProducts_orderByStatus() {
+            // ※ここは「ベース商品なし」
+            factory.createProduct(buildProduct(p -> {
+                p.setSku(10);
+                p.setProductName("test");
+                p.setPriceExcl(200);
+                p.setStatus(SaleStatus.UNPUBLISHED);
+            }));
+            factory.createProduct(buildProduct(p -> {
+                p.setSku(11);
+                p.setProductName("test2");
+                p.setPriceExcl(200);
+                p.setStatus(SaleStatus.PUBLISHED);
+            }));
+            factory.createProduct(buildProduct(p -> {
+                p.setSku(12);
+                p.setProductName("test3");
+                p.setPriceExcl(200);
+                p.setStatus(SaleStatus.PUBLISHED);
+            }));
+
+            AdminProductSearchRequest req = new AdminProductSearchRequest();
+            req.setSortFIeld(ProductSortField.STATUS);
+            req.setSortDirection(SortDirection.DESC);
+
+            List<AdminProductDto> results = adminProductMapper.searchProducts(req, 100, 0);
+
+            assertThat(results).hasSize(3)
+                    .extracting(AdminProductDto::getSku)
+                    .containsExactly(11, 12, 10);
         }
     }
 
@@ -319,6 +373,5 @@ class AdminProductMapperTest {
         p.setUpdatedAt(LocalDateTime.of(2021, 6, 3, 12, 0));
         customizer.accept(p);
         return p;
-    }
-
+        }
 }

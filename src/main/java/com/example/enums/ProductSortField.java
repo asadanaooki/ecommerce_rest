@@ -8,7 +8,8 @@ public enum ProductSortField {
     PRICE("price_excl"),
     CREATED_AT("created_at"),
     UPDATED_AT("updated_at"),
-    STOCK("stock");
+    STOCK("stock"),
+    STATUS("status");
     
     private final String field;
     

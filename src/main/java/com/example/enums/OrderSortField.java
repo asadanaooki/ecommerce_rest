@@ -10,7 +10,8 @@ public enum OrderSortField {
     
     ORDER_NUMBER("order_number"),
     NAME("name"),
-    CREATED_AT("created_at");
+    CREATED_AT("created_at"),
+    STATUS("order_status");
     
     private final String field;
     

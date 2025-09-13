@@ -23,8 +23,11 @@ import org.springframework.test.context.jdbc.Sql;
 
 import com.example.dto.admin.AdminOrderDetailDto;
 import com.example.dto.admin.AdminOrderDetailItemDto;
+import com.example.dto.admin.AdminOrderRowDto;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
+import com.example.enums.OrderSortField;
+import com.example.enums.SortDirection;
 import com.example.enums.order.OrderStatus;
 import com.example.enums.order.PaymentStatus;
 import com.example.enums.order.ShippingStatus;
@@ -51,7 +54,6 @@ class AdminOrderMapperTest {
 
     @Autowired
     TestDataFactory factory;
-
 
     @Nested
     class Count {
@@ -291,7 +293,7 @@ class AdminOrderMapperTest {
         assertThat(order.getGrandTotalIncl()).isEqualTo(2330);
 
     }
-    
+
     @Nested
     class SelectMonthlySalesTotal {
         LocalDateTime start = LocalDateTime.of(2025, 8, 1, 0, 0);
@@ -305,7 +307,6 @@ class AdminOrderMapperTest {
 
             Order order = OrderTestFactory.buildOrder(customizer);
             factory.createOrder(order);
-
 
             int actual = adminOrderMapper.selectMonthlySalesTotal(start, end);
 
@@ -333,44 +334,44 @@ class AdminOrderMapperTest {
                         o.setItemsSubtotalIncl(5000);
                     }, 4830));
         }
-        
+
         @Test
         void selectMonthlySalesTotal_noData() {
-            Order o1 = OrderTestFactory.buildOrder(o ->{
+            Order o1 = OrderTestFactory.buildOrder(o -> {
                 o.setShippedAt(null);
                 o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
                 o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
             });
             factory.createOrder(o1);
-            
-            Order o2 = OrderTestFactory.buildOrder(o ->{
+
+            Order o2 = OrderTestFactory.buildOrder(o -> {
                 o.setShippedAt(LocalDateTime.of(2025, 6, 10, 12, 0));
                 o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
                 o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
             });
             factory.createOrder(o2);
-            
+
             int actual = adminOrderMapper.selectMonthlySalesTotal(start, end);
             assertThat(actual).isZero();
         }
-        
+
         @Test
         void selectMonthlySalesTotal_multiple() {
-            Order o1 = OrderTestFactory.buildOrder(o ->{
+            Order o1 = OrderTestFactory.buildOrder(o -> {
                 o.setShippedAt(null);
                 o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
                 o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
             });
             factory.createOrder(o1);
-            
-            Order o2 = OrderTestFactory.buildOrder(o ->{
+
+            Order o2 = OrderTestFactory.buildOrder(o -> {
                 o.setShippedAt(LocalDateTime.of(2025, 6, 10, 12, 0));
                 o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
                 o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
             });
             factory.createOrder(o2);
-            
-            Order o3 = OrderTestFactory.buildOrder(o ->{
+
+            Order o3 = OrderTestFactory.buildOrder(o -> {
                 o.setShippingFeeIncl(0);
                 o.setItemsSubtotalIncl(500);
                 o.setShippedAt(LocalDateTime.of(2025, 8, 24, 12, 0));
@@ -378,17 +379,80 @@ class AdminOrderMapperTest {
                 o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
             });
             factory.createOrder(o3);
-            
-            Order o4 = OrderTestFactory.buildOrder(o ->{
+
+            Order o4 = OrderTestFactory.buildOrder(o -> {
                 o.setShippedAt(LocalDateTime.of(2025, 8, 2, 12, 0));
                 o.setCreatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
                 o.setUpdatedAt(LocalDateTime.of(2025, 8, 10, 12, 0));
             });
             factory.createOrder(o4);
-            
+
             int actual = adminOrderMapper.selectMonthlySalesTotal(start, end);
             assertThat(actual).isEqualTo(5660);
         }
     }
 
+    @Nested
+    class SelectPage {
+        @BeforeEach
+        void setup() {
+         // 共通テストデータ投入（合計5件）
+            // OPEN 2件（2025/9/12 12:10:11, 2025/9/13 12:10:11）
+            factory.createOrder(OrderTestFactory.buildOrder(o -> {
+                o.setOrderStatus(OrderStatus.OPEN);
+                o.setOrderNumber(1001);
+                o.setCreatedAt(LocalDateTime.of(2025, 9, 12, 12, 10, 11));
+            }));
+            factory.createOrder(OrderTestFactory.buildOrder(o -> {
+                o.setOrderStatus(OrderStatus.OPEN);
+                o.setOrderNumber(1004);
+                o.setCreatedAt(LocalDateTime.of(2025, 9, 13, 12, 10, 11));
+            }));
+
+            // CANCEL_REQUESTED 1件（2025/9/11 12:10:11）
+            factory.createOrder(OrderTestFactory.buildOrder(o -> {
+                o.setOrderStatus(OrderStatus.CANCEL_REQUESTED);
+                o.setOrderNumber(1002);
+                o.setCreatedAt(LocalDateTime.of(2025, 9, 11, 12, 10, 11));
+            }));
+
+            // CANCELED 1件（2025/9/11 12:10:11）※同時刻 → 二次ソート(order_number ASC)で1002→1003の順
+            factory.createOrder(OrderTestFactory.buildOrder(o -> {
+                o.setOrderStatus(OrderStatus.CANCELED);
+                o.setOrderNumber(1003);
+                o.setCreatedAt(LocalDateTime.of(2025, 9, 11, 12, 10, 11));
+            }));
+
+            // COMPLETED 1件（2025/8/2 00:00:00）
+            factory.createOrder(OrderTestFactory.buildOrder(o -> {
+                o.setOrderStatus(OrderStatus.COMPLETED);
+                o.setOrderNumber(1005);
+                o.setCreatedAt(LocalDateTime.of(2025, 8, 2, 0, 0, 0));
+            }));
+        }
+        
+        @Test
+        void selectPage_sortByStaus() {
+            AdminOrderSearchRequest req = new AdminOrderSearchRequest();
+            req.setSortField(OrderSortField.STATUS);
+            req.setSortDirection(SortDirection.ASC);
+            
+            List<AdminOrderRowDto> rows = adminOrderMapper.selectPage(req, 100, 0);
+            
+            assertThat(rows).extracting(AdminOrderRowDto::getOrderNumber)
+            .containsExactly("1001","1004","1002","1003","1005");
+        }
+        
+        @Test
+        void selectPage_sortByCreatedAt() {
+            AdminOrderSearchRequest req = new AdminOrderSearchRequest();
+            req.setSortField(OrderSortField.CREATED_AT);
+            req.setSortDirection(SortDirection.DESC);
+            
+            List<AdminOrderRowDto> rows = adminOrderMapper.selectPage(req, 100, 0);
+            
+            assertThat(rows).extracting(AdminOrderRowDto::getOrderNumber)
+            .containsExactly("1004","1001","1002","1003","1005");
+        }
+    }
 }
